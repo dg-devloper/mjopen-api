@@ -232,10 +232,10 @@ run_docker_container() {
     print_msg "${BLUE}" "启动 Docker 容器..."
     docker run --name ${CONTAINER_NAME} -d --restart=always \
         -p $external_port:8080 --user root \
-        -v /root/mjopen/logs:/app/logs:rw \
-        -v /root/mjopen/data:/app/data:rw \
-        -v /root/mjopen/attachments:/app/wwwroot/attachments:rw \
-        -v /root/mjopen/ephemeral-attachments:/app/wwwroot/ephemeral-attachments:rw \
+        -v /root/mjopen-api/logs:/app/logs:rw \
+        -v /root/mjopen-api/data:/app/data:rw \
+        -v /root/mjopen-api/attachments:/app/wwwroot/attachments:rw \
+        -v /root/mjopen-api/ephemeral-attachments:/app/wwwroot/ephemeral-attachments:rw \
         -e TZ=Asia/Shanghai \
         -v /etc/localtime:/etc/localtime:ro \
         -v /etc/timezone:/etc/timezone:ro \
@@ -292,6 +292,8 @@ INSTALLED_VERSIONS=()
 # 从GitHub获取最新版本信息
 get_latest_version_info() {
     local API_URL="https://api.github.com/repos/trueai-org/midjourney-proxy/releases/latest"
+    local API_URL="https://api.github.com/repos/dg-devloper/mjopen-api/releases/latest"
+
     local response
 
     if $USE_ACCELERATION; then
@@ -340,6 +342,8 @@ install_version() {
     fi
 
     local specific_api_url="https://api.github.com/repos/trueai-org/midjourney-proxy/releases/tags/$version"
+    # local specific_api_url="https://api.github.com/repos/dg-devloper/mjopen-api/releases/tags/$version"
+
     if $USE_ACCELERATION; then
         specific_api_url="https://ghproxy.com/$specific_api_url"
     fi
