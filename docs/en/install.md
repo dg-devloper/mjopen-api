@@ -34,14 +34,14 @@ docker pull registry.cn-guangzhou.aliyuncs.com/trueai-org/midjourney-proxy
 # curl -o /root/mjopen/appsettings.Production.json https://raw.githubusercontent.com/trueai-org/midjourney-proxy/main/src/Midjourney.API/appsettings.json
 
 # 2. Stop and remove the old Docker container
-docker stop mjopen && docker rm mjopen
+docker stop mjopen-api && docker rm mjopen-api
 
 # 3. Start the container
-docker run --name mjopen -d --restart=always \
+docker run --name mjopen-api -d --restart=always \
  -p 8088:8080 --user root \
- -v /root/mjopen/logs:/app/logs:rw \
+ -v /root/mjopen-api/logs:/app/logs:rw \
  -v /root/mjopen/data:/app/data:rw \
- -v /root/mjopen/attachments:/app/wwwroot/attachments:rw \
+ -v /root/mjopen-api/attachments:/app/wwwroot/attachments:rw \
  -v /root/mjopen/ephemeral-attachments:/app/wwwroot/ephemeral-attachments:rw \
  -e TZ=Asia/Shanghai \
  -v /etc/localtime:/etc/localtime:ro \
@@ -52,9 +52,9 @@ docker run --name mjopen -d --restart=always \
 docker pull ghcr.io/trueai-org/midjourney-proxy
 docker run --name mjopen-api -d --restart=always \
  -p 8088:8080 --user root \
- -v /root/mjopen/logs:/app/logs:rw \
+ -v /root/mjopen-api/logs:/app/logs:rw \
  -v /root/mjopen/data:/app/data:rw \
- -v /root/mjopen/attachments:/app/wwwroot/attachments:rw \
+ -v /root/mjopen-api/attachments:/app/wwwroot/attachments:rw \
  -v /root/mjopen/ephemeral-attachments:/app/wwwroot/ephemeral-attachments:rw \
  -e TZ=Asia/Shanghai \
  -v /etc/localtime:/etc/localtime:ro \
@@ -65,9 +65,9 @@ docker run --name mjopen-api -d --restart=always \
 docker pull trueaiorg/midjourney-proxy
 docker run --name mjopen-api -d --restart=always \
  -p 8088:8080 --user root \
- -v /root/mjopen/logs:/app/logs:rw \
+ -v /root/mjopen-api/logs:/app/logs:rw \
  -v /root/mjopen/data:/app/data:rw \
- -v /root/mjopen/attachments:/app/wwwroot/attachments:rw \
+ -v /root/mjopen-api/attachments:/app/wwwroot/attachments:rw \
  -v /root/mjopen/ephemeral-attachments:/app/wwwroot/ephemeral-attachments:rw \
  -e TZ=Asia/Shanghai \
  -v /etc/localtime:/etc/localtime:ro \
