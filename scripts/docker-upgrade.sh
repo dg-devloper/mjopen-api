@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 定义一些变量
-IMAGE_NAME="registry.cn-guangzhou.aliyuncs.com/trueai-org/midjourney-proxy"
+IMAGE_NAME="registry.cn-guangzhou.aliyuncs.com/dg-devloper/mjopen-api"
 CONTAINER_NAME="mjopen-api"
 
 # 打印信息
