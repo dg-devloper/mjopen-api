@@ -1,6 +1,7 @@
 name: Rahasia (build disini) CI
 
 on:
+  workflow_dispatch:
   release:
     types: [published]
     
