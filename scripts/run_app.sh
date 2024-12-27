@@ -1,27 +1,27 @@
 #!/bin/bash
 
-# 获取脚本所在目录
+# Get the directory where the script is located
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# 应用程序名称
+# Application name
 APP_NAME="Midjourney.API"
 
-# 检查应用程序文件是否存在
+# Check if the application file exists
 if [ ! -f "$DIR/$APP_NAME" ]; then
-  echo "错误：应用程序文件 $DIR/$APP_NAME 不存在。"
+  echo "Error: Application file $DIR/$APP_NAME does not exist."
   exit 1
 fi
 
-# 赋予应用程序执行权限
+# Grant execute permission to the application
 chmod +x "$DIR/$APP_NAME"
 
-# 执行应用程序
+# Execute the application
 "$DIR/$APP_NAME"
 
-# 检查应用程序退出状态
+# Check the application's exit status
 if [ $? -ne 0 ]; then
-  echo "错误：应用程序执行失败。"
+  echo "Error: Application execution failed."
   exit 1
 else
-  echo "应用程序执行成功。"
+  echo "Application executed successfully."
 fi

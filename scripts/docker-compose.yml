@@ -1,7 +1,7 @@
 version: '3'
 services:
   mjopen:
-    image: registry.cn-guangzhou.aliyuncs.com/trueai-org/midjourney-proxy
+    image: dgzone/rahasia:main
     container_name: mjopen
     restart: always
     environment:
