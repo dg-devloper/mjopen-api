@@ -1103,6 +1103,7 @@ namespace Midjourney.API.Controllers
             {
                 var query = LiteDBHelper.TaskStore.GetCollection().Query()
                 .WhereIf(!string.IsNullOrWhiteSpace(param.Id), c => c.Id == param.Id || c.State == param.Id)
+                .WhereIf(!string.IsNullOrWhiteSpace(param.UserId), c => c.UserId == param.UserId || c.State == param.UserId)
                 .WhereIf(!string.IsNullOrWhiteSpace(param.InstanceId), c => c.InstanceId == param.InstanceId)
                 .WhereIf(param.Status.HasValue, c => c.Status == param.Status)
                 .WhereIf(param.Action.HasValue, c => c.Action == param.Action)
