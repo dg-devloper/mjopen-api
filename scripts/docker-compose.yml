@@ -1,8 +1,8 @@
 version: '3'
 services:
-  mjopen:
+  mjopen-api:
     image: dgzone/rahasia:main
-    container_name: mjopen
+    container_name: mjopen-api
     restart: always
     environment:
       - DEMO=true
@@ -10,10 +10,10 @@ services:
     ports:
       - "8088:8080"
     volumes:
-      - /root/mjopen/logs:/app/logs:rw
-      - /root/mjopen/data:/app/data:rw
-      - /root/mjopen/attachments:/app/wwwroot/attachments:rw
-      - /root/mjopen/ephemeral-attachments:/app/wwwroot/ephemeral-attachments:rw
-      - /root/mjopen/appsettings.Production.json:/app/appsettings.Production.json:ro
+      - /root/mjopen-api/logs:/app/logs:rw
+      - /root/mjopen-api/data:/app/data:rw
+      - /root/mjopen-api/attachments:/app/wwwroot/attachments:rw
+      - /root/mjopen-api/ephemeral-attachments:/app/wwwroot/ephemeral-attachments:rw
+      - /root/mjopen-api/appsettings.Production.json:/app/appsettings.Production.json:ro
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
