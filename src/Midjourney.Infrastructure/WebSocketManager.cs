@@ -208,7 +208,7 @@ namespace Midjourney.Infrastructure
 
                     WebSocket.Options.SetRequestHeader("User-Agent", Account.UserAgent);
                     WebSocket.Options.SetRequestHeader("Accept-Encoding", "gzip, deflate, br");
-                    WebSocket.Options.SetRequestHeader("Accept-Language", "zh-CN,zh;q=0.9");
+                   WebSocket.Options.SetRequestHeader("Accept-Language", "en-US,en;q=0.9");
                     WebSocket.Options.SetRequestHeader("Cache-Control", "no-cache");
                     WebSocket.Options.SetRequestHeader("Pragma", "no-cache");
                     WebSocket.Options.SetRequestHeader("Sec-WebSocket-Extensions", "permessage-deflate; client_max_window_bits");
