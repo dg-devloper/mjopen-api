@@ -96,45 +96,40 @@ namespace Midjourney.API.Controllers
             }
         }
 
-        /// <summary>
-        /// Restart
-        /// </summary>
-        /// <returns></returns>
-        [HttpPost("restart")]
-        public Result Restart()
-        {
-            try
-            {
-            if (_isAnonymous)
-            {
-                return Result.Fail("Demo mode, operation prohibited");
-            }
-
-            // Use dotnet command to start DLL
-            var fileName = "dotnet";
-            var arguments = Path.GetFileName(Assembly.GetExecutingAssembly().Location);
-
-            var processStartInfo = new ProcessStartInfo
-            {
-                FileName = fileName,
-                Arguments = arguments,
-                WorkingDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
-                UseShellExecute = true
-            };
-            Process.Start(processStartInfo);
-
-            // Exit the current application
-            Environment.Exit(0);
-
-            return Result.Ok("Application is restarting...");
-            }
-            catch (Exception ex)
-            {
-            Log.Error(ex, "System auto-restart exception");
-
-            return Result.Fail("Restart failed, please restart manually");
-            }
-        }
+        ///// <summary>
+        ///// Restart
+        ///// </summary>
+        ///// <returns></returns>
+        //[HttpPost("restart")]
+        //public Result Restart()
+        //{
+        //    try
+        //    {
+        //    if (_isAnonymous)
+        //    {
+        //        return Result.Fail("Demo mode, operation prohibited");
+        //    }
+        //    // Use dotnet command to start DLL
+        //    var fileName = "dotnet";
+        //    var arguments = Path.GetFileName(Assembly.GetExecutingAssembly().Location);
+        //    var processStartInfo = new ProcessStartInfo
+        //    {
+        //        FileName = fileName,
+        //        Arguments = arguments,
+        //        WorkingDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+        //        UseShellExecute = true
+        //    };
+        //    Process.Start(processStartInfo);
+        //    // Exit the current application
+        //    Environment.Exit(0);
+        //    return Result.Ok("Application is restarting...");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //    Log.Error(ex, "System auto-restart exception");
+        //    return Result.Fail("Restart failed, please restart manually");
+        //    }
+        //}
 
         /// <summary>
         /// Register User
