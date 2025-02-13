@@ -32,7 +32,7 @@ using System.Net;
 namespace Midjourney.API.Controllers
 {
     /// <summary>
-    /// 控制器用于查询任务信息
+    /// Controller for querying task information
     /// </summary>
     [ApiController]
     [Route("mj/task")]
@@ -62,25 +62,25 @@ namespace Midjourney.API.Controllers
 
             var user = _workContext.GetUser();
 
-            // 如果非演示模式、未开启访客，如果没有登录，直接返回 403 错误
+            // If not in demo mode or if guest is not enabled and if not logged in, return 403 error
             if (GlobalConfiguration.IsDemoMode != true
                 && GlobalConfiguration.Setting.EnableGuest != true)
             {
                 if (user == null)
                 {
-                    // 如果是普通用户, 并且不是匿名控制器，则返回 403
+                    // If normal user and not an anonymous controller, return 403
                     httpContextAccessor.HttpContext.Response.StatusCode = (int)HttpStatusCode.Forbidden;
-                    httpContextAccessor.HttpContext.Response.WriteAsync("未登录");
+                    httpContextAccessor.HttpContext.Response.WriteAsync("Not logged in");
                     return;
                 }
             }
         }
 
         /// <summary>
-        /// 根据任务ID获取任务信息
+        /// Get task information by task ID
         /// </summary>
-        /// <param name="id">任务ID</param>
-        /// <returns>任务信息</returns>
+        /// <param name="id">Task ID</param>
+        /// <returns>Task information</returns>
         [HttpGet("{id}/fetch")]
         public ActionResult<TaskInfo> Fetch(string id)
         {
@@ -89,7 +89,7 @@ namespace Midjourney.API.Controllers
         }
 
         /// <summary>
-        /// 取消任务
+        /// Cancel the task
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
@@ -98,21 +98,21 @@ namespace Midjourney.API.Controllers
         {
             if (GlobalConfiguration.IsDemoMode == true)
             {
-                // 直接抛出错误
-                return BadRequest("演示模式，禁止操作");
+                // Directly throw an error
+                return BadRequest("Demo mode, operation prohibited");
             }
 
             var queueTask = _discordLoadBalancer.GetQueueTasks().FirstOrDefault(t => t.Id == id);
             if (queueTask != null)
             {
-                queueTask.Fail("主动取消任务");
+                queueTask.Fail("Task actively canceled");
             }
 
             return Ok();
         }
 
         /// <summary>
-        /// 获取任务图片的seed（需设置mj或niji的私信ID）
+        /// Get the image seed of the task (requires setting the private message ID for MJ or NIJI)
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
@@ -124,32 +124,32 @@ namespace Midjourney.API.Controllers
             {
                 if (!string.IsNullOrWhiteSpace(targetTask.Seed))
                 {
-                    return Ok(SubmitResultVO.Of(ReturnCode.SUCCESS, "成功", targetTask.Seed));
+                    return Ok(SubmitResultVO.Of(ReturnCode.SUCCESS, "Success", targetTask.Seed));
                 }
                 else
                 {
                     var hash = targetTask.GetProperty<string>(Constants.TASK_PROPERTY_MESSAGE_HASH, default);
                     if (string.IsNullOrWhiteSpace(hash))
                     {
-                        return BadRequest(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "关联任务状态错误"));
+                        return BadRequest(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "Related task status error"));
                     }
                     else
                     {
-                        // 有 hash 但没有 seed，说明任务已经完成，但是没有 seed
-                        // 重新获取 seed
+                        // Has hash but no seed, indicating the task is completed but no seed
+                        // Re-acquire seed
                         var data = await _taskService.SubmitSeed(targetTask);
                         return Ok(data);
                     }
                 }
             }
 
-            return NotFound(SubmitResultVO.Fail(ReturnCode.NOT_FOUND, "关联任务不存在或已失效"));
+            return NotFound(SubmitResultVO.Fail(ReturnCode.NOT_FOUND, "Related task does not exist or has expired"));
         }
 
         /// <summary>
-        /// 获取任务队列中的所有任务
+        /// Get all tasks in the task queue
         /// </summary>
-        /// <returns>任务队列中的所有任务</returns>
+        /// <returns>All tasks in the task queue</returns>
         [HttpGet("queue")]
         public ActionResult<List<TaskInfo>> Queue()
         {
@@ -157,9 +157,9 @@ namespace Midjourney.API.Controllers
         }
 
         /// <summary>
-        /// 获取最新100条任务信息
+        /// Get the latest 100 tasks
         /// </summary>
-        /// <returns>所有任务信息</returns>
+        /// <returns>All task information</returns>
         [HttpGet("list")]
         public ActionResult<List<TaskInfo>> List()
         {
@@ -168,10 +168,10 @@ namespace Midjourney.API.Controllers
         }
 
         /// <summary>
-        /// 根据条件查询任务信息/根据ID列表查询任务
+        /// Query task information by condition / query tasks by ID list
         /// </summary>
-        /// <param name="conditionDTO">任务查询条件</param>
-        /// <returns>符合条件的任务信息</returns>
+        /// <param name="conditionDTO">Task query condition</param>
+        /// <returns>Tasks that meet the conditions</returns>
         [HttpPost("list-by-condition")]
         [HttpPost("list-by-ids")]
         public ActionResult<List<TaskInfo>> ListByCondition([FromBody] TaskConditionDTO conditionDTO)

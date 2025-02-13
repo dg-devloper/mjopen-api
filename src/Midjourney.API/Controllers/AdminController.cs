@@ -41,8 +41,8 @@ using System.Text.RegularExpressions;
 namespace Midjourney.API.Controllers
 {
     /// <summary>
-    /// 管理后台接口
-    /// 用于查询、管理账号等
+    /// Admin API
+    /// Used for querying and managing accounts
     /// </summary>
     [ApiController]
     [Route("mj/admin")]
@@ -51,7 +51,7 @@ namespace Midjourney.API.Controllers
         private readonly IMemoryCache _memoryCache;
         private readonly ITaskService _taskService;
 
-        // 是否匿名用户
+        // Whether the user is anonymous
         private readonly bool _isAnonymous;
 
         private readonly DiscordLoadBalancer _loadBalancer;
@@ -73,71 +73,71 @@ namespace Midjourney.API.Controllers
             _discordAccountInitializer = discordAccountInitializer;
             _workContext = workContext;
 
-            // 如果不是管理员，并且是演示模式时，则是为匿名用户
+            // If not an admin and in demo mode, then the user is anonymous
             var user = workContext.GetUser();
 
             _isAnonymous = user?.Role != EUserRole.ADMIN;
             _properties = GlobalConfiguration.Setting;
 
-            // 普通用户，无法登录管理后台，演示模式除外
-            // 判断当前用户如果是普通用户
-            // 并且不是匿名控制器时
+            // Regular users cannot log in to the admin backend, except in demo mode
+            // If the current user is a regular user
+            // and not an anonymous controller
             if (user?.Role != EUserRole.ADMIN)
             {
-                var endpoint = context.HttpContext.GetEndpoint();
-                var allowAnonymous = endpoint?.Metadata?.GetMetadata<IAllowAnonymous>() != null;
-                if (!allowAnonymous && GlobalConfiguration.IsDemoMode != true)
-                {
-                    // 如果是普通用户, 并且不是匿名控制器，则返回 401
-                    context.HttpContext.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
-                    context.HttpContext.Response.WriteAsync("Forbidden: User is not admin.");
-                    return;
-                }
+            var endpoint = context.HttpContext.GetEndpoint();
+            var allowAnonymous = endpoint?.Metadata?.GetMetadata<IAllowAnonymous>() != null;
+            if (!allowAnonymous && GlobalConfiguration.IsDemoMode != true)
+            {
+                // If the user is a regular user and not an anonymous controller, return 401
+                context.HttpContext.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+                context.HttpContext.Response.WriteAsync("Forbidden: User is not admin.");
+                return;
+            }
             }
         }
 
-        ///// <summary>
-        ///// 重启
-        ///// </summary>
-        ///// <returns></returns>
-        //[HttpPost("restart")]
-        //public Result Restart()
-        //{
-        //    try
-        //    {
-        //        if (_isAnonymous)
-        //        {
-        //            return Result.Fail("演示模式，禁止操作");
-        //        }
+        /// <summary>
+        /// Restart
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost("restart")]
+        public Result Restart()
+        {
+            try
+            {
+            if (_isAnonymous)
+            {
+                return Result.Fail("Demo mode, operation prohibited");
+            }
 
-        //        // 使用 dotnet 命令启动 DLL
-        //        var fileName = "dotnet";
-        //        var arguments = Path.GetFileName(Assembly.GetExecutingAssembly().Location);
+            // Use dotnet command to start DLL
+            var fileName = "dotnet";
+            var arguments = Path.GetFileName(Assembly.GetExecutingAssembly().Location);
 
-        //        var processStartInfo = new ProcessStartInfo
-        //        {
-        //            FileName = fileName,
-        //            Arguments = arguments,
-        //            WorkingDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
-        //            UseShellExecute = true
-        //        };
-        //        Process.Start(processStartInfo);
+            var processStartInfo = new ProcessStartInfo
+            {
+                FileName = fileName,
+                Arguments = arguments,
+                WorkingDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+                UseShellExecute = true
+            };
+            Process.Start(processStartInfo);
 
-        //        // 退出当前应用程序
-        //        Environment.Exit(0);
+            // Exit the current application
+            Environment.Exit(0);
 
-        //        return Result.Ok("Application is restarting...");
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Log.Error(ex, "系统自动重启异常");
+            return Result.Ok("Application is restarting...");
+            }
+            catch (Exception ex)
+            {
+            Log.Error(ex, "System auto-restart exception");
 
-        //        return Result.Fail("重启失败，请手动重启");
-        //    }
-        //}
+            return Result.Fail("Restart failed, please restart manually");
+            }
+        }
 
         /// <summary>
-        /// 注册用户
+        /// Register User
         /// </summary>
         /// <param name="registerDto"></param>
         /// <returns></returns>
@@ -148,45 +148,45 @@ namespace Midjourney.API.Controllers
         {
             if (registerDto == null || string.IsNullOrWhiteSpace(registerDto.Email))
             {
-                throw new LogicException("参数错误");
+                throw new LogicException("Invalid email length");
             }
 
-            // 验证长度
+            // Validate length
             if (registerDto.Email.Length < 5 || registerDto.Email.Length > 50)
             {
-                throw new LogicException("邮箱长度错误");
+                throw new LogicException("Invalid email length");
             }
 
             var mail = registerDto.Email.Trim();
 
-            // 验证 email 格式
+            // Validate email format
             var isMatch = Regex.IsMatch(mail, @"^[\w-]+(\.[\w-]+)*@[\w-]+(\.[\w-]+)+$");
             if (!isMatch)
             {
-                throw new LogicException("邮箱格式错误");
+                throw new LogicException("Invalid email format");
             }
 
-            // 判断是否开放注册
-            // 如果没有配置邮件服务，则不允许注册
+            // Check if registration is open
+            // If email service is not configured, registration is not allowed
             if (GlobalConfiguration.Setting.EnableRegister != true
                 || string.IsNullOrWhiteSpace(GlobalConfiguration.Setting?.Smtp?.FromPassword))
             {
-                throw new LogicException("注册已关闭");
+                throw new LogicException("Registration is closed");
             }
 
-            // 每个IP每天只能注册一个账号
+            // Each IP can only register one account per day
             var ip = _workContext.GetIp();
             var key = $"register:{ip}";
             if (_memoryCache.TryGetValue(key, out _))
             {
-                throw new LogicException("注册太频繁");
+                throw new LogicException("Registration too frequent");
             }
 
-            // 验证用户是否存在
+            // Check if user already exists
             var user = DbHelper.Instance.UserStore.Single(u => u.Email == mail);
             if (user != null)
             {
-                throw new LogicException("用户已存在");
+                throw new LogicException("User already exists");
             }
 
             user = new User
@@ -203,32 +203,32 @@ namespace Midjourney.API.Controllers
             };
             DbHelper.Instance.UserStore.Add(user);
 
-            // 发送邮件
+            // Send email
             EmailJob.Instance.EmailSend(GlobalConfiguration.Setting.Smtp,
-                $"Midjourney Proxy 注册通知", $"您的登录密码为：{user.Token}",
+                $"Midjourney Proxy Registration Notification", $"Your login password is: {user.Token}",
                 user.Email);
 
-            // 设置缓存
+            // Set cache
             _memoryCache.Set(key, true, TimeSpan.FromDays(1));
 
             return Result.Ok();
         }
 
         /// <summary>
-        /// 管理员登录
+        /// Admin login
         /// </summary>
         /// <returns></returns>
         [AllowAnonymous]
         [HttpPost("login")]
         public ActionResult Login([FromBody] string token)
         {
-            // 如果没有开启访客模式，则不允许匿名登录
+            // If guest mode is not enabled, anonymous login is not allowed
             if (GlobalConfiguration.IsDemoMode != true && string.IsNullOrWhiteSpace(token))
             {
-                throw new LogicException("禁止登录");
+                throw new LogicException("Login prohibited");
             }
 
-            // 如果 DEMO 模式，并且没有传入 token，则返回空 token
+            // If in DEMO mode and no token is provided, return an empty token
             if (GlobalConfiguration.IsDemoMode == true && string.IsNullOrWhiteSpace(token))
             {
                 return Ok(new
@@ -238,7 +238,7 @@ namespace Midjourney.API.Controllers
                 });
             }
 
-            //// 如果开启访客
+            // If guest mode is enabled
             //if (string.IsNullOrWhiteSpace(token) && GlobalConfiguration.Setting.EnableGuest)
             //{
             //    return Ok(new
@@ -251,21 +251,21 @@ namespace Midjourney.API.Controllers
             var user = DbHelper.Instance.UserStore.Single(u => u.Token == token);
             if (user == null)
             {
-                throw new LogicException("用户 Token 错误");
+                throw new LogicException("User token is incorrect");
             }
 
             if (user.Status == EUserStatus.DISABLED)
             {
-                throw new LogicException("用户已被禁用");
+                throw new LogicException("User has been disabled");
             }
 
-            // 非演示模式，普通用户和访客无法登录后台
+            // Non-demo mode, regular users and guests cannot log in to the admin backend
             if (user.Role != EUserRole.ADMIN && GlobalConfiguration.IsDemoMode != true)
             {
-                throw new LogicException("用户无权限");
+                throw new LogicException("User does not have permission");
             }
 
-            // 更新最后登录时间
+            // Update last login time
             user.LastLoginTime = DateTime.Now;
             user.LastLoginIp = _workContext.GetIp();
 
@@ -279,7 +279,7 @@ namespace Midjourney.API.Controllers
         }
 
         /// <summary>
-        /// 管理员退出
+        /// Admin logout
         /// </summary>
         /// <returns></returns>
         [AllowAnonymous]
@@ -290,7 +290,7 @@ namespace Midjourney.API.Controllers
         }
 
         /// <summary>
-        /// CF 验证通过通知（允许匿名）
+        /// CF verification notification (allow anonymous)
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
@@ -307,16 +307,16 @@ namespace Midjourney.API.Controllers
                     var secret = GlobalConfiguration.Setting.CaptchaNotifySecret;
                     if (string.IsNullOrWhiteSpace(secret) || secret == request.Secret)
                     {
-                        // 10 分钟之内有效
+                        // Valid for 10 minutes
                         if (item.CfHashCreated != null && (DateTime.Now - item.CfHashCreated.Value).TotalMinutes > 10)
                         {
                             if (request.Success)
                             {
                                 request.Success = false;
-                                request.Message = "CF 验证过期，超过 10 分钟";
+                                request.Message = "CF verification expired, more than 10 minutes";
                             }
 
-                            Log.Warning("CF 验证过期，超过 10 分钟 {@0}, time: {@1}", request, item.CfHashCreated);
+                            Log.Warning("CF verification expired, more than 10 minutes {@0}, time: {@1}", request, item.CfHashCreated);
                         }
 
                         if (request.Success)
@@ -329,27 +329,27 @@ namespace Midjourney.API.Controllers
                         }
                         else
                         {
-                            // 更新验证失败原因
+                            // Update verification failure reason
                             item.DisabledReason = request.Message;
                         }
 
-                        // 更新账号信息
+                        // Update account information
                         DbHelper.Instance.AccountStore.Update(item);
 
-                        // 清空缓存
+                        // Clear cache
                         var inc = _loadBalancer.GetDiscordInstance(item.ChannelId);
                         inc?.ClearAccountCache(item.Id);
 
                         if (!request.Success)
                         {
-                            // 发送邮件
-                            EmailJob.Instance.EmailSend(_properties.Smtp, $"CF自动真人验证失败-{item.ChannelId}", $"CF自动真人验证失败-{item.ChannelId}, 请手动验证");
+                            // Send email
+                            EmailJob.Instance.EmailSend(_properties.Smtp, $"CF automatic human verification failed-{item.ChannelId}", $"CF automatic human verification failed-{item.ChannelId}, please verify manually");
                         }
                     }
                     else
                     {
-                        // 签名错误
-                        Log.Warning("验证通知签名验证失败 {@0}", request);
+                        // Signature error
+                        Log.Warning("Verification notification signature verification failed {@0}", request);
 
                         return Ok();
                     }
@@ -360,7 +360,7 @@ namespace Midjourney.API.Controllers
         }
 
         /// <summary>
-        /// 当前用户信息
+        /// Current user information
         /// </summary>
         /// <returns></returns>
         [HttpGet("current")]
@@ -372,7 +372,7 @@ namespace Midjourney.API.Controllers
             var token = user?.Token;
             var name = user?.Name ?? "Guest";
 
-            // 如果未开启访客，且未登录，且未开启演示模式，则返回 403
+            // If guest is not enabled, and not logged in, and demo mode is not enabled, return 403
             if (GlobalConfiguration.Setting.EnableGuest != true && user == null && GlobalConfiguration.IsDemoMode != true)
             {
                 return StatusCode(403);
@@ -411,20 +411,20 @@ namespace Midjourney.API.Controllers
         }
 
         /// <summary>
-        /// 获取日志
+        /// Get logs
         /// </summary>
         /// <param name="tail"></param>
         /// <returns></returns>
         [HttpGet("probe")]
         public IActionResult GetLogs([FromQuery] int tail = 1000)
         {
-            // 演示模式 100 条
+            // Demo mode 100 lines
             if (_isAnonymous)
             {
                 tail = 100;
             }
 
-            // 项目目录，而不是 AppContext.BaseDirectory
+            // Project directory, not AppContext.BaseDirectory
             var logFilePath = Path.Combine(Directory.GetCurrentDirectory(), $"logs/log{DateTime.Now:yyyyMMdd}.txt");
 
             if (!System.IO.File.Exists(logFilePath))
@@ -448,11 +448,11 @@ namespace Midjourney.API.Controllers
         }
 
         /// <summary>
-        /// 根据账号ID获取账号信息
-        /// 指定ID获取账号
+        /// Get account information by account ID
+        /// Specify ID to get account
         /// </summary>
-        /// <param name="id">账号ID</param>
-        /// <returns>Discord账号信息</returns>
+        /// <param name="id">Account ID</param>
+        /// <returns>Discord account information</returns>
         [HttpGet("account/{id}")]
         public ActionResult<DiscordAccount> Fetch(string id)
         {
@@ -462,12 +462,12 @@ namespace Midjourney.API.Controllers
             var item = DbHelper.Instance.AccountStore.Get(id);
             if (item == null)
             {
-                throw new LogicException("账号不存在");
+                throw new LogicException("Account does not exist");
             }
 
             if (_isAnonymous)
             {
-                // Token 加密
+                // Token encryption
                 item.UserToken = item.UserToken?.Substring(0, 4) + "****" + item.UserToken?.Substring(item.UserToken.Length - 4);
                 item.BotToken = item.BotToken?.Substring(0, 4) + "****" + item.BotToken?.Substring(item.BotToken.Length - 4);
             }
@@ -476,7 +476,7 @@ namespace Midjourney.API.Controllers
         }
 
         /// <summary>
-        /// 执行 info 和 setting
+        /// Execute info and setting
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
@@ -485,7 +485,7 @@ namespace Midjourney.API.Controllers
         {
             if (_isAnonymous)
             {
-                return Result.Fail("演示模式，禁止操作");
+                return Result.Fail("Demo mode, operation prohibited");
             }
 
             await _taskService.InfoSetting(id);
@@ -493,10 +493,10 @@ namespace Midjourney.API.Controllers
         }
 
         /// <summary>
-        /// 获取 cf 真人验证链接
+        /// Get CF human verification link
         /// </summary>
         /// <param name="id"></param>
-        /// <param name="refresh">是否获取新链接</param>
+        /// <param name="refresh">Whether to get a new link</param>
         /// <returns></returns>
         /// <exception cref="LogicException"></exception>
         [HttpGet("account-cf/{id}")]
@@ -504,22 +504,22 @@ namespace Midjourney.API.Controllers
         {
             if (_isAnonymous)
             {
-                throw new LogicException("演示模式，禁止操作");
+                throw new LogicException("Demo mode, operation prohibited");
             }
 
             var item = DbHelper.Instance.AccountStore.Get(id);
             if (item == null)
             {
-                throw new LogicException("账号不存在");
+                throw new LogicException("Account does not exist");
             }
 
             if (!item.Lock || string.IsNullOrWhiteSpace(item.CfHashUrl))
             {
-                throw new LogicException("CF 验证链接不存在");
+                throw new LogicException("CF verification link does not exist");
             }
 
-            // 发送 hashUrl GET 请求, 返回 {"hash":"OOUxejO94EQNxsCODRVPbg","token":"dXDm-gSb4Zlsx-PCkNVyhQ"}
-            // 通过 hash 和 token 拼接验证 CF 验证 URL
+            // Send hashUrl GET request, return {"hash":"OOUxejO94EQNxsCODRVPbg","token":"dXDm-gSb4Zlsx-PCkNVyhQ"}
+            // Concatenate verification CF verification URL with hash and token
 
             if (refresh)
             {
@@ -541,7 +541,7 @@ namespace Midjourney.API.Controllers
                 var con = await response.Content.ReadAsStringAsync();
                 if (!string.IsNullOrWhiteSpace(con))
                 {
-                    // 解析
+                    // Parse
                     var json = System.Text.Json.JsonSerializer.Deserialize<JsonElement>(con);
                     if (json.TryGetProperty("hash", out var h) && json.TryGetProperty("token", out var to))
                     {
@@ -550,24 +550,24 @@ namespace Midjourney.API.Controllers
 
                         if (!string.IsNullOrWhiteSpace(hashStr) && !string.IsNullOrWhiteSpace(token))
                         {
-                            // 通过 hash 和 token 拼接验证 CF 验证 URL
+                            // Concatenate verification CF verification URL with hash and token
                             // https://editor.midjourney.com/captcha/challenge/index.html?hash=OOUxejO94EQNxsCODRVPbg&token=dXDm-gSb4Zlsx-PCkNVyhQ
 
                             var url = $"https://editor.midjourney.com/captcha/challenge/index.html?hash={hashStr}&token={token}";
 
                             item.CfUrl = url;
 
-                            // 更新账号信息
+                            // Update account information
                             DbHelper.Instance.AccountStore.Update(item);
 
-                            // 清空缓存
+                            // Clear cache
                             var inc = _loadBalancer.GetDiscordInstance(item.ChannelId);
                             inc?.ClearAccountCache(item.Id);
                         }
                     }
                     else
                     {
-                        throw new LogicException("生成链接失败");
+                        throw new LogicException("Failed to generate link");
                     }
                 }
             }
@@ -576,7 +576,7 @@ namespace Midjourney.API.Controllers
         }
 
         /// <summary>
-        /// CF 验证标记完成
+        /// CF verification marked as completed
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
@@ -586,18 +586,18 @@ namespace Midjourney.API.Controllers
         {
             if (_isAnonymous)
             {
-                throw new LogicException("演示模式，禁止操作");
+                throw new LogicException("Demo mode, operation prohibited");
             }
 
             var item = DbHelper.Instance.AccountStore.Get(id);
             if (item == null)
             {
-                throw new LogicException("账号不存在");
+                throw new LogicException("Account does not exist");
             }
 
             //if (!item.Lock)
             //{
-            //    throw new LogicException("不需要 CF 验证");
+            //    throw new LogicException("No need for CF verification");
             //}
 
             item.Lock = false;
@@ -606,10 +606,10 @@ namespace Midjourney.API.Controllers
             item.CfUrl = null;
             item.DisabledReason = null;
 
-            // 更新账号信息
+            // Update account information
             DbHelper.Instance.AccountStore.Update(item);
 
-            // 清空缓存
+            // Clear cache
             var inc = _loadBalancer.GetDiscordInstance(item.ChannelId);
             inc?.ClearAccountCache(item.Id);
 
@@ -617,7 +617,7 @@ namespace Midjourney.API.Controllers
         }
 
         /// <summary>
-        /// 修改版本
+        /// Change version
         /// </summary>
         /// <param name="id"></param>
         /// <param name="version"></param>
@@ -627,7 +627,7 @@ namespace Midjourney.API.Controllers
         {
             if (_isAnonymous)
             {
-                return Result.Fail("演示模式，禁止操作");
+                return Result.Fail("Demo mode, operation prohibited");
             }
 
             await _taskService.AccountChangeVersion(id, version);
@@ -635,7 +635,7 @@ namespace Midjourney.API.Controllers
         }
 
         /// <summary>
-        /// 执行操作
+        /// Execute action
         /// </summary>
         /// <param name="id"></param>
         /// <param name="customId"></param>
@@ -646,7 +646,7 @@ namespace Midjourney.API.Controllers
         {
             if (_isAnonymous)
             {
-                return Result.Fail("演示模式，禁止操作");
+                return Result.Fail("Demo mode, operation prohibited");
             }
 
             await _taskService.AccountAction(id, customId, botType);
@@ -654,7 +654,7 @@ namespace Midjourney.API.Controllers
         }
 
         /// <summary>
-        /// 添加账号
+        /// Add account
         /// </summary>
         /// <param name="accountConfig"></param>
         /// <returns></returns>
@@ -666,22 +666,22 @@ namespace Midjourney.API.Controllers
 
             if (user == null)
             {
-                return Result.Fail("演示模式，禁止操作");
+                return Result.Fail("Demo mode, operation prohibited");
             }
 
             if (!setting.EnableAccountSponsor && user.Role != EUserRole.ADMIN)
             {
-                return Result.Fail("未开启赞助功能，禁止操作");
+                return Result.Fail("Sponsorship feature not enabled, operation prohibited");
             }
 
-            // 同一个用户每天最多只能赞助 10 个账号
+            // The same user can sponsor up to 10 accounts per day
             var limitKey = $"{DateTime.Now:yyyyMMdd}:sponsor:{user.Id}";
             var sponsorCount = 0;
             if (setting.EnableAccountSponsor && user.Role != EUserRole.ADMIN)
             {
                 if (_memoryCache.TryGetValue(limitKey, out sponsorCount) && sponsorCount > 10)
                 {
-                    Result.Fail("每天最多只能赞助 10 个账号");
+                    Result.Fail("You can sponsor up to 10 accounts per day");
                 }
             }
 
@@ -689,17 +689,17 @@ namespace Midjourney.API.Controllers
 
             if (model != null)
             {
-                throw new LogicException("渠道已存在");
+                throw new LogicException("Channel already exists");
             }
 
             var account = DiscordAccount.Create(accountConfig);
 
-            // 赞助账号
+            // Sponsor account
             if (account.IsSponsor)
             {
                 account.SponsorUserId = user.Id;
 
-                // 赞助者禁止配置的选项
+                // Options prohibited for sponsors
                 if (user.Role != EUserRole.ADMIN)
                 {
                     account.Sort = 0;
@@ -708,16 +708,16 @@ namespace Midjourney.API.Controllers
                     account.FishingTime = null;
                 }
 
-                // 赞助者参数校验
+                // Sponsor parameter validation
                 account.SponsorValidate();
             }
 
             DbHelper.Instance.AccountStore.Add(account);
 
-            // 后台执行
+            // Execute in background
             _ = _discordAccountInitializer.StartCheckAccount(account);
 
-            // 更新缓存
+            // Update cache
             if (setting.EnableAccountSponsor && user.Role != EUserRole.ADMIN)
             {
                 sponsorCount++;
@@ -729,7 +729,7 @@ namespace Midjourney.API.Controllers
         }
 
         /// <summary>
-        /// 编辑账号
+        /// Edit account
         /// </summary>
         /// <param name="param"></param>
         /// <returns></returns>
@@ -741,31 +741,31 @@ namespace Midjourney.API.Controllers
 
             if (user == null)
             {
-                return Result.Fail("演示模式，禁止操作");
+                return Result.Fail("Demo mode, operation prohibited");
             }
 
             if (!setting.EnableAccountSponsor && user.Role != EUserRole.ADMIN)
             {
-                return Result.Fail("未开启赞助功能，禁止操作");
+                return Result.Fail("Sponsorship feature not enabled, operation prohibited");
             }
 
             //if (_isAnonymous)
             //{
-            //    return Result.Fail("演示模式，禁止操作");
+            //    return Result.Fail("Demo mode, operation prohibited");
             //}
 
             var model = DbHelper.Instance.AccountStore.Get(param.Id);
             if (model == null)
             {
-                throw new LogicException("账号不存在");
+                throw new LogicException("Account does not exist");
             }
 
             if (user.Role != EUserRole.ADMIN && model.SponsorUserId != user.Id)
             {
-                return Result.Fail("无权限操作");
+                return Result.Fail("No permission to operate");
             }
 
-            // 赞助者禁止配置的选项
+            // Options prohibited for sponsors
             if (user.Role != EUserRole.ADMIN)
             {
                 param.Sort = model.Sort;
@@ -773,7 +773,7 @@ namespace Midjourney.API.Controllers
                 param.WorkTime = model.WorkTime;
                 param.FishingTime = model.WorkTime;
 
-                // 赞助者参数校验
+                // Sponsor parameter validation
                 param.SponsorValidate();
             }
 
@@ -796,7 +796,7 @@ namespace Midjourney.API.Controllers
             model.IsShorten = param.IsShorten;
             model.DayDrawLimit = param.DayDrawLimit;
 
-            // 初始化子频道
+            // Initialize sub-channels
             model.InitSubChannels();
 
             await _discordAccountInitializer.UpdateAccount(model);
@@ -805,7 +805,7 @@ namespace Midjourney.API.Controllers
         }
 
         /// <summary>
-        /// 更新账号并重新连接
+        /// Update account and reconnect
         /// </summary>
         /// <param name="id"></param>
         /// <param name="param"></param>
@@ -815,7 +815,7 @@ namespace Midjourney.API.Controllers
         {
             if (id != param.Id)
             {
-                throw new LogicException("参数错误");
+                throw new LogicException("Parameter error");
             }
 
             var setting = GlobalConfiguration.Setting;
@@ -823,29 +823,29 @@ namespace Midjourney.API.Controllers
 
             if (user == null)
             {
-                return Result.Fail("演示模式，禁止操作");
+                return Result.Fail("Demo mode, operation prohibited");
             }
 
             if (!setting.EnableAccountSponsor && user.Role != EUserRole.ADMIN)
             {
-                return Result.Fail("未开启赞助功能，禁止操作");
+                return Result.Fail("Sponsorship feature not enabled, operation prohibited");
             }
 
             var model = DbHelper.Instance.AccountStore.Get(id);
             if (model == null)
             {
-                throw new LogicException("账号不存在");
+                throw new LogicException("Account does not exist");
             }
 
             if (user.Role != EUserRole.ADMIN && model.SponsorUserId != user.Id)
             {
-                return Result.Fail("无权限操作");
+                return Result.Fail("No permission to operate");
             }
 
-            // 不可修改频道 ID
+            // Cannot modify channel ID
             if (param.GuildId != model.GuildId || param.ChannelId != model.ChannelId)
             {
-                return Result.Fail("禁止修改频道 ID 和服务器 ID");
+                return Result.Fail("Modification of channel ID and server ID is prohibited");
             }
 
             await _discordAccountInitializer.ReconnectAccount(param);
@@ -854,7 +854,7 @@ namespace Midjourney.API.Controllers
         }
 
         /// <summary>
-        /// 删除账号
+        /// Delete account
         /// </summary>
         /// <returns></returns>
         [HttpDelete("account/{id}")]
@@ -865,28 +865,28 @@ namespace Midjourney.API.Controllers
 
             if (user == null)
             {
-                return Result.Fail("演示模式，禁止操作");
+                return Result.Fail("Demo mode, operation prohibited");
             }
 
             if (!setting.EnableAccountSponsor && user.Role != EUserRole.ADMIN)
             {
-                return Result.Fail("未开启赞助功能，禁止操作");
+                return Result.Fail("Sponsorship feature not enabled, operation prohibited");
             }
 
             var model = DbHelper.Instance.AccountStore.Get(id);
             if (model == null)
             {
-                throw new LogicException("账号不存在");
+                throw new LogicException("Account does not exist");
             }
 
             if (user.Role != EUserRole.ADMIN && model.SponsorUserId != user.Id)
             {
-                return Result.Fail("无权限操作");
+                return Result.Fail("No permission to operate");
             }
 
             //if (_isAnonymous)
             //{
-            //    return Result.Fail("演示模式，禁止操作");
+            //    return Result.Fail("Demo mode, operation prohibited");
             //}
 
             _discordAccountInitializer.DeleteAccount(id);
@@ -895,9 +895,9 @@ namespace Midjourney.API.Controllers
         }
 
         /// <summary>
-        /// 获取所有账号信息（只返回启用账号）
+        /// Get all account information (only return enabled accounts)
         /// </summary>
-        /// <returns>所有Discord账号信息</returns>
+        /// <returns>All Discord account information</returns>
         [HttpGet("accounts")]
         public ActionResult<List<DiscordAccount>> List()
         {
@@ -917,7 +917,7 @@ namespace Midjourney.API.Controllers
 
                 if (user == null || (user.Role != EUserRole.ADMIN && user.Id != item.SponsorUserId))
                 {
-                    // Token 加密
+                    // Token encryption
                     item.UserToken = item.UserToken?.Substring(0, item.UserToken.Length / 5) + "****";
                     item.BotToken = item.BotToken?.Substring(0, item.BotToken.Length / 5) + "****";
 
@@ -928,7 +928,7 @@ namespace Midjourney.API.Controllers
 
                     if (item.SubChannels.Count > 0)
                     {
-                        // 加密
+                        // Encrypt
                         item.SubChannels = item.SubChannels.Select(c => "****").ToList();
                     }
                 }
@@ -938,7 +938,7 @@ namespace Midjourney.API.Controllers
         }
 
         /// <summary>
-        /// 分页获取账号信息
+        /// Paginate account information
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
@@ -954,14 +954,14 @@ namespace Midjourney.API.Controllers
                 page.PageSize = 100;
             }
 
-            // 演示模式 100 条
+            // Demo mode 100 lines
             if (_isAnonymous)
             {
                 page.PageSize = 10;
 
                 if (page.Current > 10)
                 {
-                    throw new LogicException("演示模式，禁止查看更多数据");
+                    throw new LogicException("Demo mode, operation prohibited");
                 }
             }
 
@@ -1027,7 +1027,7 @@ namespace Midjourney.API.Controllers
 
                 if (user == null || (user.Role != EUserRole.ADMIN && user.Id != item.SponsorUserId))
                 {
-                    // Token 加密
+                    // Token encryption
                     item.UserToken = item.UserToken?.Substring(0, item.UserToken.Length / 5) + "****";
                     item.BotToken = item.BotToken?.Substring(0, item.BotToken.Length / 5) + "****";
 
@@ -1038,7 +1038,7 @@ namespace Midjourney.API.Controllers
 
                     if (item.SubChannels.Count > 0)
                     {
-                        // 加密
+                        // Encrypt
                         item.SubChannels = item.SubChannels.Select(c => "****").ToList();
                     }
                 }
@@ -1050,9 +1050,9 @@ namespace Midjourney.API.Controllers
         }
 
         /// <summary>
-        /// 获取所有任务信息
+        /// Get all task information
         /// </summary>
-        /// <returns>所有任务信息</returns>
+        /// <returns>All task information</returns>
         [HttpPost("tasks")]
         public ActionResult<StandardTableResult<TaskInfo>> Tasks([FromBody] StandardTableParam<TaskInfo> request)
         {
@@ -1062,20 +1062,20 @@ namespace Midjourney.API.Controllers
                 page.PageSize = 100;
             }
 
-            // 演示模式 100 条
+            // Demo mode 100 lines
             if (_isAnonymous)
             {
                 page.PageSize = 10;
 
                 if (page.Current > 10)
                 {
-                    throw new LogicException("演示模式，禁止查看更多数据");
+                    throw new LogicException("Demo mode, operation prohibited");
                 }
             }
 
             var param = request.Search;
 
-            // 这里使用原生查询，因为查询条件比较复杂
+            // Use native query here because the query conditions are more complex
             if (GlobalConfiguration.Setting.IsMongo)
             {
                 var coll = MongoHelper.GetCollection<TaskInfo>().AsQueryable();
@@ -1124,7 +1124,7 @@ namespace Midjourney.API.Controllers
         }
 
         /// <summary>
-        /// 删除作业
+        /// Delete task
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
@@ -1133,13 +1133,13 @@ namespace Midjourney.API.Controllers
         {
             if (_isAnonymous)
             {
-                return Result.Fail("演示模式，禁止操作");
+                return Result.Fail("Demo mode, operation prohibited");
             }
 
             var queueTask = _loadBalancer.GetQueueTasks().FirstOrDefault(t => t.Id == id);
             if (queueTask != null)
             {
-                queueTask.Fail("删除任务");
+                queueTask.Fail("Delete task");
 
                 Thread.Sleep(1000);
             }
@@ -1153,7 +1153,7 @@ namespace Midjourney.API.Controllers
                     var model = ins.FindRunningTask(c => c.Id == id).FirstOrDefault();
                     if (model != null)
                     {
-                        model.Fail("删除任务");
+                        model.Fail("Delete task");
 
                         Thread.Sleep(1000);
                     }
@@ -1166,7 +1166,7 @@ namespace Midjourney.API.Controllers
         }
 
         /// <summary>
-        /// 用户列表
+        /// User list
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
@@ -1176,14 +1176,14 @@ namespace Midjourney.API.Controllers
         {
             var page = request.Pagination;
 
-            // 演示模式 100 条
+            // Demo mode 100 lines
             if (_isAnonymous)
             {
                 page.PageSize = 10;
 
                 if (page.Current > 10)
                 {
-                    throw new LogicException("演示模式，禁止查看更多数据");
+                    throw new LogicException("Demo mode, operation prohibited");
                 }
             }
 
@@ -1229,7 +1229,7 @@ namespace Midjourney.API.Controllers
 
             if (_isAnonymous)
             {
-                // 对用户信息进行脱敏处理
+                // Mask user information
                 foreach (var item in list)
                 {
                     item.Name = "***";
@@ -1245,7 +1245,7 @@ namespace Midjourney.API.Controllers
         }
 
         /// <summary>
-        /// 添加或编辑用户
+        /// Add or edit user
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
@@ -1255,7 +1255,7 @@ namespace Midjourney.API.Controllers
         {
             if (_isAnonymous)
             {
-                return Result.Fail("演示模式，禁止操作");
+                return Result.Fail("Demo mode, operation prohibited");
             }
 
             var oldToken = user?.Token;
@@ -1269,7 +1269,7 @@ namespace Midjourney.API.Controllers
                 var model = DbHelper.Instance.UserStore.Get(user.Id);
                 if (model == null)
                 {
-                    throw new LogicException("用户不存在");
+                    throw new LogicException("User does not exist");
                 }
 
                 oldToken = model?.Token;
@@ -1281,33 +1281,33 @@ namespace Midjourney.API.Controllers
                 user.CreateTime = model.CreateTime;
             }
 
-            // 参数校验
-            // token 不能为空
+            // Parameter validation
+            // Token cannot be empty
             if (string.IsNullOrWhiteSpace(user.Token))
             {
-                throw new LogicException("Token 不能为空");
+                throw new LogicException("Token cannot be empty");
             }
 
-            // 判断 token 重复
+            // Check for duplicate token
             var tokenUser = DbHelper.Instance.UserStore.Single(c => c.Id != user.Id && c.Token == user.Token);
             if (tokenUser != null)
             {
-                throw new LogicException("Token 重复");
+                throw new LogicException("Duplicate token");
             }
 
-            // 用户名不能为空
+            // Username cannot be empty
             if (string.IsNullOrWhiteSpace(user.Name))
             {
-                throw new LogicException("用户名不能为空");
+                throw new LogicException("Username cannot be empty");
             }
 
-            // 角色
+            // Role
             if (user.Role == null)
             {
                 user.Role = EUserRole.USER;
             }
 
-            // 状态
+            // Status
             if (user.Status == null)
             {
                 user.Status = EUserStatus.NORMAL;
@@ -1317,7 +1317,7 @@ namespace Midjourney.API.Controllers
 
             DbHelper.Instance.UserStore.Save(user);
 
-            // 清除缓存
+            // Clear cache
             var key = $"USER_{oldToken}";
             _memoryCache.Remove(key);
 
@@ -1325,7 +1325,7 @@ namespace Midjourney.API.Controllers
         }
 
         /// <summary>
-        /// 删除用户
+        /// Delete user
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
@@ -1334,24 +1334,24 @@ namespace Midjourney.API.Controllers
         {
             if (_isAnonymous)
             {
-                return Result.Fail("演示模式，禁止操作");
+                return Result.Fail("Demo mode, operation prohibited");
             }
 
             var model = DbHelper.Instance.UserStore.Get(id);
             if (model == null)
             {
-                throw new LogicException("用户不存在");
+                throw new LogicException("User does not exist");
             }
             if (model.Id == Constants.ADMIN_USER_ID)
             {
-                throw new LogicException("不能删除管理员账号");
+                throw new LogicException("Cannot delete admin account");
             }
             if (model.Id == Constants.DEFAULT_USER_ID)
             {
-                throw new LogicException("不能删除默认账号");
+                throw new LogicException("Cannot delete default account");
             }
 
-            // 清除缓存
+            // Clear cache
             var key = $"USER_{model.Token}";
             _memoryCache.Remove(key);
 
@@ -1361,7 +1361,7 @@ namespace Midjourney.API.Controllers
         }
 
         /// <summary>
-        /// 获取所有启动的领域标签
+        /// Get all enabled domain tags
         /// </summary>
         /// <returns></returns>
         [HttpGet("domain-tags")]
@@ -1379,7 +1379,7 @@ namespace Midjourney.API.Controllers
         }
 
         /// <summary>
-        /// 领域标签管理
+        /// Domain tag management
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
@@ -1428,7 +1428,7 @@ namespace Midjourney.API.Controllers
         }
 
         /// <summary>
-        /// 添加或编辑领域标签
+        /// Add or edit domain tag
         /// </summary>
         /// <param name="domain"></param>
         /// <returns></returns>
@@ -1438,7 +1438,7 @@ namespace Midjourney.API.Controllers
         {
             if (_isAnonymous)
             {
-                return Result.Fail("演示模式，禁止操作");
+                return Result.Fail("Demo mode, operation prohibited");
             }
 
             if (string.IsNullOrWhiteSpace(domain.Id))
@@ -1450,7 +1450,7 @@ namespace Midjourney.API.Controllers
                 var model = DbHelper.Instance.DomainStore.Get(domain.Id);
                 if (model == null)
                 {
-                    throw new LogicException("领域标签不存在");
+                    throw new LogicException("Domain tag does not exist");
                 }
 
                 domain.CreateTime = model.CreateTime;
@@ -1471,7 +1471,7 @@ namespace Midjourney.API.Controllers
         }
 
         /// <summary>
-        /// 删除领域标签
+        /// Delete domain tag
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
@@ -1480,23 +1480,23 @@ namespace Midjourney.API.Controllers
         {
             if (_isAnonymous)
             {
-                return Result.Fail("演示模式，禁止操作");
+                return Result.Fail("Demo mode, operation prohibited");
             }
 
             var model = DbHelper.Instance.DomainStore.Get(id);
             if (model == null)
             {
-                throw new LogicException("领域标签不存在");
+                throw new LogicException("Domain tag does not exist");
             }
 
             if (model.Id == Constants.DEFAULT_DOMAIN_ID)
             {
-                throw new LogicException("不能删除默认领域标签");
+                throw new LogicException("Cannot delete default domain tag");
             }
 
             if (model.Id == Constants.DEFAULT_DOMAIN_FULL_ID)
             {
-                throw new LogicException("不能删除默认领域标签");
+                throw new LogicException("Cannot delete default domain tag");
             }
 
             DbHelper.Instance.DomainStore.Delete(id);
@@ -1507,7 +1507,7 @@ namespace Midjourney.API.Controllers
         }
 
         /// <summary>
-        /// 违规词
+        /// Banned words
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
@@ -1556,7 +1556,7 @@ namespace Midjourney.API.Controllers
         }
 
         /// <summary>
-        /// 添加或编辑违规词
+        /// Add or edit banned word
         /// </summary>
         /// <param name="param"></param>
         /// <returns></returns>
@@ -1566,7 +1566,7 @@ namespace Midjourney.API.Controllers
         {
             if (_isAnonymous)
             {
-                return Result.Fail("演示模式，禁止操作");
+                return Result.Fail("Demo mode, operation prohibited");
             }
 
             if (string.IsNullOrWhiteSpace(param.Id))
@@ -1578,7 +1578,7 @@ namespace Midjourney.API.Controllers
                 var model = DbHelper.Instance.BannedWordStore.Get(param.Id);
                 if (model == null)
                 {
-                    throw new LogicException("违规词不存在");
+                    throw new LogicException("Banned word does not exist");
                 }
 
                 model.CreateTime = model.CreateTime;
@@ -1599,7 +1599,7 @@ namespace Midjourney.API.Controllers
         }
 
         /// <summary>
-        /// 删除违规词
+        /// Delete banned word
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
@@ -1608,18 +1608,18 @@ namespace Midjourney.API.Controllers
         {
             if (_isAnonymous)
             {
-                return Result.Fail("演示模式，禁止操作");
+                return Result.Fail("Demo mode, operation prohibited");
             }
 
             var model = DbHelper.Instance.BannedWordStore.Get(id);
             if (model == null)
             {
-                throw new LogicException("违规词不存在");
+                throw new LogicException("Banned word does not exist");
             }
 
             if (model.Id == Constants.DEFAULT_BANNED_WORD_ID)
             {
-                throw new LogicException("不能删除默认违规词");
+                throw new LogicException("Cannot delete default banned word");
             }
 
             DbHelper.Instance.BannedWordStore.Delete(id);
@@ -1630,7 +1630,7 @@ namespace Midjourney.API.Controllers
         }
 
         /// <summary>
-        /// 获取系统配置
+        /// Get system configuration
         /// </summary>
         /// <returns></returns>
         /// <exception cref="LogicException"></exception>
@@ -1640,12 +1640,12 @@ namespace Midjourney.API.Controllers
             var model = LiteDBHelper.SettingStore.Get(Constants.DEFAULT_SETTING_ID);
             if (model == null)
             {
-                throw new LogicException("系统配置错误，请重启服务");
+                throw new LogicException("System configuration error, please restart the service");
             }
 
             model.IsMongo = GlobalConfiguration.Setting.IsMongo;
 
-            // 演示模式，部分配置不可见
+            // Demo mode, some configurations are not visible
             if (_isAnonymous)
             {
                 if (model.Smtp != null)
@@ -1702,7 +1702,7 @@ namespace Midjourney.API.Controllers
         }
 
         /// <summary>
-        /// 编辑系统配置
+        /// Edit system configuration
         /// </summary>
         /// <param name="setting"></param>
         /// <returns></returns>
@@ -1711,7 +1711,7 @@ namespace Midjourney.API.Controllers
         {
             if (_isAnonymous)
             {
-                return Result.Fail("演示模式，禁止操作");
+                return Result.Fail("Demo mode, operation prohibited");
             }
 
             setting.Id = Constants.DEFAULT_SETTING_ID;
@@ -1720,10 +1720,10 @@ namespace Midjourney.API.Controllers
 
             GlobalConfiguration.Setting = setting;
 
-            // 存储服务
+            // Storage service
             StorageHelper.Configure();
 
-            // 首页缓存
+            // Home page cache
             _memoryCache.Remove("HOME");
             var now = DateTime.Now.ToString("yyyyMMdd");
             var key = $"{now}_home";
@@ -1733,7 +1733,7 @@ namespace Midjourney.API.Controllers
         }
 
         /// <summary>
-        /// MJ Plus 数据迁移（迁移账号数据和任务数据）
+        /// MJ Plus data migration (migrate account data and task data)
         /// </summary>
         /// <param name="dto"></param>
         /// <returns></returns>
@@ -1742,7 +1742,7 @@ namespace Midjourney.API.Controllers
         {
             if (_isAnonymous)
             {
-                return Result.Fail("演示模式，禁止操作");
+                return Result.Fail("Demo mode, operation prohibited");
             }
 
             await _taskService.MjPlusMigration(dto);
@@ -1751,7 +1751,7 @@ namespace Midjourney.API.Controllers
         }
 
         /// <summary>
-        /// 验证 mongo db 是否正常连接
+        /// Verify if MongoDB is connected properly
         /// </summary>
         /// <returns></returns>
         [HttpPost("verify-mongo")]
@@ -1759,18 +1759,18 @@ namespace Midjourney.API.Controllers
         {
             if (_isAnonymous)
             {
-                return Result.Fail("演示模式，禁止操作");
+                return Result.Fail("Demo mode, operation prohibited");
             }
 
             if (string.IsNullOrWhiteSpace(GlobalConfiguration.Setting.MongoDefaultConnectionString)
                 || string.IsNullOrWhiteSpace(GlobalConfiguration.Setting.MongoDefaultDatabase))
             {
-                return Result.Fail("MongoDB 配置错误，请保存配置后再验证");
+                return Result.Fail("MongoDB configuration error, please save the configuration and then verify");
             }
 
             var success = MongoHelper.Verify();
 
-            return success ? Result.Ok() : Result.Fail("连接失败");
+            return success ? Result.Ok() : Result.Fail("Connection failed");
         }
     }
 }
