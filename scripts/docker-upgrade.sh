@@ -48,7 +48,7 @@ docker run --name ${CONTAINER_NAME} -d --restart=always \
  -v /root/mjopen-api/data:/app/data:rw \
  -v /root/mjopen-api/attachments:/app/wwwroot/attachments:rw \
  -v /root/mjopen-api/ephemeral-attachments:/app/wwwroot/ephemeral-attachments:rw \
- -e TZ=Asia/Shanghai \
+ -e TZ=Asia/Jakarta \
  -v /etc/localtime:/etc/localtime:ro \
  -v /etc/timezone:/etc/timezone:ro \
  ${IMAGE_NAME}
