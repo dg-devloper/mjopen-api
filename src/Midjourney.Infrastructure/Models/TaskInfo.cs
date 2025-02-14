@@ -31,7 +31,7 @@ using Serilog;
 namespace Midjourney.Infrastructure.Models
 {
     /// <summary>
-    /// 任务类，表示一个任务的基本信息。
+    /// Task class, representing basic information of a task.
     /// </summary>
     [BsonCollection("task")]
     [MongoDB.Bson.Serialization.Attributes.BsonIgnoreExtraElements]
@@ -43,159 +43,154 @@ namespace Midjourney.Infrastructure.Models
         }
 
         /// <summary>
-        /// 父级 ID
+        /// Parent ID
         /// </summary>
         public string ParentId { get; set; }
 
         /// <summary>
-        /// bot 类型，mj(默认)或niji
-        /// MID_JOURNEY | 枚举值: NIJI_JOURNEY
+        /// Bot type, mj (default) or niji
+        /// MID_JOURNEY | Enum value: NIJI_JOURNEY
         /// </summary>
         public EBotType BotType { get; set; }
 
         /// <summary>
-        /// 真实的 bot 类型，mj(默认)或niji
-        /// MID_JOURNEY | 枚举值: NIJI_JOURNEY
-        /// 当开启 niji 转 mj 时，这里记录的是 mj bot
+        /// Actual bot type, mj (default) or niji
+        /// When niji->mj is enabled, mj bot is recorded here
         /// </summary>
         public EBotType? RealBotType { get; set; }
 
         /// <summary>
-        /// 绘画用户 ID
+        /// User ID for the drawing
         /// </summary>
         public string UserId { get; set; }
 
         /// <summary>
-        /// 白名单用户（加入白名单不受限流控制）
+        /// Whitelist user (not affected by rate limits)
         /// </summary>
         public bool IsWhite { get; set; } = false;
 
         /// <summary>
-        /// 提交作业的唯一ID。
+        /// Unique ID of the submitted task.
         /// </summary>
         public string Nonce { get; set; }
 
         /// <summary>
-        /// 与 MJ 交互成功后消息 ID。
-        /// INTERACTION_SUCCESS
+        /// ID returned after successfully interacting with MJ.
         /// </summary>
         public string InteractionMetadataId { get; set; }
 
         /// <summary>
-        /// 消息 ID（MJ 消息 ID，Nonce 与 MessageId 对应）
-        /// 最终消息 ID
+        /// Final message ID from MJ (Nonce -> MessageId)
         /// </summary>
         public string MessageId { get; set; }
 
         /// <summary>
-        /// Remix 模式时，返回的消息 ID
-        /// Remix Modal 消息 ID
+        /// Remix modal message ID
         /// </summary>
         public string RemixModalMessageId { get; set; }
 
         /// <summary>
-        /// 表示是否为 Remix 自动提交任务
+        /// Indicates whether it is a Remix auto-submit task
         /// </summary>
         public bool RemixAutoSubmit { get; set; }
 
         /// <summary>
-        /// Remix 模式，处于弹窗模式中时
+        /// Whether the Remix modal is currently active
         /// </summary>
         public bool RemixModaling { get; set; }
 
         /// <summary>
-        /// 账号实例 ID = 账号渠道 ID = ChannelId
+        /// Account instance ID = channel ID
         /// </summary>
         public string InstanceId { get; set; }
 
         /// <summary>
-        /// 子频道 ID
+        /// Sub-channel ID
         /// </summary>
         public string SubInstanceId { get; set; }
 
         /// <summary>
-        /// 消息 ID
-        /// 创建消息 ID -> 进度消息 ID -> 完成消息 ID
+        /// List of message IDs (creation -> progress -> completion)
         /// </summary>
         public List<string> MessageIds { get; set; } = new List<string>();
 
         /// <summary>
-        /// 任务类型。
+        /// Task type
         /// </summary>
         public TaskAction? Action { get; set; }
 
         /// <summary>
-        /// 任务状态。
+        /// Task status
         /// </summary>
         public TaskStatus? Status { get; set; }
 
         /// <summary>
-        /// 提示词。
+        /// Prompt
         /// </summary>
         public string Prompt { get; set; }
 
         /// <summary>
-        /// 提示词（英文）。
+        /// Prompt (English)
         /// </summary>
         public string PromptEn { get; set; }
 
         /// <summary>
-        /// 提示词（由 mj 返回的完整提示词）
+        /// Prompt (full prompt returned by MJ)
         /// </summary>
         public string PromptFull { get; set; }
 
         /// <summary>
-        /// 任务描述。
+        /// Task description
         /// </summary>
         public string Description { get; set; }
 
         /// <summary>
-        /// 自定义参数。
+        /// Custom parameters
         /// </summary>
         public string State { get; set; }
 
         /// <summary>
-        /// 提交时间。
+        /// Submission time
         /// </summary>
         public long? SubmitTime { get; set; }
 
         /// <summary>
-        /// 开始执行时间。
+        /// Start time
         /// </summary>
         public long? StartTime { get; set; }
 
         /// <summary>
-        /// 结束时间。
+        /// Finish time
         /// </summary>
         public long? FinishTime { get; set; }
 
         /// <summary>
-        /// 图片URL。
+        /// Image URL
         /// </summary>
         public string ImageUrl { get; set; }
 
         /// <summary>
-        /// 缩略图 url
+        /// Thumbnail URL
         /// </summary>
         public string ThumbnailUrl { get; set; }
 
         /// <summary>
-        /// 任务进度。
+        /// Task progress
         /// </summary>
         public string Progress { get; set; }
 
         /// <summary>
-        /// 失败原因。
+        /// Reason for failure
         /// </summary>
         public string FailReason { get; set; }
 
         /// <summary>
-        /// 按钮
+        /// Buttons
         /// </summary>
         public List<CustomComponentModel> Buttons { get; set; } = new List<CustomComponentModel>();
 
         /// <summary>
-        /// 任务的显示信息。
+        /// Display information of the task
         /// </summary>
         [LiteDB.BsonIgnore]
         [MongoDB.Bson.Serialization.Attributes.BsonIgnore]
@@ -206,18 +201,18 @@ namespace Midjourney.Infrastructure.Models
             {
                 var dic = new Dictionary<string, object>();
 
-                // 状态
+                // Status
                 dic["status"] = Status.ToString();
 
-                // 转为可视化时间
+                // Convert to visual time
                 dic["submitTime"] = SubmitTime?.ToDateTimeString();
                 dic["startTime"] = StartTime?.ToDateTimeString();
                 dic["finishTime"] = FinishTime?.ToDateTimeString();
 
-                // 行为
+                // Action
                 dic["action"] = Action.ToString();
 
-                // discord 实例 ID
+                // Discord instance ID
                 dic["discordInstanceId"] = Properties.ContainsKey("discordInstanceId") ? Properties["discordInstanceId"] : "";
 
                 return dic;
@@ -225,52 +220,52 @@ namespace Midjourney.Infrastructure.Models
         }
 
         /// <summary>
-        /// 任务的种子。
+        /// Task seed
         /// </summary>
         public string Seed { get; set; }
 
         /// <summary>
-        /// Seed 消息 ID
+        /// Seed message ID
         /// </summary>
         public string SeedMessageId { get; set; }
 
         /// <summary>
-        /// 绘图任务客户的 IP 地址
+        /// Client IP address for the drawing
         /// </summary>
         public string ClientIp { get; set; }
 
         /// <summary>
-        /// 图片 ID / 图片 hash
+        /// Image ID / image hash
         /// </summary>
         public string JobId { get; set; }
 
         /// <summary>
-        /// 是否为 replicate 任务
+        /// Whether this is a replicate task
         /// </summary>
         public bool IsReplicate { get; set; }
 
         /// <summary>
-        /// 人脸源图片
+        /// Face source image
         /// </summary>
         public string ReplicateSource { get; set; }
 
         /// <summary>
-        /// 目标图片/目标视频
+        /// Target image or video
         /// </summary>
         public string ReplicateTarget { get; set; }
 
         /// <summary>
-        /// 当前绘画客户端指定的速度模式
+        /// Speed mode specified by the current drawing client
         /// </summary>
         public GenerationSpeedMode? Mode { get; set; }
 
         /// <summary>
-        /// 账号过滤
+        /// Account filter
         /// </summary>
         public AccountFilter AccountFilter { get; set; }
 
         /// <summary>
-        /// 启动任务。
+        /// Start the task.
         /// </summary>
         public void Start()
         {
@@ -280,25 +275,25 @@ namespace Midjourney.Infrastructure.Models
         }
 
         /// <summary>
-        /// 任务成功。
+        /// Task succeeded.
         /// </summary>
         public void Success()
         {
             try
             {
-                // 保存图片
+                // Save image
                 StorageHelper.DownloadFile(this);
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "保存图片失败 {@0}", ImageUrl);
+                Log.Error(ex, "Failed to save image {@0}", ImageUrl);
             }
 
-            // 调整图片 ACTION
-            // 如果是 show 时
+            // Adjust image ACTION
+            // If it is show
             if (Action == TaskAction.SHOW)
             {
-                // 根据 buttons 调整
+                // Adjust based on buttons
                 if (Buttons.Count > 0)
                 {
                     // U1
@@ -306,7 +301,7 @@ namespace Midjourney.Infrastructure.Models
                     {
                         Action = TaskAction.IMAGINE;
                     }
-                    // 局部重绘说明是放大
+                    // Local redraw means upscale
                     else if (Buttons.Any(x => x.CustomId?.Contains("MJ::Inpaint::") == true))
                     {
                         Action = TaskAction.UPSCALE;
@@ -325,9 +320,9 @@ namespace Midjourney.Infrastructure.Models
         }
 
         /// <summary>
-        /// 任务失败。
+        /// Task failed.
         /// </summary>
-        /// <param name="reason">失败原因。</param>
+        /// <param name="reason">Reason for failure.</param>
         public void Fail(string reason)
         {
             FinishTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
@@ -340,11 +335,11 @@ namespace Midjourney.Infrastructure.Models
                 if (reason.Contains("Banned prompt detected", StringComparison.OrdinalIgnoreCase)
                     || reason.Contains("Image denied", StringComparison.OrdinalIgnoreCase))
                 {
-                    // 触发提示提示词封锁
+                    // Trigger prompt ban
                     var band = GlobalConfiguration.Setting?.BannedLimiting;
                     var cache = GlobalConfiguration.MemoryCache;
 
-                    // 记录累计触发次数
+                    // Record cumulative trigger count
                     if (band?.Enable == true && cache != null)
                     {
                         if (!string.IsNullOrWhiteSpace(UserId))

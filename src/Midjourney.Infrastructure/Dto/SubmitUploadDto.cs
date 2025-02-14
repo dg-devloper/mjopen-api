@@ -24,17 +24,17 @@
 namespace Midjourney.Infrastructure.Dto
 {
     /// <summary>
-    /// Imagine提交参数。
+    /// Imagine submission parameters.
     /// </summary>
     public class SubmitUploadDto : BaseSubmitDTO
     {
         /// <summary>
-        /// 图片 urls
+        /// Image URLs
         /// </summary>
         public string[] Urls { get; set; } = new string[0];
 
         /// <summary>
-        /// 过滤指定实例的账号
+        /// Filter for a specific instance ID
         /// </summary>
         public string InstanceId { get; set; }
     }

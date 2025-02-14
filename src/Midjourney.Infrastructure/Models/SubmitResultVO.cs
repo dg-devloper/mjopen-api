@@ -29,30 +29,30 @@ using System.Reflection.Metadata;
 namespace Midjourney.Infrastructure.Models
 {
     /// <summary>
-    /// 提交结果类。
+    /// Submission result class.
     /// </summary>
     public class SubmitResultVO
     {
         /// <summary>
-        /// 状态码。
+        /// Status code.
         /// </summary>
         [JsonProperty("code")]
         public int Code { get; set; }
 
         /// <summary>
-        /// 描述信息。
+        /// Description message.
         /// </summary>
         [JsonProperty("description")]
         public string Description { get; set; }
 
         /// <summary>
-        /// 任务ID。
+        /// Task ID.
         /// </summary>
         [JsonProperty("result")]
         public dynamic Result { get; set; }
 
         /// <summary>
-        /// 扩展字段。
+        /// Extended fields.
         /// </summary>
         [JsonProperty("properties")]
         public Dictionary<string, object> Properties { get; set; } = new Dictionary<string, object>();
@@ -69,7 +69,7 @@ namespace Midjourney.Infrastructure.Models
         }
 
         /// <summary>
-        /// 设置扩展字段。
+        /// Sets an extended field.
         /// </summary>
         public SubmitResultVO SetProperty(string name, object value)
         {
@@ -85,7 +85,7 @@ namespace Midjourney.Infrastructure.Models
         }
 
         /// <summary>
-        /// 移除扩展字段。
+        /// Removes an extended field.
         /// </summary>
         public SubmitResultVO RemoveProperty(string name)
         {
@@ -94,27 +94,27 @@ namespace Midjourney.Infrastructure.Models
         }
 
         /// <summary>
-        /// 获取扩展字段。
+        /// Gets an extended field.
         /// </summary>
         public object GetProperty(string name) => Properties.TryGetValue(name, out var value) ? value : null;
 
         /// <summary>
-        /// 获取扩展字段的泛型版本。
+        /// Gets an extended field (generic version).
         /// </summary>
         public T GetPropertyGeneric<T>(string name) => (T)GetProperty(name);
 
         /// <summary>
-        /// 返回带自定义状态码、描述和任务ID的提交结果。
+        /// Returns a custom status code, description, and task ID.
         /// </summary>
         public static SubmitResultVO Of(int code, string description, string result) => new SubmitResultVO(code, description, result);
 
         /// <summary>
-        /// 返回带自定义状态码、描述和任务ID的提交结果。
+        /// Returns a custom status code, description, and task ID.
         /// </summary>
         public static SubmitResultVO Of(int code, string description, List<string> result) => new SubmitResultVO(code, description, result);
 
         /// <summary>
-        /// 返回失败的提交结果。
+        /// Returns a failed submission result.
         /// </summary>
         public static SubmitResultVO Fail(int code, string description) => new SubmitResultVO(code, description);
     }

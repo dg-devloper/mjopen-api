@@ -27,140 +27,140 @@ using Midjourney.Infrastructure.Options;
 namespace Midjourney.Infrastructure.Models
 {
     /// <summary>
-    /// 系统配置
+    /// System configuration
     /// </summary>
     public class Setting : ProxyProperties
     {
         /// <summary>
-        /// 全局开启垂直领域
+        /// Globally enable vertical domain
         /// </summary>
         public bool IsVerticalDomain { get; set; }
 
         /// <summary>
-        /// 启用 Swagger
+        /// Enable Swagger
         /// </summary>
         public bool EnableSwagger { get; set; }
 
         /// <summary>
-        /// Banned 限流配置
+        /// Banned limiting configuration
         /// </summary>
         public BannedLimitingOptions BannedLimiting { get; set; } = new();
 
         /// <summary>
-        /// 限流配置
+        /// Rate limiting configuration
         /// </summary>
         public IpRateLimitingOptions IpRateLimiting { get; set; }
 
         /// <summary>
-        /// 黑名单限流配置
+        /// Blacklist rate limiting configuration
         /// </summary>
         public IpBlackRateLimitingOptions IpBlackRateLimiting { get; set; }
 
         /// <summary>
-        /// 开启注册
+        /// Enable registration
         /// </summary>
         public bool EnableRegister { get; set; }
 
         /// <summary>
-        /// 注册用户默认日绘图限制
+        /// Daily drawing limit for newly registered users
         /// </summary>
         public int RegisterUserDefaultDayLimit { get; set; } = -1;
 
         /// <summary>
-        /// 开启访客
+        /// Enable guest
         /// </summary>
         public bool EnableGuest { get; set; }
 
         /// <summary>
-        /// 访客默认日绘图限制
+        /// Default daily drawing limit for guest users
         /// </summary>
         public int GuestDefaultDayLimit { get; set; } = -1;
 
         /// <summary>
-        /// 首页公告
+        /// Home page notification
         /// </summary>
         public string Notify { get; set; }
 
         /// <summary>
-        /// 启用启动时自动获取私信 ID 功能
+        /// Enable auto-get private ID at startup
         /// </summary>
         public bool EnableAutoGetPrivateId { get; set; }
 
         /// <summary>
-        /// 启用启动时自动验证账号可用性功能
+        /// Enable auto-verify account availability at startup
         /// </summary>
         public bool EnableAutoVerifyAccount { get; set; }
 
         /// <summary>
-        /// 启用自动同步信息和设置
+        /// Enable auto-sync info and settings
         /// </summary>
         public bool EnableAutoSyncInfoSetting { get; set; }
 
         /// <summary>
-        /// 启用 token 自动延期
+        /// Enable automatic token extension
         /// </summary>
         public bool EnableAutoExtendToken { get; set; }
 
         /// <summary>
-        /// 启用用户自定义上传 Base64
+        /// Enable user to upload Base64
         /// </summary>
         public bool EnableUserCustomUploadBase64 { get; set; } = true;
 
         /// <summary>
-        /// 启用转换官方链接
+        /// Enable converting official links
         /// </summary>
         public bool EnableConvertOfficialLink { get; set; } = true;
 
         /// <summary>
-        /// 启用转换云/加速链接/OSS/COS/CDN
+        /// Enable converting to cloud/accelerated/OSS/COS/CDN links
         /// </summary>
         public bool EnableConvertAliyunLink { get; set; }
 
         /// <summary>
-        /// 开启 mj 翻译
+        /// Enable MJ translation
         /// </summary>
         public bool EnableMjTranslate { get; set; } = true;
 
         /// <summary>
-        /// 开启 niji 翻译
+        /// Enable Niji translation
         /// </summary>
         public bool EnableNijiTranslate { get; set; } = true;
 
         /// <summary>
-        /// 转换 Niji 为 MJ
-        /// 启用后将 Niji · journey 任务自动转为 Midjourney 任务，并对任务添加 --niji 后缀（转换后出图效果是一致的）
+        /// Convert Niji to MJ
+        /// Enable this to automatically convert Niji · journey tasks to Midjourney tasks and add the --niji suffix to the task (the output effect is the same after conversion)
         /// </summary>
         public bool EnableConvertNijiToMj { get; set; }
 
         /// <summary>
-        /// 转换 --niji 为 Niji Bot
-        /// 当 prompt 中包含 --niji 时，将会自动转换为 Niji·journey Bot 任务
+        /// Convert --niji to Niji Bot
+        /// When the prompt contains --niji, it will automatically convert to Niji·journey Bot task
         /// </summary>
         public bool EnableConvertNijiToNijiBot { get; set; }
 
         /// <summary>
-        /// 开启自动登录
+        /// Enable auto-login
         /// </summary>
         public bool EnableAutoLogin { get; set; }
 
         /// <summary>
-        /// 开启账号赞助
+        /// Enable account sponsorship
         /// </summary>
         public bool EnableAccountSponsor { get; set; }
     }
 
     /// <summary>
-    /// 表示 Banned 限流配置选项，当处罚 Banned prompt detected 时，将会限制 IP 访问和非白名单用户
+    /// Banned limiting options when Banned prompt is detected
     /// </summary>
     public class BannedLimitingOptions
     {
         /// <summary>
-        /// 是否启用 Banned 限流
+        /// Whether to enable Banned limiting
         /// </summary>
         public bool Enable { get; set; }
 
         /// <summary>
-        /// Banned 限流规则，key：当日触发次数，value：封锁时间（分钟）
+        /// Banned limiting rules. Key: daily trigger count, Value: block duration (minutes)
         /// </summary>
         public Dictionary<int, int> Rules { get; set; } = [];
     }

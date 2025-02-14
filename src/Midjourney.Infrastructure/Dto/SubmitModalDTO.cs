@@ -26,27 +26,27 @@ using Swashbuckle.AspNetCore.Annotations;
 namespace Midjourney.Infrastructure.Dto
 {
     /// <summary>
-    /// Imagine提交参数。
+    /// Imagine submission parameters.
     /// </summary>
-    [SwaggerSchema("Imagine提交参数")]
+    [SwaggerSchema("Imagine submission parameters")]
     public class SubmitModalDTO : BaseSubmitDTO
     {
         /// <summary>
-        /// 提示词。
+        /// Prompt.
         /// </summary>
-        [SwaggerSchema("提示词", Description = "Cat")]
+        [SwaggerSchema("Prompt", Description = "Cat")]
         public string Prompt { get; set; }
 
         /// <summary>
-        /// 任务ID。
+        /// Task ID.
         /// </summary>
-        [SwaggerSchema("任务ID", Description = "\"1320098173412546\"")]
+        [SwaggerSchema("Task ID", Description = "\"1320098173412546\"")]
         public string TaskId { get; set; }
 
         /// <summary>
-        /// 局部重绘的蒙版base64
+        /// Mask base64.
         /// </summary>
-        [SwaggerSchema("图片base64", Description = "data:image/png;base64,xxx")]
+        [SwaggerSchema("Mask base64", Description = "data:image/png;base64,xxx")]
         public string MaskBase64 { get; set; }
     }
 }

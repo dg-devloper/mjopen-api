@@ -26,15 +26,15 @@ using Swashbuckle.AspNetCore.Annotations;
 namespace Midjourney.Infrastructure.Dto
 {
     /// <summary>
-    /// 任务查询参数。
+    /// Task query parameters.
     /// </summary>
-    [SwaggerSchema("任务查询参数")]
+    [SwaggerSchema("Task query parameters")]
     public class TaskConditionDTO
     {
         /// <summary>
-        /// 任务ID列表。
+        /// Task ID list.
         /// </summary>
-        [SwaggerSchema("任务ID列表")]
+        [SwaggerSchema("Task ID list")]
         public List<string> Ids { get; set; }
     }
 }

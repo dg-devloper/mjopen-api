@@ -24,39 +24,39 @@
 namespace Midjourney.Infrastructure
 {
     /// <summary>
-    /// 用户状态
+    /// User status
     /// </summary>
     public enum EUserStatus
     {
         /// <summary>
-        /// 正常
+        /// Normal
         /// </summary>
         NORMAL = 0,
 
         /// <summary>
-        /// 禁用
+        /// Disabled
         /// </summary>
         DISABLED = 1
     }
 
     /// <summary>
-    /// 用户角色
+    /// User role
     /// </summary>
     public enum EUserRole
     {
         /// <summary>
-        /// 普通用户
+        /// Regular user
         /// </summary>
         USER = 0,
 
         /// <summary>
-        /// 管理员
+        /// Administrator
         /// </summary>
         ADMIN = 1,
     }
 
     /// <summary>
-    /// Bot类型枚举 MID_JOURNEY | 枚举值: NIJI_JOURNEY
+    /// Bot type enumeration
     /// </summary>
     public enum EBotType
     {
@@ -71,33 +71,33 @@ namespace Midjourney.Infrastructure
         NIJI_JOURNEY = 1,
 
         /// <summary>
-        /// 换脸
+        /// Face swap
         /// </summary>
         INSIGHT_FACE = 2
     }
 
     /// <summary>
-    /// 账号选择规则
+    /// Account selection rule
     /// </summary>
     public enum AccountChooseRule
     {
         /// <summary>
-        /// 最优空闲模式
+        /// Optimal idle mode
         /// </summary>
         BestWaitIdle = 0,
 
         /// <summary>
-        /// 随机模式
+        /// Random mode
         /// </summary>
         Random = 1,
 
         /// <summary>
-        /// 权重模式
+        /// Weight mode
         /// </summary>
         Weight = 2,
 
         /// <summary>
-        /// 轮询模式
+        /// Polling mode
         /// </summary>
         Polling = 3
     }
@@ -105,43 +105,43 @@ namespace Midjourney.Infrastructure
     public enum TranslateWay
     {
         /// <summary>
-        /// 百度翻译
+        /// Baidu Translate
         /// </summary>
         BAIDU,
 
         /// <summary>
-        /// GPT翻译
+        /// GPT Translate
         /// </summary>
         GPT,
 
         /// <summary>
-        /// 不翻译
+        /// No translation
         /// </summary>
         NULL
     }
 
     /// <summary>
-    /// 图片存储类型
+    /// Image storage type
     /// </summary>
     public enum ImageStorageType
     {
         /// <summary>
-        /// 不存储
+        /// Do not store
         /// </summary>
         NONE = 0,
 
         /// <summary>
-        /// 本地存储
+        /// Local store
         /// </summary>
         LOCAL = 1,
 
         /// <summary>
-        /// 阿里云存储 OSS
+        /// Alibaba Cloud OSS
         /// </summary>
         OSS = 2,
 
         /// <summary>
-        /// 腾讯云 COS
+        /// Tencent Cloud COS
         /// </summary>
         COS = 3,
 
@@ -152,42 +152,42 @@ namespace Midjourney.Infrastructure
     }
 
     /// <summary>
-    /// 任务状态枚举.
+    /// Task status enumeration.
     /// </summary>
     public enum TaskStatus
     {
         /// <summary>
-        /// 未启动.
+        /// Not started.
         /// </summary>
         NOT_START = 0,
 
         /// <summary>
-        /// 已提交.
+        /// Submitted.
         /// </summary>
         SUBMITTED = 1,
 
         /// <summary>
-        /// 执行中.
+        /// In progress.
         /// </summary>
         IN_PROGRESS = 3,
 
         /// <summary>
-        /// 失败.
+        /// Failed.
         /// </summary>
         FAILURE = 4,
 
         /// <summary>
-        /// 成功.
+        /// Succeeded.
         /// </summary>
         SUCCESS = 5,
 
         /// <summary>
-        /// 弹窗
+        /// Modal
         /// </summary>
         MODAL = 6,
 
         /// <summary>
-        /// 取消
+        /// Cancelled
         /// </summary>
         CANCEL = 7
     }
@@ -211,104 +211,103 @@ namespace Midjourney.Infrastructure
     }
 
     /// <summary>
-    /// 任务操作枚举.
+    /// Task action enumeration.
     /// </summary>
     public enum TaskAction
     {
         /// <summary>
-        /// 生成图片.
+        /// Generate image.
         /// </summary>
         IMAGINE,
 
         /// <summary>
-        /// 选中放大.
+        /// Upscale the selected image.
         /// </summary>
         UPSCALE,
 
         /// <summary>
-        /// 选中其中的一张图，生成四张相似的.
+        /// Select one of the images and generate four similar ones.
         /// </summary>
         VARIATION,
 
         /// <summary>
-        /// 重新执行.
+        /// Rerun.
         /// </summary>
         REROLL,
 
         /// <summary>
-        /// 图转 prompt.
+        /// Image to prompt.
         /// </summary>
         DESCRIBE,
 
         /// <summary>
-        /// 多图混合.
+        /// Blend multiple images.
         /// </summary>
         BLEND,
 
         /// <summary>
-        /// 提交动作
+        /// Submit action
         /// </summary>
         ACTION,
 
         /// <summary>
-        /// 平移
+        /// Pan
         /// </summary>
         PAN,
 
         /// <summary>
-        /// 变焦
+        /// Outpaint
         /// </summary>
         OUTPAINT,
 
         /// <summary>
-        /// 局部重绘
+        /// Inpaint
         /// </summary>
         INPAINT,
 
         /// <summary>
-        /// 自定义变焦
+        /// Custom zoom
         /// </summary>
         ZOOM,
 
         /// <summary>
-        /// SHOW 指令
+        /// SHOW command
         /// </summary>
         SHOW,
 
         /// <summary>
-        /// prompt 简短指令
+        /// Short prompt instruction
         /// </summary>
         SHORTEN,
 
         /// <summary>
-        /// 换脸任务
-        /// = FACE_SWAP
+        /// Face swap task
         /// </summary>
         SWAP_FACE,
 
         /// <summary>
-        /// 视频换脸任务
+        /// Video face swap task
         /// </summary>
         SWAP_VIDEO_FACE
     }
 
     /// <summary>
-    /// 消息类型枚举.
+    /// Message type enumeration.
     /// </summary>
     public enum MessageType
     {
         /// <summary>
-        /// 创建.
+        /// Create.
         /// </summary>
         CREATE,
 
         /// <summary>
-        /// 修改.
+        /// Update.
         /// </summary>
         UPDATE,
 
         /// <summary>
-        /// 删除.
+        /// Delete.
         /// </summary>
         DELETE,
 
@@ -334,7 +333,7 @@ namespace Midjourney.Infrastructure
     }
 
     /// <summary>
-    /// 生成速度模式枚举.
+    /// Generation speed mode enumeration.
     /// </summary>
     public enum GenerationSpeedMode
     {
@@ -346,10 +345,10 @@ namespace Midjourney.Infrastructure
     public static class MessageTypeExtensions
     {
         /// <summary>
-        /// 将字符串转换为对应的消息类型枚举.
+        /// Converts a string to the corresponding message type enumeration.
         /// </summary>
-        /// <param name="type">消息类型字符串.</param>
-        /// <returns>对应的消息类型枚举.</returns>
+        /// <param name="type">Message type string.</param>
+        /// <returns>The corresponding message type enumeration.</returns>
         public static MessageType? Of(string type)
         {
             return type switch
@@ -367,22 +366,22 @@ namespace Midjourney.Infrastructure
     }
 
     /// <summary>
-    /// 图片混合维度枚举.
+    /// Image blending dimension enumeration.
     /// </summary>
     public enum BlendDimensions
     {
         /// <summary>
-        /// 纵向.
+        /// Portrait.
         /// </summary>
         PORTRAIT,
 
         /// <summary>
-        /// 正方形.
+        /// Square.
         /// </summary>
         SQUARE,
 
         /// <summary>
-        /// 横向.
+        /// Landscape.
         /// </summary>
         LANDSCAPE
     }
@@ -390,10 +389,10 @@ namespace Midjourney.Infrastructure
     public static class BlendDimensionsExtensions
     {
         /// <summary>
-        /// 获取图片混合维度的字符串值.
+        /// Get the string value of the image blending dimension.
         /// </summary>
-        /// <param name="dimension">图片混合维度.</param>
-        /// <returns>图片混合维度的字符串值.</returns>
+        /// <param name="dimension">Image blending dimension.</param>
+        /// <returns>The string value of the image blending dimension.</returns>
         public static string GetValue(this BlendDimensions dimension)
         {
             return dimension switch

@@ -24,12 +24,12 @@
 namespace Midjourney.Infrastructure.Dto
 {
     /// <summary>
-    /// 注册
+    /// Registration
     /// </summary>
     public class RegisterDto
     {
         /// <summary>
-        /// 邮箱
+        /// Email
         /// </summary>
         public string Email { get; set; }   
     }

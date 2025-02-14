@@ -24,27 +24,27 @@
 namespace Midjourney.Infrastructure.Options
 {
     /// <summary>
-    /// 验证码配置项
+    /// Captcha configuration.
     /// </summary>
     public class CaptchaOption
     {
         /// <summary>
-        /// 并发数
+        /// Concurrency.
         /// </summary>
         public int Concurrent { get; set; } = 1;
 
         /// <summary>
-        /// 2captcha API key
+        /// 2captcha API key.
         /// </summary>
         public string TwoCaptchaKey { get; set; }
 
         /// <summary>
-        /// yescaptcha API key
+        /// yescaptcha API key.
         /// </summary>
         public string YesCaptchaKey { get; set; }
 
         /// <summary>
-        /// 是否后台运行
+        /// Whether it runs in headless mode.
         /// </summary>
         public bool Headless { get; set; }
     }

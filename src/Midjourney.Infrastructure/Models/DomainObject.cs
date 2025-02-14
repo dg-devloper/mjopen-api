@@ -30,7 +30,7 @@ using JsonIgnoreAttribute = Newtonsoft.Json.JsonIgnoreAttribute;
 namespace Midjourney.Infrastructure.Models
 {
     /// <summary>
-    /// 基础领域对象类，支持扩展属性和线程同步操作。
+    /// Base domain object class, supporting extended properties and thread synchronization.
     /// </summary>
     //[DataContract] // 由于继承关系，不需要再次标记
     public class DomainObject : IBaseId // , ISerializable
@@ -41,13 +41,13 @@ namespace Midjourney.Infrastructure.Models
         private Dictionary<string, object> _properties;
 
         /// <summary>
-        /// 对象ID。
+        /// Object ID.
         /// </summary>
         [DataMember]
         public string Id { get; set; }
 
         /// <summary>
-        /// 暂停当前线程，等待唤醒。
+        /// Put the current thread to sleep until awakened.
         /// </summary>
         public void Sleep()
         {
@@ -58,7 +58,7 @@ namespace Midjourney.Infrastructure.Models
         }
 
         /// <summary>
-        /// 唤醒所有等待当前对象锁的线程。
+        /// Wake up all threads waiting on this object's lock.
         /// </summary>
         public void Awake()
         {
@@ -69,11 +69,11 @@ namespace Midjourney.Infrastructure.Models
         }
 
         /// <summary>
-        /// 设置扩展属性。
+        /// Set an extended property.
         /// </summary>
-        /// <param name="name">属性名称。</param>
-        /// <param name="value">属性值。</param>
-        /// <returns>当前对象实例。</returns>
+        /// <param name="name">Property name.</param>
+        /// <param name="value">Property value.</param>
+        /// <returns>Current object instance.</returns>
         public DomainObject SetProperty(string name, object value)
         {
             Properties[name] = value;
@@ -88,10 +88,10 @@ namespace Midjourney.Infrastructure.Models
         }
 
         /// <summary>
-        /// 移除扩展属性。
+        /// Remove an extended property.
         /// </summary>
-        /// <param name="name">属性名称。</param>
-        /// <returns>当前对象实例。</returns>
+        /// <param name="name">Property name.</param>
+        /// <returns>Current object instance.</returns>
         public DomainObject RemoveProperty(string name)
         {
             Properties.Remove(name);
@@ -99,10 +99,10 @@ namespace Midjourney.Infrastructure.Models
         }
 
         /// <summary>
-        /// 获取扩展属性值。
+        /// Get the value of an extended property.
         /// </summary>
-        /// <param name="name">属性名称。</param>
-        /// <returns>属性值。</returns>
+        /// <param name="name">Property name.</param>
+        /// <returns>Property value.</returns>
         public object GetProperty(string name)
         {
             Properties.TryGetValue(name, out var value);
@@ -110,23 +110,23 @@ namespace Midjourney.Infrastructure.Models
         }
 
         /// <summary>
-        /// 获取泛型扩展属性值。
+        /// Get the value of an extended property as a generic type.
         /// </summary>
-        /// <typeparam name="T">属性类型。</typeparam>
-        /// <param name="name">属性名称。</param>
-        /// <returns>属性值。</returns>
+        /// <typeparam name="T">Property type.</typeparam>
+        /// <param name="name">Property name.</param>
+        /// <returns>Property value.</returns>
         public T GetPropertyGeneric<T>(string name)
         {
             return (T)GetProperty(name);
         }
 
         /// <summary>
-        /// 获取扩展属性值，并指定默认值。
+        /// Get the value of an extended property with a default value.
         /// </summary>
-        /// <typeparam name="T">属性类型。</typeparam>
-        /// <param name="name">属性名称。</param>
-        /// <param name="defaultValue">默认值。</param>
-        /// <returns>属性值或默认值。</returns>
+        /// <typeparam name="T">Property type.</typeparam>
+        /// <param name="name">Property name.</param>
+        /// <param name="defaultValue">Default value.</param>
+        /// <returns>Property value or default value.</returns>
         public T GetProperty<T>(string name, T defaultValue)
         {
             // return Properties.TryGetValue(name, out var value) ? (T)value : defaultValue;
@@ -170,7 +170,7 @@ namespace Midjourney.Infrastructure.Models
         }
 
         /// <summary>
-        /// 获取或初始化扩展属性字典。
+        /// Get or initialize the extended properties dictionary.
         /// </summary>
         //[JsonIgnore]
         public Dictionary<string, object> Properties
@@ -180,7 +180,7 @@ namespace Midjourney.Infrastructure.Models
         }
 
         /// <summary>
-        /// 克隆这个对象
+        /// Clone this object.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>

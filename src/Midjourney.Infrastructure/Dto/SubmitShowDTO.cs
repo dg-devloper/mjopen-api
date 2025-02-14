@@ -29,18 +29,18 @@ namespace Midjourney.Infrastructure.Dto
     public class SubmitShowDTO : BaseSubmitDTO
     {
         /// <summary>
-        /// bot 类型，mj(默认)或niji
-        /// MID_JOURNEY | 枚举值: NIJI_JOURNEY
+        /// Bot type: mj (default) or niji
+        /// MID_JOURNEY | enumerated value: NIJI_JOURNEY
         /// </summary>
         public string BotType { get; set; }
 
         /// <summary>
-        /// JobId 或 图片 url
+        /// JobId or image URL
         /// </summary>
         public string JobId { get; set; }
 
         /// <summary>
-        /// 账号过滤
+        /// Account filter
         /// </summary>
         public AccountFilter AccountFilter { get; set; }
     }

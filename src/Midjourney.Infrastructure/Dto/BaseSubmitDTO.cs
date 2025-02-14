@@ -24,48 +24,48 @@
 namespace Midjourney.Infrastructure.Dto
 {
     /// <summary>
-    /// 基础提交参数类。
+    /// Basic submission parameter class.
     /// </summary>
     public abstract class BaseSubmitDTO
     {
         /// <summary>
-        /// 自定义参数。
+        /// Custom parameters.
         /// </summary>
         public string State { get; set; }
 
         /// <summary>
-        /// 回调地址, 为空时使用全局notifyHook。
+        /// Callback address, the global notifyHook is used if empty.
         /// </summary>
         public string NotifyHook { get; set; }
     }
 
     /// <summary>
-    /// 账号筛选
+    /// Account filter.
     /// </summary>
     public class AccountFilter
     {
         /// <summary>
-        /// 过滤指定实例的账号
+        /// Filter accounts of designated instance.
         /// </summary>
         public string InstanceId { get; set; }
 
         /// <summary>
-        /// 账号模式 RELAX | FAST | TURBO
+        /// Account modes: RELAX | FAST | TURBO
         /// </summary>
         public List<GenerationSpeedMode> Modes { get; set; } = new List<GenerationSpeedMode>();
 
         /// <summary>
-        /// 账号是否 remix（Midjourney Remix）
+        /// Whether the account has remix enabled (Midjourney Remix).
         /// </summary>
         public bool? Remix { get; set; }
 
         /// <summary>
-        /// 账号是否 remix（Nijiourney Remix）
+        /// Whether the account has remix enabled (Nijiourney Remix).
         /// </summary>
         public bool? NijiRemix { get; set; }
 
         /// <summary>
-        /// 账号过滤时，remix 自动提交视为账号的 remix 为 false
+        /// When filtering accounts, automatically submitted remix is considered false.
         /// </summary>
         public bool? RemixAutoConsidered { get; set; }
     }

@@ -26,27 +26,27 @@ using Swashbuckle.AspNetCore.Annotations;
 namespace Midjourney.Infrastructure.Dto
 {
     /// <summary>
-    /// 变化任务提交参数。
+    /// Change task submission parameters.
     /// </summary>
-    [SwaggerSchema("变化任务提交参数")]
+    [SwaggerSchema("Change task submission parameters")]
     public class SubmitChangeDTO : BaseSubmitDTO
     {
         /// <summary>
-        /// 任务ID。
+        /// Task ID.
         /// </summary>
-        [SwaggerSchema("任务ID", Description = "\"1320098173412546\"")]
+        [SwaggerSchema("Task ID", Description = "\"1320098173412546\"")]
         public string TaskId { get; set; }
 
         /// <summary>
-        /// 操作类型: UPSCALE(放大); VARIATION(变换); REROLL(重新生成)。
+        /// Operation type: UPSCALE, VARIATION, or REROLL.
         /// </summary>
-        [SwaggerSchema("UPSCALE(放大); VARIATION(变换); REROLL(重新生成)", Description = "UPSCALE")]
+        [SwaggerSchema("UPSCALE; VARIATION; REROLL", Description = "UPSCALE")]
         public TaskAction Action { get; set; }
 
         /// <summary>
-        /// 序号(1~4), action为UPSCALE, VARIATION时必传。
+        /// Index (1~4), required if action is UPSCALE or VARIATION.
         /// </summary>
-        [SwaggerSchema("序号(1~4), action为UPSCALE,VARIATION时必传", Description = "1")]
+        [SwaggerSchema("Index (1~4), required if action is UPSCALE or VARIATION", Description = "1")]
         public int? Index { get; set; }
     }
 }

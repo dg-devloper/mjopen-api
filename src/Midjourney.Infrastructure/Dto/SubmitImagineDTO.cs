@@ -26,31 +26,31 @@ using Swashbuckle.AspNetCore.Annotations;
 namespace Midjourney.Infrastructure.Dto
 {
     /// <summary>
-    /// Imagine提交参数。
+    /// Imagine submission parameters.
     /// </summary>
-    [SwaggerSchema("Imagine提交参数")]
+    [SwaggerSchema("Imagine submission parameters")]
     public class SubmitImagineDTO : BaseSubmitDTO
     {
         /// <summary>
-        /// bot 类型，mj(默认)或niji
-        /// MID_JOURNEY | 枚举值: NIJI_JOURNEY
+        /// Bot type: mj (default) or niji
+        /// MID_JOURNEY | enumerated value: NIJI_JOURNEY
         /// </summary>
         public string BotType { get; set; }
 
         /// <summary>
-        /// 提示词。
+        /// Prompt
         /// </summary>
-        [SwaggerSchema("提示词", Description = "Cat")]
+        [SwaggerSchema("Prompt", Description = "Cat")]
         public string Prompt { get; set; }
 
         /// <summary>
-        /// 垫图base64数组。
+        /// Base64 list
         /// </summary>
-        [SwaggerSchema("垫图base64数组")]
+        [SwaggerSchema("Base64 list")]
         public List<string> Base64Array { get; set; }
 
         /// <summary>
-        /// 账号过滤
+        /// Account filter
         /// </summary>
         public AccountFilter AccountFilter { get; set; }
     }

@@ -24,14 +24,14 @@
 namespace Midjourney.Infrastructure.Dto
 {
     /// <summary>
-    /// 下拉选项
+    /// Dropdown option
     /// </summary>
     public class SelectOption : SelectOption<string>
     {
     }
 
     /// <summary>
-    /// 包含子级的下拉选项
+    /// Dropdown option with children
     /// </summary>
     public class SelectChildrenOption : SelectOption<string>
     {
@@ -39,7 +39,7 @@ namespace Midjourney.Infrastructure.Dto
     }
 
     /// <summary>
-    /// 包含子级的下拉选项
+    /// Dropdown option with children
     /// </summary>
     public class SelectChildrenOption<T> : SelectOption<T>
     {
@@ -47,87 +47,87 @@ namespace Midjourney.Infrastructure.Dto
     }
 
     /// <summary>
-    /// 包含子级的下拉选项
+    /// Dropdown option with sorting
     /// </summary>
     public class SelectChildrenWithSort<T> : SelectOption<T>
     {
         /// <summary>
-        /// 子级
+        /// Children
         /// </summary>
         public List<SelectChildrenWithSort<T>> Children { get; set; } = new List<SelectChildrenWithSort<T>>();
 
         /// <summary>
-        /// 序号
+        /// Sort order
         /// </summary>
         public int Sort { get; set; }
     }
 
     /// <summary>
-    /// 下拉选项
+    /// Dropdown option
     /// </summary>
     /// <typeparam name="TValue"></typeparam>
     public class SelectOption<TValue>
     {
         /// <summary>
-        /// 名称
+        /// Label
         /// </summary>
         public string Label { get; set; }
 
         /// <summary>
-        /// 值
+        /// Value
         /// </summary>
         public TValue Value { get; set; }
 
         /// <summary>
-        /// 是否禁用
+        /// Disabled
         /// </summary>
         public bool Disabled { get; set; }
 
         /// <summary>
-        /// 是否默认
+        /// Default
         /// </summary>
         public bool Default { get; set; }
 
         /// <summary>
-        /// 描述
+        /// Description
         /// </summary>
         public string Description { get; set; }
 
         /// <summary>
-        /// 图片
+        /// Image
         /// </summary>
         public string Image { get; set; }
 
         /// <summary>
-        /// 数量
+        /// Count
         /// </summary>
         public int Count { get; set; }
     }
 
     /// <summary>
-    /// 下拉选项（区分类型）
+    /// Dropdown option (distinguished by type)
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public class SelectOptionWithType<T> : SelectOption<T>
     {
         /// <summary>
-        /// 类型
+        /// Type
         /// </summary>
         public int? Type { get; set; }
     }
 
     /// <summary>
-    /// 扩展时间类型下拉框
+    /// Extended time-based dropdown
     /// </summary>
     public class SelectOptionOnTime : SelectOption
     {
         /// <summary>
-        /// 开始时间
+        /// Start time
         /// </summary>
         public DateTime? StartOn { get; set; }
 
         /// <summary>
-        /// 结束时间
+        /// End time
         /// </summary>
         public DateTime? EndOn { get; set; }
     }
