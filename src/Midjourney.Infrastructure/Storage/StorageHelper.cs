@@ -284,7 +284,14 @@ namespace Midjourney.Infrastructure.Storage
                     else
                     {
                         imageUrl = url.ToStyle(opt.ImageStyle);
-                        thumbnailUrl = url.ToStyle(opt.ThumbnailImageStyle);
+                        // cloudflare r2 formatnya berbeda
+                        // nanti disini diberi cdn?.Trim()?.Trim('/') + "/cdn-cgi/image/" + opt.ImageStyle + "/" + localPath + uri?.Query
+                        if(string.IsNullOrWhiteSpace(opt.ThumbnailImageStyle)){
+                            thumbnailUrl = url.ToStyle(opt.ThumbnailImageStyle);
+                        }else{
+                            thumbnailUrl = cdn?.Trim()?.Trim('/') + "/cdn-cgi/image/" + opt.ThumbnailImageStyle + "/" + localPath + uri?.Query;
+                        }
+                        
                     }
                 });
 

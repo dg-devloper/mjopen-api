@@ -38,7 +38,7 @@ namespace Midjourney.Infrastructure
         private static readonly char[] PathSeparator = ['/'];
 
         /// <summary>
-        /// 移除路径首尾 ' ', '/', '\'
+        /// Remove leading and trailing ' ', '/', '\'
         /// </summary>
         /// <param name="path"></param>
         /// <returns></returns>
@@ -48,7 +48,7 @@ namespace Midjourney.Infrastructure
         }
 
         /// <summary>
-        /// string 转 int
+        /// Convert string to int
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
@@ -62,7 +62,7 @@ namespace Midjourney.Infrastructure
         }
 
         /// <summary>
-        /// string 转 long
+        /// Convert string to long
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
@@ -76,7 +76,7 @@ namespace Midjourney.Infrastructure
         }
 
         /// <summary>
-        /// 移除空白字符、url 等，只保留参数的 prompt 用于比较
+        /// Remove whitespace characters, URLs, etc., keeping only the prompt for comparison
         /// </summary>
         /// <param name="str"></param>
         /// <returns></returns>
@@ -86,11 +86,11 @@ namespace Midjourney.Infrastructure
             if (str == null)
                 throw new ArgumentNullException(nameof(str));
 
-            // 移除 <url> , 例如: <https://www.baidu.com> a cute girl -> acutegirl
-            // 移除 url, 例如: https://www.baiud.com a cute girl -> acutegirl
-            // 移除空白字符, 例如: a cute girl -> acutegirl
+            // Remove <url>, e.g., <https://www.baidu.com> a cute girl -> acutegirl
+            // Remove URL, e.g., https://www.baidu.com a cute girl -> acutegirl
+            // Remove whitespace characters, e.g., a cute girl -> acutegirl
 
-            // 修复 -> v6.0 问题
+            // Fix -> v6.0 issue
             // Interactiveinstallations,textlayout,interestingshapes,children.--ar1:1--v6.0--iw2
             // Interactiveinstallations,textlayout,interestingshapes,children.--ar1: 1--v6--iw2
 
@@ -100,28 +100,28 @@ namespace Midjourney.Infrastructure
         }
 
         /// <summary>
-        /// 获取格式化之后的 prompt 用于比较
+        /// Get formatted prompt for comparison
         /// </summary>
         /// <param name="prompt"></param>
         /// <returns></returns>
         private static string GetPrimaryPrompt(string prompt)
         {
-            // 去除 -- 开头的参数
+            // Remove parameters starting with --
             prompt = Regex.Replace(prompt, @"\x20+--[a-z]+.*$", string.Empty, RegexOptions.IgnoreCase);
 
-            // 匹配并替换 URL
+            // Match and replace URL
             string regex = @"https?://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]";
             prompt = Regex.Replace(prompt, regex, "<link>");
 
-            // 替换多余的 <<link>> 为 <link>
-            // 针对 " -- " discord 会返回为空
+            // Replace redundant <<link>> with <link>
+            // For " -- " discord will return empty
             return prompt.Replace("<<link>>", "<link>")
                 .Replace(" -- ", " ")
                 .Replace("  ", " ");
         }
 
         /// <summary>
-        /// 格式化只保留纯文本和链接（移除 -- 参数）
+        /// Format to keep only plain text and links (remove -- parameters)
         /// </summary>
         /// <param name="prompt"></param>
         /// <returns></returns>
@@ -132,27 +132,27 @@ namespace Midjourney.Infrastructure
                 return prompt;
             }
 
-            // 移除 <url> , 例如: <https://www.baidu.com> a cute girl -> <https://www.baidu.com>acutegirl
-            // 移除 url, 例如: https://www.baiud.com a cute girl ->  https://www.baiud.comacutegirl
-            // 移除空白字符, 例如: a cute girl -> acutegirl
+            // Remove <url>, e.g., <https://www.baidu.com> a cute girl -> <https://www.baidu.com>acutegirl
+            // Remove URL, e.g., https://www.baidu.com a cute girl ->  https://www.baidu.comacutegirl
+            // Remove whitespace characters, e.g., a cute girl -> acutegirl
 
-            // 修复 -> v6.0 问题
+            // Fix -> v6.0 issue
             // Interactiveinstallations,textlayout,interestingshapes,children.--ar1:1--v6.0--iw2
             // Interactiveinstallations,textlayout,interestingshapes,children.--ar1: 1--v6--iw2
 
-            // 去除 -- 开头的参数
+            // Remove parameters starting with --
             prompt = Regex.Replace(prompt, @"\x20+--[a-z]+.*$", string.Empty, RegexOptions.IgnoreCase);
 
 
-            // 替换多余的 <<link>> 为 <link>
-            // 针对 " -- " discord 会返回为空
+            // Replace redundant <<link>> with <link>
+            // For " -- " discord will return empty
             prompt = prompt.Replace(" -- ", " ").Replace("  ", " ");
             return Regex.Replace(prompt, @"\s+|\p{P}", "").ToLower();
         }
 
         /// <summary>
-        /// 转为 url 路径
-        /// 例如：由 E:\_backups\p00\3e4 -> _backups/p00/3e4
+        /// Convert to URL path
+        /// e.g., from E:\_backups\p00\3e4 -> _backups/p00/3e4
         /// </summary>
         /// <param name="path"></param>
         /// <returns></returns>
@@ -163,14 +163,14 @@ namespace Midjourney.Infrastructure
                 return path;
             }
 
-            // 替换所有的反斜杠为斜杠
-            // 分割路径，移除空字符串，然后重新连接
+            // Replace all backslashes with slashes
+            // Split path, remove empty strings, then rejoin
             return string.Join("/", path.Replace("\\", "/").Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries)).TrimPath();
         }
 
         /// <summary>
-        /// 将完整路径分解为子路径列表
-        /// 例如：/a/b/c -> [a, b, c]
+        /// Decompose the full path into a list of sub-paths
+        /// e.g., /a/b/c -> [a, b, c]
         /// </summary>
         /// <param name="path"></param>
         /// <returns></returns>
@@ -180,11 +180,11 @@ namespace Midjourney.Infrastructure
         }
 
         /// <summary>
-        /// 转为 url 路径
-        /// 例如：由 E:\_backups\p00\3e4 -> _backups/p00/3e4
+        /// Convert to URL path
+        /// e.g., from E:\_backups\p00\3e4 -> _backups/p00/3e4
         /// </summary>
         /// <param name="path"></param>
-        /// <param name="removePrefix">移除的前缀</param>
+        /// <param name="removePrefix">Prefix to remove</param>
         /// <returns></returns>
         public static string TrimPrefix(this string path, string removePrefix = "")
         {
@@ -201,13 +201,13 @@ namespace Midjourney.Infrastructure
                 }
             }
 
-            // 替换所有的反斜杠为斜杠
-            // 分割路径，移除空字符串，然后重新连接
+            // Replace all backslashes with slashes
+            // Split path, remove empty strings, then rejoin
             return string.Join("/", path.Replace("\\", "/").Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries)).TrimPath();
         }
 
         /// <summary>
-        /// 移除指路径的后缀
+        /// Remove the suffix from the specified path
         /// </summary>
         /// <param name="path"></param>
         /// <param name="removeSuffix"></param>
@@ -231,7 +231,7 @@ namespace Midjourney.Infrastructure
         }
 
         /// <summary>
-        /// 获取枚举描述或名称
+        /// Get enum description or name
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
@@ -259,7 +259,7 @@ namespace Midjourney.Infrastructure
         }
 
         /// <summary>
-        /// 计算数据流的哈希值并返回十六进制字符串
+        /// Calculate the hash value of the data stream and return a hexadecimal string
         /// </summary>
         /// <param name="hash"></param>
         /// <returns></returns>
@@ -269,20 +269,12 @@ namespace Midjourney.Infrastructure
         }
 
         /// <summary>
-        /// 格式化文件大小
+        /// Format file size
         /// </summary>
         /// <param name="size"></param>
         /// <returns></returns>
         public static string ToFileSizeString(this double size)
         {
-            //size switch
-            //{
-            //    var s when s >= 1024 * 1024 * 1024 => $"{s / 1024 / 1024 / 1024:F2} GB/s",
-            //    var s when s >= 1024 * 1024 => $"{s / 1024 / 1024:F2} MB/s",
-            //    var s when s >= 1024 => $"{s / 1024:F2} KB/s",
-            //    var s => $"{s:F2} B/s"
-            //};
-
             if (size >= 1024 * 1024 * 1024)
             {
                 return $"{size / 1024 / 1024 / 1024:F2} GB";
@@ -302,21 +294,21 @@ namespace Midjourney.Infrastructure
         }
 
         /// <summary>
-        /// 根据多个条件动态添加查询条件，并支持排序和限制返回数量。
+        /// Dynamically add query conditions based on multiple conditions, and support sorting and limiting the number of returned records.
         /// </summary>
-        /// <typeparam name="T">实体类型。</typeparam>
-        /// <param name="dataHelper">数据助手接口。</param>
-        /// <param name="orderBy">排序字段表达式。</param>
-        /// <param name="orderByAsc">是否升序排序。</param>
-        /// <param name="limit">返回的最大记录数。</param>
-        /// <param name="filters">一组条件表达式及其对应的布尔值。</param>
-        /// <returns>满足条件的实体列表。</returns>
+        /// <typeparam name="T">Entity type.</typeparam>
+        /// <param name="dataHelper">Data helper interface.</param>
+        /// <param name="orderBy">Sorting field expression.</param>
+        /// <param name="orderByAsc">Whether to sort in ascending order.</param>
+        /// <param name="limit">Maximum number of records to return.</param>
+        /// <param name="filters">A set of condition expressions and their corresponding boolean values.</param>
+        /// <returns>List of entities that meet the conditions.</returns>
         public static List<T> WhereIf<T>(this IDataHelper<T> dataHelper, params (bool condition, Expression<Func<T, bool>> filter)[] filters) where T : IBaseId
         {
-            // 获取所有数据的初始查询
+            // Get the initial query for all data
             var query = dataHelper.GetAll().AsQueryable();
 
-            // 动态应用条件
+            // Dynamically apply conditions
             foreach (var (condition, filter) in filters)
             {
                 if (condition)
@@ -325,20 +317,11 @@ namespace Midjourney.Infrastructure
                 }
             }
 
-            //// 应用排序
-            //query = orderByAsc ? query.OrderBy(orderBy) : query.OrderByDescending(orderBy);
-
-            //// 应用限制
-            //if (limit > 0)
-            //{
-            //    query = query.Take(limit);
-            //}
-
             return query.ToList();
         }
 
         /// <summary>
-        /// 查询条件扩展
+        /// Query condition extension
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="query"></param>
@@ -351,7 +334,7 @@ namespace Midjourney.Infrastructure
         }
 
         /// <summary>
-        /// Lite DB 查询条件扩展
+        /// Lite DB query condition extension
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="query"></param>
@@ -364,21 +347,21 @@ namespace Midjourney.Infrastructure
         }
 
         /// <summary>
-        /// MongoDB 查询条件扩展方法。
-        /// 根据条件动态添加查询条件。
+        /// MongoDB query condition extension method.
+        /// Dynamically add query conditions based on conditions.
         /// </summary>
-        /// <typeparam name="T">实体类型。</typeparam>
-        /// <param name="query">MongoDB 可查询对象。</param>
-        /// <param name="condition">条件布尔值，决定是否添加查询条件。</param>
-        /// <param name="predicate">要添加的查询条件表达式。</param>
-        /// <returns>带有可选条件的查询对象。</returns>
+        /// <typeparam name="T">Entity type.</typeparam>
+        /// <param name="query">MongoDB queryable object.</param>
+        /// <param name="condition">Boolean value of the condition, determining whether to add the query condition.</param>
+        /// <param name="predicate">Query condition expression to add.</param>
+        /// <returns>Queryable object with optional conditions.</returns>
         public static IMongoQueryable<T> WhereIf<T>(this IMongoQueryable<T> query, bool condition, Expression<Func<T, bool>> predicate)
         {
             return condition ? query.Where(predicate) : query;
         }
 
         /// <summary>
-        /// 查询条件扩展
+        /// Query condition extension
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="query"></param>
@@ -391,7 +374,7 @@ namespace Midjourney.Infrastructure
         }
 
         /// <summary>
-        /// 查询条件扩展
+        /// Query condition extension
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="query"></param>
@@ -404,7 +387,7 @@ namespace Midjourney.Infrastructure
         }
 
         /// <summary>
-        /// 转为可视化时间
+        /// Convert to visualized time
         /// </summary>
         /// <param name="timestamp"></param>
         /// <returns></returns>
@@ -424,8 +407,8 @@ namespace Midjourney.Infrastructure
         }
 
         /// <summary>
-        /// 时间段输入解析
-        /// 格式为 "HH:mm-HH:mm, HH:mm-HH:mm, ..."，例如 "09:00-17:00, 18:00-22:00"
+        /// Time slot input parsing
+        /// Format is "HH:mm-HH:mm, HH:mm-HH:mm, ...", e.g., "09:00-17:00, 18:00-22:00"
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
@@ -447,7 +430,7 @@ namespace Midjourney.Infrastructure
         }
 
         /// <summary>
-        /// 判断是否在工作时间内（如果没有值，则默认：true）
+        /// Determine if it is within working hours (if no value, default: true)
         /// </summary>
         /// <param name="dateTime"></param>
         /// <param name="input"></param>
@@ -465,7 +448,7 @@ namespace Midjourney.Infrastructure
             {
                 if (slot.Start <= slot.End)
                 {
-                    // 正常时间段：例如 09:00-17:00
+                    // Normal time slot: e.g., 09:00-17:00
                     if (currentTime >= slot.Start && currentTime <= slot.End)
                     {
                         return true;
@@ -473,7 +456,7 @@ namespace Midjourney.Infrastructure
                 }
                 else
                 {
-                    // 跨越午夜的时间段：例如 23:00-02:00
+                    // Time slot crossing midnight: e.g., 23:00-02:00
                     if (currentTime >= slot.Start || currentTime <= slot.End)
                     {
                         return true;
@@ -485,7 +468,7 @@ namespace Midjourney.Infrastructure
         }
 
         /// <summary>
-        /// 判断是否处于摸鱼时间（如果没有值，则默认：false）
+        /// Determine if it is within fish time (if no value, default: false)
         /// </summary>
         /// <param name="dateTime"></param>
         /// <param name="input"></param>
@@ -504,7 +487,7 @@ namespace Midjourney.Infrastructure
             {
                 if (slot.Start <= slot.End)
                 {
-                    // 正常时间段：例如 09:00-17:00
+                    // Normal time slot: e.g., 09:00-17:00
                     if (currentTime >= slot.Start && currentTime <= slot.End)
                     {
                         return true;
@@ -512,7 +495,7 @@ namespace Midjourney.Infrastructure
                 }
                 else
                 {
-                    // 跨越午夜的时间段：例如 23:00-02:00
+                    // Time slot crossing midnight: e.g., 23:00-02:00
                     if (currentTime >= slot.Start || currentTime <= slot.End)
                     {
                         return true;
@@ -524,7 +507,7 @@ namespace Midjourney.Infrastructure
         }
 
         /// <summary>
-        /// 排序条件扩展
+        /// Sorting condition extension
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="query"></param>
@@ -545,7 +528,7 @@ namespace Midjourney.Infrastructure
         }
 
         /// <summary>
-        /// URL 添加处理样式
+        /// URL add processing style
         /// </summary>
         /// <param name="url"></param>
         /// <param name="style"></param>
@@ -574,17 +557,17 @@ namespace Midjourney.Infrastructure
     }
 
     /// <summary>
-    /// 时间段解析
+    /// Time slot parsing
     /// </summary>
     public class TimeSlot
     {
         /// <summary>
-        /// 当天开始时间
+        /// Start time of the day
         /// </summary>
         public TimeSpan Start { get; set; }
 
         /// <summary>
-        /// 当天结束时间
+        /// End time of the day
         /// </summary>
         public TimeSpan End { get; set; }
     }
