@@ -40,17 +40,17 @@ namespace Midjourney.Infrastructure.Handle
 
         public override void Handle(DiscordInstance instance, MessageType messageType, EventData message)
         {
-            // 跳过 Waiting to start 消息
+            // Skip "Waiting to start" messages
             if (!string.IsNullOrWhiteSpace(message.Content) && message.Content.Contains("(Waiting to start)"))
             {
                 return;
             }
 
-            // 判断消息是否处理过了
+            // Check if the message has already been processed
             CacheHelper<string, bool>.TryAdd(message.Id.ToString(), false);
             if (CacheHelper<string, bool>.Get(message.Id.ToString()))
             {
-                Log.Debug("USER 消息已经处理过了 {@0}", message.Id);
+                Log.Debug("USER message has already been processed {@0}", message.Id);
                 return;
             }
 
@@ -63,13 +63,13 @@ namespace Midjourney.Infrastructure.Handle
             {
                 var fullPrompt = GetFullPrompt(message);
 
-                // 任务开始
+                // Task start
                 var task = instance.GetRunningTaskByMessageId(msgId);
                 if (task == null && !string.IsNullOrWhiteSpace(message.InteractionMetadata?.Id))
                 {
                     task = instance.FindRunningTask(c => (c.Status == TaskStatus.IN_PROGRESS || c.Status == TaskStatus.SUBMITTED) && c.InteractionMetadataId == message.InteractionMetadata.Id).FirstOrDefault();
 
-                    // 如果通过 meta id 找到任务，但是 full prompt 为空，则更新 full prompt
+                    // If the task is found through meta id but the full prompt is empty, update the full prompt
                     if (task != null && string.IsNullOrWhiteSpace(task.PromptFull))
                     {
                         task.PromptFull = fullPrompt;
@@ -99,7 +99,7 @@ namespace Midjourney.Infrastructure.Handle
                 task.SetProperty(Constants.MJ_MESSAGE_HANDLED, true);
                 task.SetProperty(Constants.TASK_PROPERTY_PROGRESS_MESSAGE_ID, message.Id.ToString());
 
-                // 兼容少数content为空的场景
+                // Compatible with scenarios where content is empty
                 if (parseData != null)
                 {
                     task.SetProperty(Constants.TASK_PROPERTY_FINAL_PROMPT, parseData.Prompt);
@@ -109,7 +109,7 @@ namespace Midjourney.Infrastructure.Handle
             }
             else if (messageType == MessageType.UPDATE && parseData != null)
             {
-                // 任务进度
+                // Task progress
                 if (parseData.Status == "Stopped")
                     return;
 
@@ -120,7 +120,7 @@ namespace Midjourney.Infrastructure.Handle
                 {
                     task = instance.FindRunningTask(c => (c.Status == TaskStatus.IN_PROGRESS || c.Status == TaskStatus.SUBMITTED) && c.InteractionMetadataId == message.InteractionMetadata.Id).FirstOrDefault();
 
-                    // 如果通过 meta id 找到任务，但是 full prompt 为空，则更新 full prompt
+                    // If the task is found through meta id but the full prompt is empty, update the full prompt
                     if (task != null && string.IsNullOrWhiteSpace(task.PromptFull))
                     {
                         task.PromptFull = fullPrompt;

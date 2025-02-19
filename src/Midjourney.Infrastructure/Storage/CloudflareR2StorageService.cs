@@ -37,7 +37,7 @@ using PutObjectRequest = Amazon.S3.Model.PutObjectRequest;
 namespace Midjourney.Infrastructure.Storage
 {
     /// <summary>
-    /// cloudflare s2 存储服务
+    /// Cloudflare R2 storage service
     /// </summary>
     public class CloudflareR2StorageService : IStorageService
     {
@@ -84,7 +84,7 @@ namespace Midjourney.Infrastructure.Storage
 
                 if (response.HttpStatusCode == System.Net.HttpStatusCode.OK)
                 {
-                    _logger.Information("上传成功 {@0}", response.ETag);
+                    _logger.Information("Upload successful {@0}", response.ETag);
 
                     return new UploadResult
                     {
@@ -98,12 +98,12 @@ namespace Midjourney.Infrastructure.Storage
                 }
                 else
                 {
-                    throw new Exception("上传失败");
+                    throw new Exception("Upload failed");
                 }
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "上传文件异常 {@key}", key);
+                _logger.Error(ex, "File upload exception {@key}", key);
                 throw;
             }
         }
@@ -114,7 +114,7 @@ namespace Midjourney.Infrastructure.Storage
             {
                 try
                 {
-                    _logger.Information("删除文件: {@key}", key);
+                    _logger.Information("Deleting file: {@key}", key);
                     var client = GetClient();
                     var request = new DeleteObjectRequest
                     {
@@ -125,7 +125,7 @@ namespace Midjourney.Infrastructure.Storage
                 }
                 catch (Exception ex)
                 {
-                    _logger.Warning(ex, "删除文件异常, {key}", key);
+                    _logger.Warning(ex, "File deletion exception, {key}", key);
                 }
             }
 
@@ -148,7 +148,7 @@ namespace Midjourney.Infrastructure.Storage
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "下载文件异常 {@key}", key);
+                _logger.Error(ex, "File download exception {@key}", key);
                 throw;
             }
         }
@@ -177,7 +177,7 @@ namespace Midjourney.Infrastructure.Storage
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "移动文件异常 {@key}, {@newKey}", key, newKey);
+                _logger.Error(ex, "File move exception {@key}, {@newKey}", key, newKey);
             }
         }
 
@@ -207,11 +207,11 @@ namespace Midjourney.Infrastructure.Storage
         }
 
         /// <summary>
-        /// 生成带签名的 URL，设置过期时间（单位：分钟）
+        /// Generate a signed URL with an expiration time (in minutes)
         /// </summary>
-        /// <param name="key">文件的对象 Key</param>
-        /// <param name="minutes">签名的过期时间，默认 60 分钟</param>
-        /// <returns>带签名的 URL</returns>
+        /// <param name="key">The object's key</param>
+        /// <param name="minutes">Expiration time for the signature, default is 60 minutes</param>
+        /// <returns>Signed URL</returns>
         public Uri GetSignKey(string key, int minutes = 60)
         {
             try
@@ -238,7 +238,7 @@ namespace Midjourney.Infrastructure.Storage
             }
             catch (Exception ex)
             {
-                throw new Exception("生成签名 URL 异常", ex);
+                throw new Exception("Generate signed URL exception", ex);
             }
         }
     }

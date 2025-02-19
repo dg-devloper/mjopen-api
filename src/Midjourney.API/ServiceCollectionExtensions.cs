@@ -33,10 +33,9 @@ namespace Midjourney.API
     {
         public static void AddMidjourneyServices(this IServiceCollection services, ProxyProperties config)
         {
+            // Register all handlers
 
-            // 注册所有的处理程序
-
-            // 机器人消息处理程序
+            // Bot message handlers
             services.AddTransient<BotMessageHandler, BotErrorMessageHandler>();
             services.AddTransient<BotMessageHandler, BotImagineSuccessHandler>();
             services.AddTransient<BotMessageHandler, BotRerollSuccessHandler>();
@@ -48,7 +47,7 @@ namespace Midjourney.API
             services.AddTransient<BotMessageHandler, BotBlendSuccessHandler>();
             services.AddTransient<BotMessageHandler, BotShowSuccessHandler>();
 
-            // 用户消息处理程序
+            // User message handlers
             services.AddTransient<UserMessageHandler, UserErrorMessageHandler>();
             services.AddTransient<UserMessageHandler, UserImagineSuccessHandler>();
             services.AddTransient<UserMessageHandler, UserActionSuccessHandler>();
@@ -62,15 +61,14 @@ namespace Midjourney.API
 
             services.AddTransient<UserMessageHandler, UserShortenSuccessHandler>();
 
-
-            // 换脸服务
+            // Face swap services
             services.AddSingleton<FaceSwapInstance>();
             services.AddSingleton<VideoFaceSwapInstance>();
 
-            // 通知服务
+            // Notification service
             services.AddSingleton<INotifyService, NotifyServiceImpl>();
 
-            // 翻译服务
+            // Translation service
             if (config.TranslateWay == TranslateWay.GPT)
             {
                 services.AddSingleton<ITranslateService, GPTTranslateService>();
@@ -80,16 +78,16 @@ namespace Midjourney.API
                 services.AddSingleton<ITranslateService, BaiduTranslateService>();
             }
 
-            // 存储服务
+            // Storage service
             StorageHelper.Configure();
 
-            // 存储服务
-            // 内存
+            // Storage service
+            // In-memory
             //services.AddSingleton<ITaskStoreService, InMemoryTaskStoreServiceImpl>();
             // LiteDB
             services.AddSingleton<ITaskStoreService>(new TaskRepository());
 
-            // 账号负载均衡服务
+            // Account load balancing service
             switch (config.AccountChooseRule)
             {
                 case AccountChooseRule.BestWaitIdle:
@@ -109,16 +107,16 @@ namespace Midjourney.API
                     break;
             }
 
-            // Discord 负载均衡器
+            // Discord load balancer
             services.AddSingleton<DiscordLoadBalancer>();
 
-            // Discord 账号助手
+            // Discord account helper
             services.AddSingleton<DiscordAccountHelper>();
 
-            // Discord 助手
+            // Discord helper
             services.AddSingleton<DiscordHelper>();
 
-            // 任务服务
+            // Task service
             services.AddSingleton<ITaskService, TaskService>();
         }
     }

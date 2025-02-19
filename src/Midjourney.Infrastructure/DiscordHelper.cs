@@ -25,14 +25,14 @@
 namespace Midjourney.Infrastructure
 {
     /// <summary>
-    /// Discord 辅助类，用于处理 Discord 相关的 URL 和操作。
+    /// Discord helper class for handling Discord-related URLs and operations.
     /// </summary>
     public class DiscordHelper
     {
         private readonly ProxyProperties _properties;
 
         /// <summary>
-        /// 初始化 DiscordHelper 类的新实例。
+        /// Initializes a new instance of the DiscordHelper class.
         /// </summary>
         public DiscordHelper()
         {
@@ -60,19 +60,19 @@ namespace Midjourney.Infrastructure
         public const string DISCORD_UPLOAD_URL = "https://discord-attachments-uploads-prd.storage.googleapis.com";
 
         /// <summary>
-        /// 身份验证地址如果 200 则是正常
+        /// Authentication URL, if 200 then it is normal.
         /// </summary>
         public const string DISCORD_VAL_URL = "https://discord.com/api/v9/users/@me/billing/country-code";
 
         /// <summary>
-        /// ME 渠道
+        /// ME channels.
         /// </summary>
         public const string ME_CHANNELS_URL = "https://discord.com/api/v9/users/@me/channels";
 
         /// <summary>
-        /// 获取 Discord 服务器 URL。
+        /// Gets the Discord server URL.
         /// </summary>
-        /// <returns>Discord 服务器 URL。</returns>
+        /// <returns>Discord server URL.</returns>
         public string GetServer()
         {
             if (string.IsNullOrWhiteSpace(_properties.NgDiscord.Server))
@@ -85,9 +85,9 @@ namespace Midjourney.Infrastructure
         }
 
         /// <summary>
-        /// 获取 Discord CDN URL。
+        /// Gets the Discord CDN URL.
         /// </summary>
-        /// <returns>Discord CDN URL。</returns>
+        /// <returns>Discord CDN URL.</returns>
         public string GetCdn()
         {
             if (string.IsNullOrWhiteSpace(_properties.NgDiscord.Cdn))
@@ -99,34 +99,12 @@ namespace Midjourney.Infrastructure
             return cdnUrl.EndsWith("/") ? cdnUrl.Substring(0, cdnUrl.Length - 1) : cdnUrl;
         }
 
-        ///// <summary>
-        ///// 获取自定义 CDN URL
-        ///// </summary>
-        ///// <returns></returns>
-        //public string GetCustomCdn()
-        //{
-        //    if (string.IsNullOrWhiteSpace(_properties.NgDiscord.CustomCdn))
-        //    {
-        //        return string.Empty;
-        //    }
-
-        //    string cdnUrl = _properties.NgDiscord.CustomCdn;
-        //    return cdnUrl.EndsWith("/") ? cdnUrl.Substring(0, cdnUrl.Length - 1) : cdnUrl;
-        //}
-
-        ///// <summary>
-        ///// 获取是否保存到本地。
-        ///// </summary>
-        ///// <returns></returns>
-        //public bool GetSaveToLocal()
-        //{
-        //    return _properties.NgDiscord.SaveToLocal == true;
-        //}
+        // ...existing code...
 
         /// <summary>
-        /// 获取 Discord WebSocket URL。
+        /// Gets the Discord WebSocket URL.
         /// </summary>
-        /// <returns>Discord WebSocket URL。</returns>
+        /// <returns>Discord WebSocket URL.</returns>
         public string GetWss()
         {
             if (string.IsNullOrWhiteSpace(_properties.NgDiscord.Wss))
@@ -139,9 +117,9 @@ namespace Midjourney.Infrastructure
         }
 
         /// <summary>
-        /// 获取 Discord Resume WebSocket URL。
+        /// Gets the Discord Resume WebSocket URL.
         /// </summary>
-        /// <returns>Discord Resume WebSocket URL。</returns>
+        /// <returns>Discord Resume WebSocket URL.</returns>
         public string GetResumeWss()
         {
             if (string.IsNullOrWhiteSpace(_properties.NgDiscord.ResumeWss))
@@ -154,10 +132,10 @@ namespace Midjourney.Infrastructure
         }
 
         /// <summary>
-        /// 获取 Discord 上传 URL。
+        /// Gets the Discord upload URL.
         /// </summary>
-        /// <param name="uploadUrl">原始上传 URL。</param>
-        /// <returns>处理后的上传 URL。</returns>
+        /// <param name="uploadUrl">Original upload URL.</param>
+        /// <returns>Processed upload URL.</returns>
         public string GetDiscordUploadUrl(string uploadUrl)
         {
             if (string.IsNullOrWhiteSpace(_properties.NgDiscord.UploadServer) || string.IsNullOrWhiteSpace(uploadUrl))
@@ -175,10 +153,10 @@ namespace Midjourney.Infrastructure
         }
 
         /// <summary>
-        /// 获取图像 URL 中的消息哈希。
+        /// Gets the message hash from the image URL.
         /// </summary>
-        /// <param name="imageUrl">图像 URL。</param>
-        /// <returns>消息哈希。</returns>
+        /// <param name="imageUrl">Image URL.</param>
+        /// <returns>Message hash.</returns>
         public string GetMessageHash(string imageUrl)
         {
             if (string.IsNullOrWhiteSpace(imageUrl))

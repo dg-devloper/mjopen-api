@@ -30,18 +30,19 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using JsonException = System.Text.Json.JsonException;
 using JsonSerializer = System.Text.Json.JsonSerializer;
+using Serilog;
 
 namespace Midjourney.Infrastructure.Services
 {
     /// <summary>
-    /// 通知服务实现类。
+    /// Notification service implementation class.
     /// </summary>
     public class NotifyServiceImpl : INotifyService
     {
         private static readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            Converters = { new JsonStringEnumConverter() } // 添加枚举序列化为字符串的转换器
+            Converters = { new JsonStringEnumConverter() } // Add converter to serialize enums as strings
         };
 
         private readonly ILogger<NotifyServiceImpl> _logger;
@@ -64,8 +65,10 @@ namespace Midjourney.Infrastructure.Services
         public async Task NotifyTaskChange(TaskInfo task)
         {
             string notifyHook = task.GetProperty<string>(Constants.TASK_PROPERTY_NOTIFY_HOOK, default);
+            
             if (string.IsNullOrWhiteSpace(notifyHook))
             {
+                _logger.LogTrace("No notify hook, task: {0}({1})", task.Id, task.Status);
                 return;
             }
 
@@ -94,7 +97,7 @@ namespace Midjourney.Infrastructure.Services
             }
             finally
             {
-                // 如果任务已完成，或失败，则移除任务状态
+                // If the task is completed or failed, remove the task status
                 if (task.Status == TaskStatus.SUCCESS || task.Status == TaskStatus.FAILURE)
                 {
                     _taskStatusMap.TryRemove(taskId, out _);
@@ -113,7 +116,7 @@ namespace Midjourney.Infrastructure.Services
                     int compare = CompareStatusStr(currentStatusStr, existStatusStr);
                     if (compare <= 0)
                     {
-                        // 忽略消息
+                        // Ignore the message
                         _logger.LogDebug("Ignore this change, task: {0}({1})", taskId, currentStatusStr);
                         return;
                     }

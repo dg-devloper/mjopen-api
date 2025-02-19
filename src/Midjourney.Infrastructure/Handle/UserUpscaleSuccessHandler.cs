@@ -57,7 +57,7 @@ namespace Midjourney.Infrastructure.Handle
             CacheHelper<string, bool>.TryAdd(message.Id.ToString(), false);
             if (CacheHelper<string, bool>.Get(message.Id.ToString()))
             {
-                Log.Debug("USER 消息已经处理过了 {@0}", message.Id);
+                Log.Debug("USER message has already been processed  {@0}", message.Id);
                 return;
             }
 

@@ -38,7 +38,7 @@ using System.Text.RegularExpressions;
 namespace Midjourney.Infrastructure.Services
 {
     /// <summary>
-    /// 任务服务实现类，处理任务的具体操作
+    /// Task service implementation class, handles specific operations of tasks
     /// </summary>
     public class TaskService : ITaskService
     {
@@ -54,7 +54,7 @@ namespace Midjourney.Infrastructure.Services
         }
 
         /// <summary>
-        /// 获取领域缓存
+        /// Get domain cache
         /// </summary>
         /// <returns></returns>
         public Dictionary<string, HashSet<string>> GetDomainCache()
@@ -76,7 +76,7 @@ namespace Midjourney.Infrastructure.Services
         }
 
         /// <summary>
-        /// 清除领域缓存
+        /// Clear domain cache
         /// </summary>
         public void ClearDomainCache()
         {
@@ -84,7 +84,7 @@ namespace Midjourney.Infrastructure.Services
         }
 
         /// <summary>
-        /// 违规词缓存
+        /// Get banned words cache
         /// </summary>
         /// <returns></returns>
         public Dictionary<string, HashSet<string>> GetBannedWordsCache()
@@ -106,7 +106,7 @@ namespace Midjourney.Infrastructure.Services
         }
 
         /// <summary>
-        /// 清除违规词缓存
+        /// Clear banned words cache
         /// </summary>
         public void ClearBannedWordsCache()
         {
@@ -114,7 +114,7 @@ namespace Midjourney.Infrastructure.Services
         }
 
         /// <summary>
-        /// 验证违规词
+        /// Validate banned words
         /// </summary>
         /// <param name="promptEn"></param>
         /// <exception cref="BannedPromptException"></exception>
@@ -140,21 +140,21 @@ namespace Midjourney.Infrastructure.Services
         }
 
         /// <summary>
-        /// 提交 imagine 任务。
+        /// Submit imagine task.
         /// </summary>
         /// <param name="info"></param>
         /// <param name="dataUrls"></param>
         /// <returns></returns>
         public SubmitResultVO SubmitImagine(TaskInfo info, List<DataUrl> dataUrls)
         {
-            // 判断是否开启垂直领域
+            // Check if vertical domain is enabled
             var domainIds = new List<string>();
             var isDomain = GlobalConfiguration.Setting.IsVerticalDomain;
             if (isDomain)
             {
-                // 对 Promat 分割为单个单词
-                // 以 ',' ' ' '.' '-' 为分隔符
-                // 并且过滤为空的字符串
+                // Split Promat into individual words
+                // Use ',' ' ' '.' '-' as delimiters
+                // And filter out empty strings
                 var prompts = info.Prompt.Split(new char[] { ',', ' ', '.', '-' })
                     .Where(c => !string.IsNullOrWhiteSpace(c))
                     .Select(c => c?.Trim()?.ToLower())
@@ -172,7 +172,7 @@ namespace Midjourney.Infrastructure.Services
                     }
                 }
 
-                // 如果没有找到领域，则不使用领域账号
+                // If no domain is found, do not use domain account
                 if (domainIds.Count == 0)
                 {
                     isDomain = false;
@@ -189,7 +189,7 @@ namespace Midjourney.Infrastructure.Services
             {
                 if (isDomain && domainIds.Count > 0)
                 {
-                    // 说明没有获取到符合领域的账号，再次获取不带领域的账号
+                    // If no suitable domain account is found, try again without domain
                     instance = _discordLoadBalancer.ChooseInstance(info.AccountFilter,
                         isNewTask: true,
                         botType: info.RealBotType ?? info.BotType,
@@ -199,7 +199,7 @@ namespace Midjourney.Infrastructure.Services
 
             if (instance == null || !instance.Account.IsAcceptNewTask)
             {
-                return SubmitResultVO.Fail(ReturnCode.NOT_FOUND, "无可用的账号实例");
+                return SubmitResultVO.Fail(ReturnCode.NOT_FOUND, "No available account instance");
             }
 
             info.SetProperty(Constants.TASK_PROPERTY_DISCORD_INSTANCE_ID, instance.ChannelId);
@@ -245,7 +245,7 @@ namespace Midjourney.Infrastructure.Services
         }
 
         /// <summary>
-        /// 提交 show 任务
+        /// Submit show task
         /// </summary>
         /// <param name="info"></param>
         /// <returns></returns>
@@ -256,7 +256,7 @@ namespace Midjourney.Infrastructure.Services
 
             if (instance == null)
             {
-                return SubmitResultVO.Fail(ReturnCode.NOT_FOUND, "无可用的账号实例");
+                return SubmitResultVO.Fail(ReturnCode.NOT_FOUND, "No available account instance");
             }
 
             info.SetProperty(Constants.TASK_PROPERTY_DISCORD_INSTANCE_ID, instance.ChannelId);
@@ -275,7 +275,7 @@ namespace Midjourney.Infrastructure.Services
             var discordInstance = _discordLoadBalancer.GetDiscordInstanceIsAlive(instanceId);
             if (discordInstance == null || !discordInstance.IsAlive)
             {
-                return SubmitResultVO.Fail(ReturnCode.NOT_FOUND, "账号不可用: " + instanceId);
+                return SubmitResultVO.Fail(ReturnCode.NOT_FOUND, "Account unavailable: " + instanceId);
             }
             return discordInstance.SubmitTaskAsync(task, async () =>
                 await discordInstance.UpscaleAsync(targetMessageId, index, targetMessageHash, messageFlags,
@@ -288,7 +288,7 @@ namespace Midjourney.Infrastructure.Services
             var discordInstance = _discordLoadBalancer.GetDiscordInstanceIsAlive(instanceId);
             if (discordInstance == null || !discordInstance.IsAlive)
             {
-                return SubmitResultVO.Fail(ReturnCode.NOT_FOUND, "账号不可用: " + instanceId);
+                return SubmitResultVO.Fail(ReturnCode.NOT_FOUND, "Account unavailable: " + instanceId);
             }
             return discordInstance.SubmitTaskAsync(task, async () =>
                 await discordInstance.VariationAsync(targetMessageId, index, targetMessageHash, messageFlags,
@@ -296,7 +296,7 @@ namespace Midjourney.Infrastructure.Services
         }
 
         /// <summary>
-        /// 提交重新生成任务。
+        /// Submit reroll task.
         /// </summary>
         /// <param name="task"></param>
         /// <param name="targetMessageId"></param>
@@ -309,7 +309,7 @@ namespace Midjourney.Infrastructure.Services
             var discordInstance = _discordLoadBalancer.GetDiscordInstanceIsAlive(instanceId);
             if (discordInstance == null || !discordInstance.IsAlive)
             {
-                return SubmitResultVO.Fail(ReturnCode.NOT_FOUND, "账号不可用: " + instanceId);
+                return SubmitResultVO.Fail(ReturnCode.NOT_FOUND, "Account unavailable: " + instanceId);
             }
             return discordInstance.SubmitTaskAsync(task, async () =>
                 await discordInstance.RerollAsync(targetMessageId, targetMessageHash, messageFlags,
@@ -317,7 +317,7 @@ namespace Midjourney.Infrastructure.Services
         }
 
         /// <summary>
-        /// 提交Describe任务
+        /// Submit Describe task
         /// </summary>
         /// <param name="task"></param>
         /// <param name="dataUrl"></param>
@@ -331,7 +331,7 @@ namespace Midjourney.Infrastructure.Services
 
             if (discordInstance == null)
             {
-                return SubmitResultVO.Fail(ReturnCode.NOT_FOUND, "无可用的账号实例");
+                return SubmitResultVO.Fail(ReturnCode.NOT_FOUND, "No available account instance");
             }
             task.SetProperty(Constants.TASK_PROPERTY_DISCORD_INSTANCE_ID, discordInstance.ChannelId);
             task.InstanceId = discordInstance.ChannelId;
@@ -377,7 +377,7 @@ namespace Midjourney.Infrastructure.Services
         }
 
         /// <summary>
-        /// 上传一个较长的提示词，mj 可以返回一组简要的提示词
+        /// Upload a longer prompt, mj can return a set of brief prompts
         /// </summary>
         /// <param name="task"></param>
         /// <returns></returns>
@@ -390,7 +390,7 @@ namespace Midjourney.Infrastructure.Services
 
             if (discordInstance == null)
             {
-                return SubmitResultVO.Fail(ReturnCode.NOT_FOUND, "无可用的账号实例");
+                return SubmitResultVO.Fail(ReturnCode.NOT_FOUND, "No available account instance");
             }
             task.SetProperty(Constants.TASK_PROPERTY_DISCORD_INSTANCE_ID, discordInstance.ChannelId);
             task.InstanceId = discordInstance.ChannelId;
@@ -402,7 +402,7 @@ namespace Midjourney.Infrastructure.Services
         }
 
         /// <summary>
-        /// 提交混合任务
+        /// Submit blend task
         /// </summary>
         /// <param name="task"></param>
         /// <param name="dataUrls"></param>
@@ -417,7 +417,7 @@ namespace Midjourney.Infrastructure.Services
 
             if (discordInstance == null)
             {
-                return SubmitResultVO.Fail(ReturnCode.NOT_FOUND, "无可用的账号实例");
+                return SubmitResultVO.Fail(ReturnCode.NOT_FOUND, "No available account instance");
             }
             task.InstanceId = discordInstance.ChannelId;
             task.SetProperty(Constants.TASK_PROPERTY_DISCORD_INSTANCE_ID, discordInstance.ChannelId);
@@ -442,7 +442,7 @@ namespace Midjourney.Infrastructure.Services
         }
 
         /// <summary>
-        /// 执行动作
+        /// Perform action
         /// </summary>
         /// <param name="task"></param>
         /// <param name="submitAction"></param>
@@ -452,7 +452,7 @@ namespace Midjourney.Infrastructure.Services
             var discordInstance = _discordLoadBalancer.GetDiscordInstanceIsAlive(task.SubInstanceId ?? task.InstanceId);
             if (discordInstance == null)
             {
-                // 如果主实例没有找子实例
+                // If the main instance is not found, look for sub-instance
                 var ids = new List<string>();
                 var list = _discordLoadBalancer.GetAliveInstances().ToList();
                 foreach (var item in list)
@@ -463,7 +463,7 @@ namespace Midjourney.Infrastructure.Services
                     }
                 }
 
-                // 通过子频道过滤可用账号
+                // Filter available accounts through sub-channels
                 if (ids.Count > 0)
                 {
                     discordInstance = _discordLoadBalancer.ChooseInstance(accountFilter: task.AccountFilter,
@@ -471,7 +471,7 @@ namespace Midjourney.Infrastructure.Services
 
                     if (discordInstance != null)
                     {
-                        // 如果找到了，则标记当前任务的子频道信息
+                        // If found, mark the sub-channel information of the current task
                         task.SubInstanceId = task.SubInstanceId ?? task.InstanceId;
                     }
                 }
@@ -479,7 +479,7 @@ namespace Midjourney.Infrastructure.Services
 
             if (discordInstance == null)
             {
-                return SubmitResultVO.Fail(ReturnCode.NOT_FOUND, "无可用的账号实例");
+                return SubmitResultVO.Fail(ReturnCode.NOT_FOUND, "No available account instance");
             }
 
             task.InstanceId = discordInstance.ChannelId;
@@ -495,20 +495,20 @@ namespace Midjourney.Infrastructure.Services
             task.SetProperty(Constants.TASK_PROPERTY_BOT_TYPE, targetTask.BotType.GetDescription());
             task.SetProperty(Constants.TASK_PROPERTY_CUSTOM_ID, submitAction.CustomId);
 
-            // 设置任务的提示信息 = 父级任务的提示信息
+            // Set the task's prompt information = parent task's prompt information
             task.Prompt = targetTask.Prompt;
 
-            // 上次的最终词作为变化的 prompt
-            // 移除速度模式参数
+            // Use the final prompt of the last task as the prompt for variation
+            // Remove speed mode parameters
             task.PromptEn = targetTask.GetProperty<string>(Constants.TASK_PROPERTY_FINAL_PROMPT, default)?.Replace("--fast", "")?.Replace("--relax", "")?.Replace("--turbo", "")?.Trim();
 
-            // 但是如果父级任务是 blend 任务，可能 prompt 为空
+            // But if the parent task is a blend task, the prompt may be empty
             if (string.IsNullOrWhiteSpace(task.PromptEn))
             {
                 task.PromptEn = targetTask.PromptEn;
             }
 
-            // 点击喜欢
+            // Click like
             if (submitAction.CustomId.Contains("MJ::BOOKMARK"))
             {
                 var res = discordInstance.ActionAsync(messageId ?? targetTask.MessageId,
@@ -516,10 +516,10 @@ namespace Midjourney.Infrastructure.Services
                     task.GetProperty<string>(Constants.TASK_PROPERTY_NONCE, default), task)
                     .ConfigureAwait(false).GetAwaiter().GetResult();
 
-                // 这里不需要保存任务
+                // No need to save the task here
                 if (res.Code == ReturnCode.SUCCESS)
                 {
-                    return SubmitResultVO.Of(ReturnCode.SUCCESS, "成功", task.ParentId);
+                    return SubmitResultVO.Of(ReturnCode.SUCCESS, "Success", task.ParentId);
                 }
                 else
                 {
@@ -527,11 +527,11 @@ namespace Midjourney.Infrastructure.Services
                 }
             }
 
-            // 如果是 Modal 作业，则直接返回
+            // If it is a Modal task, return directly
             if (submitAction.CustomId.StartsWith("MJ::CustomZoom::")
                 || submitAction.CustomId.StartsWith("MJ::Inpaint::"))
             {
-                // 如果是局部重绘，则设置任务状态为 modal
+                // If it is an inpaint task, set the task status to modal
                 if (task.Action == TaskAction.INPAINT)
                 {
                     task.Status = TaskStatus.MODAL;
@@ -544,13 +544,13 @@ namespace Midjourney.Infrastructure.Services
 
                 _taskStoreService.Save(task);
 
-                // 状态码为 21
-                // 重绘、自定义变焦始终 remix 为true
+                // Status code is 21
+                // Inpaint and custom zoom always have remix set to true
                 return SubmitResultVO.Of(ReturnCode.EXISTED, "Waiting for window confirm", task.Id)
                     .SetProperty(Constants.TASK_PROPERTY_FINAL_PROMPT, task.PromptEn)
                     .SetProperty(Constants.TASK_PROPERTY_REMIX, true);
             }
-            // describe 全部重新生成绘图
+            // describe all regenerate drawing
             else if (submitAction.CustomId?.Contains("MJ::Job::PicReader::all") == true)
             {
                 var prompts = targetTask.PromptEn.Split('\n').Where(c => !string.IsNullOrWhiteSpace(c)).ToArray();
@@ -604,14 +604,14 @@ namespace Midjourney.Infrastructure.Services
 
                     if (res.Code != ReturnCode.SUCCESS && res.Code != ReturnCode.EXISTED && res.Code != ReturnCode.IN_QUEUE)
                     {
-                        return SubmitResultVO.Of(ReturnCode.SUCCESS, "成功", string.Join(",", ids));
+                        return SubmitResultVO.Of(ReturnCode.SUCCESS, "Success", string.Join(",", ids));
                     }
                 }
 
-                return SubmitResultVO.Of(ReturnCode.SUCCESS, "成功", string.Join(",", ids));
+                return SubmitResultVO.Of(ReturnCode.SUCCESS, "Success", string.Join(",", ids));
             }
-            // 如果是 PicReader 作业，则直接返回
-            // 图生文 -> 生图
+            // If it is a PicReader task, return directly
+            // Image to text -> text to image
             else if (submitAction.CustomId?.StartsWith("MJ::Job::PicReader::") == true)
             {
                 var index = int.Parse(submitAction.CustomId.Split("::").LastOrDefault().Trim());
@@ -627,13 +627,13 @@ namespace Midjourney.Infrastructure.Services
 
                 _taskStoreService.Save(task);
 
-                // 状态码为 21
-                // 重绘、自定义变焦始终 remix 为true
+                // Status code is 21
+                // Inpaint and custom zoom always have remix set to true
                 return SubmitResultVO.Of(ReturnCode.EXISTED, "Waiting for window confirm", task.Id)
                     .SetProperty(Constants.TASK_PROPERTY_FINAL_PROMPT, task.PromptEn)
                     .SetProperty(Constants.TASK_PROPERTY_REMIX, true);
             }
-            // prompt shorten -> 生图
+            // prompt shorten -> text to image
             else if (submitAction.CustomId.StartsWith("MJ::Job::PromptAnalyzer::"))
             {
                 var index = int.Parse(submitAction.CustomId.Split("::").LastOrDefault().Trim());
@@ -652,7 +652,7 @@ namespace Midjourney.Infrastructure.Services
                     task.SetProperty(Constants.TASK_PROPERTY_MESSAGE_ID, targetTask.MessageId);
                     task.SetProperty(Constants.TASK_PROPERTY_FLAGS, messageFlags);
 
-                    // 如果开启了 remix 自动提交
+                    // If remix auto-submit is enabled
                     if (discordInstance.Account.RemixAutoSubmit)
                     {
                         task.RemixAutoSubmit = true;
@@ -670,8 +670,8 @@ namespace Midjourney.Infrastructure.Services
                     {
                         _taskStoreService.Save(task);
 
-                        // 状态码为 21
-                        // 重绘、自定义变焦始终 remix 为true
+                        // Status code is 21
+                        // Inpaint and custom zoom always have remix set to true
                         return SubmitResultVO.Of(ReturnCode.EXISTED, "Waiting for window confirm", task.Id)
                             .SetProperty(Constants.TASK_PROPERTY_FINAL_PROMPT, task.PromptEn)
                             .SetProperty(Constants.TASK_PROPERTY_REMIX, true);
@@ -679,10 +679,10 @@ namespace Midjourney.Infrastructure.Services
                 }
                 else
                 {
-                    return SubmitResultVO.Fail(ReturnCode.NOT_FOUND, "未找到 Shortened prompts");
+                    return SubmitResultVO.Fail(ReturnCode.NOT_FOUND, "Shortened prompts not found");
                 }
             }
-            // REMIX 处理
+            // REMIX handling
             else if (task.Action == TaskAction.PAN || task.Action == TaskAction.VARIATION || task.Action == TaskAction.REROLL)
             {
                 task.SetProperty(Constants.TASK_PROPERTY_MESSAGE_ID, targetTask.MessageId);
@@ -690,8 +690,8 @@ namespace Midjourney.Infrastructure.Services
 
                 if (discordInstance.Account.RemixAutoSubmit)
                 {
-                    // 如果开启了 remix 自动提交
-                    // 并且已开启 remix 模式
+                    // If remix auto-submit is enabled
+                    // And remix mode is enabled
                     if (((task.RealBotType ?? task.BotType) == EBotType.MID_JOURNEY && discordInstance.Account.MjRemixOn)
                         || (task.BotType == EBotType.NIJI_JOURNEY && discordInstance.Account.NijiRemixOn))
                     {
@@ -710,16 +710,16 @@ namespace Midjourney.Infrastructure.Services
                 }
                 else
                 {
-                    // 未开启 remix 自动提交
-                    // 并且已开启 remix 模式
+                    // Remix auto-submit is not enabled
+                    // And remix mode is enabled
                     if (((task.RealBotType ?? task.BotType) == EBotType.MID_JOURNEY && discordInstance.Account.MjRemixOn)
                         || (task.BotType == EBotType.NIJI_JOURNEY && discordInstance.Account.NijiRemixOn))
                     {
-                        // 如果是 REMIX 任务，则设置任务状态为 modal
+                        // If it is a REMIX task, set the task status to modal
                         task.Status = TaskStatus.MODAL;
                         _taskStoreService.Save(task);
 
-                        // 状态码为 21
+                        // Status code is 21
                         return SubmitResultVO.Of(ReturnCode.EXISTED, "Waiting for window confirm", task.Id)
                             .SetProperty(Constants.TASK_PROPERTY_FINAL_PROMPT, task.PromptEn)
                             .SetProperty(Constants.TASK_PROPERTY_REMIX, true);
@@ -738,7 +738,7 @@ namespace Midjourney.Infrastructure.Services
         }
 
         /// <summary>
-        /// 执行 Modal
+        /// Perform Modal
         /// </summary>
         /// <param name="task"></param>
         /// <param name="submitAction"></param>
@@ -749,7 +749,7 @@ namespace Midjourney.Infrastructure.Services
             var discordInstance = _discordLoadBalancer.GetDiscordInstanceIsAlive(task.SubInstanceId ?? task.InstanceId);
             if (discordInstance == null)
             {
-                // 如果主实例没有找子实例
+                // If the main instance is not found, look for sub-instance
                 var ids = new List<string>();
                 var list = _discordLoadBalancer.GetAliveInstances().ToList();
                 foreach (var item in list)
@@ -760,7 +760,7 @@ namespace Midjourney.Infrastructure.Services
                     }
                 }
 
-                // 通过子频道过滤可用账号
+                // Filter available accounts through sub-channels
                 if (ids.Count > 0)
                 {
                     discordInstance = _discordLoadBalancer.ChooseInstance(accountFilter: task.AccountFilter,
@@ -768,7 +768,7 @@ namespace Midjourney.Infrastructure.Services
 
                     if (discordInstance != null)
                     {
-                        // 如果找到了，则标记当前任务的子频道信息
+                        // If found, mark the sub-channel information of the current task
                         task.SubInstanceId = task.SubInstanceId ?? task.InstanceId;
                     }
                 }
@@ -776,7 +776,7 @@ namespace Midjourney.Infrastructure.Services
 
             if (discordInstance == null)
             {
-                return SubmitResultVO.Fail(ReturnCode.NOT_FOUND, "无可用的账号实例");
+                return SubmitResultVO.Fail(ReturnCode.NOT_FOUND, "No available account instance");
             }
 
             task.InstanceId = discordInstance.ChannelId;
@@ -789,7 +789,7 @@ namespace Midjourney.Infrastructure.Services
                 var messageId = task.GetProperty<string>(Constants.TASK_PROPERTY_MESSAGE_ID, default);
                 var nonce = task.GetProperty<string>(Constants.TASK_PROPERTY_NONCE, default);
 
-                // 弹窗确认
+                // Window confirmation
                 task = discordInstance.GetRunningTask(task.Id);
                 task.RemixModaling = true;
                 var res = await discordInstance.ActionAsync(messageId, customId, messageFlags, nonce, task);
@@ -798,13 +798,13 @@ namespace Midjourney.Infrastructure.Services
                     return res;
                 }
 
-                // 等待获取 messageId 和交互消息 id
-                // 等待最大超时 5min
+                // Wait to get messageId and interaction message id
+                // Maximum timeout 5min
                 var sw = new Stopwatch();
                 sw.Start();
                 do
                 {
-                    // 等待 2.5s
+                    // Wait 2.5s
                     Thread.Sleep(2500);
                     task = discordInstance.GetRunningTask(task.Id);
 
@@ -812,17 +812,17 @@ namespace Midjourney.Infrastructure.Services
                     {
                         if (sw.ElapsedMilliseconds > 300000)
                         {
-                            return Message.Of(ReturnCode.NOT_FOUND, "超时，未找到消息 ID");
+                            return Message.Of(ReturnCode.NOT_FOUND, "Timeout, message ID not found");
                         }
                     }
                 } while (string.IsNullOrWhiteSpace(task.RemixModalMessageId) || string.IsNullOrWhiteSpace(task.InteractionMetadataId));
 
-                // 等待 1.2s
+                // Wait 1.2s
                 Thread.Sleep(1200);
 
                 task.RemixModaling = false;
 
-                // 自定义变焦
+                // Custom zoom
                 if (customId.StartsWith("MJ::CustomZoom::"))
                 {
                     nonce = SnowFlake.NextId();
@@ -831,13 +831,13 @@ namespace Midjourney.Infrastructure.Services
 
                     return await discordInstance.ZoomAsync(task, task.RemixModalMessageId, customId, task.PromptEn, nonce);
                 }
-                // 局部重绘
+                // Inpaint
                 else if (customId.StartsWith("MJ::Inpaint::"))
                 {
                     var ifarmeCustomId = task.GetProperty<string>(Constants.TASK_PROPERTY_IFRAME_MODAL_CREATE_CUSTOM_ID, default);
                     return await discordInstance.InpaintAsync(task, ifarmeCustomId, task.PromptEn, submitAction.MaskBase64);
                 }
-                // 图生文 -> 文生图
+                // Image to text -> text to image
                 else if (customId.StartsWith("MJ::Job::PicReader::"))
                 {
                     nonce = SnowFlake.NextId();
@@ -846,7 +846,7 @@ namespace Midjourney.Infrastructure.Services
 
                     return await discordInstance.PicReaderAsync(task, task.RemixModalMessageId, customId, task.PromptEn, nonce, task.RealBotType ?? task.BotType);
                 }
-                // prompt shorten -> 生图
+                // prompt shorten -> text to image
                 else if (customId.StartsWith("MJ::Job::PromptAnalyzer::"))
                 {
                     nonce = SnowFlake.NextId();
@@ -875,7 +875,7 @@ namespace Midjourney.Infrastructure.Services
                         parentTask = _taskStoreService.Get(task.ParentId);
                         if (parentTask == null)
                         {
-                            return Message.Of(ReturnCode.NOT_FOUND, "未找到父级任务");
+                            return Message.Of(ReturnCode.NOT_FOUND, "Parent task not found");
                         }
                     }
 
@@ -885,7 +885,7 @@ namespace Midjourney.Infrastructure.Services
                     var modal = "MJ::RemixModal::new_prompt";
                     if (action == TaskAction.REROLL)
                     {
-                        // 如果是首次提交，则使用交互 messageId
+                        // If it is the first submission, use the interaction messageId
                         if (string.IsNullOrWhiteSpace(prevCustomId))
                         {
                             // MJ::ImagineModal::1265485889606516808
@@ -898,11 +898,11 @@ namespace Midjourney.Infrastructure.Services
 
                             if (prevModal.Contains("::PanModal"))
                             {
-                                // 如果是 pan, pan 是根据放大图片的 CUSTOM_ID 进行重绘处理
+                                // If it is pan, pan is processed based on the customId of the enlarged image
                                 var cus = parentTask?.GetProperty<string>(Constants.TASK_PROPERTY_REMIX_U_CUSTOM_ID, default);
                                 if (string.IsNullOrWhiteSpace(cus))
                                 {
-                                    return Message.Of(ReturnCode.VALIDATION_ERROR, "未找到目标图片的 U 操作");
+                                    return Message.Of(ReturnCode.VALIDATION_ERROR, "Target image U operation not found");
                                 }
 
                                 // MJ::JOB::upsample::3::10f78893-eddb-468f-a0fb-55643a94e3b4
@@ -914,7 +914,7 @@ namespace Midjourney.Infrastructure.Services
                                 var convertedString = $"MJ::PanModal::{prevArr[2]}::{hash}::{i}";
                                 customId = convertedString;
 
-                                // 在进行 U 时，记录目标图片的 U 的 customId
+                                // When performing U, record the customId of the target image's U operation
                                 task.SetProperty(Constants.TASK_PROPERTY_REMIX_U_CUSTOM_ID, parentTask?.GetProperty<string>(Constants.TASK_PROPERTY_REMIX_U_CUSTOM_ID, default));
                             }
                             else
@@ -930,7 +930,7 @@ namespace Midjourney.Infrastructure.Services
                     {
                         var suffix = "0";
 
-                        // 如果全局开启了高变化，则高变化
+                        // If high variability is enabled globally, use high variability
                         if ((task.RealBotType ?? task.BotType) == EBotType.MID_JOURNEY)
                         {
                             if (discordInstance.Account.Buttons.Any(x => x.CustomId == "MJ::Settings::HighVariabilityMode::1" && x.Style == 3))
@@ -946,12 +946,12 @@ namespace Midjourney.Infrastructure.Services
                             }
                         }
 
-                        // 低变化
+                        // Low variability
                         if (customId.Contains("low_variation"))
                         {
                             suffix = "0";
                         }
-                        // 如果是高变化
+                        // If it is high variability
                         else if (customId.Contains("high_variation"))
                         {
                             suffix = "1";
@@ -979,12 +979,12 @@ namespace Midjourney.Infrastructure.Services
                         task.SetProperty(Constants.TASK_PROPERTY_REMIX_CUSTOM_ID, customId);
                         task.SetProperty(Constants.TASK_PROPERTY_REMIX_MODAL, modal);
 
-                        // 在进行 U 时，记录目标图片的 U 的 customId
+                        // When performing U, record the customId of the target image's U operation
                         task.SetProperty(Constants.TASK_PROPERTY_REMIX_U_CUSTOM_ID, parentTask?.GetProperty<string>(Constants.TASK_PROPERTY_REMIX_U_CUSTOM_ID, default));
                     }
                     else
                     {
-                        return Message.Failure("未知操作");
+                        return Message.Failure("Unknown operation");
                     }
 
                     return await discordInstance.RemixAsync(task, task.Action.Value, task.RemixModalMessageId, modal,
@@ -992,14 +992,14 @@ namespace Midjourney.Infrastructure.Services
                 }
                 else
                 {
-                    // 不支持
-                    return Message.Of(ReturnCode.NOT_FOUND, "不支持的操作");
+                    // Not supported
+                    return Message.Of(ReturnCode.NOT_FOUND, "Operation not supported");
                 }
             });
         }
 
         /// <summary>
-        /// 获取图片 seed
+        /// Get image seed
         /// </summary>
         /// <param name="task"></param>
         /// <returns></returns>
@@ -1008,10 +1008,10 @@ namespace Midjourney.Infrastructure.Services
             var discordInstance = _discordLoadBalancer.GetDiscordInstanceIsAlive(task.InstanceId);
             if (discordInstance == null)
             {
-                return SubmitResultVO.Fail(ReturnCode.NOT_FOUND, "无可用的账号实例");
+                return SubmitResultVO.Fail(ReturnCode.NOT_FOUND, "No available account instance");
             }
 
-            // 请配置私聊频道
+            // Please configure private chat channel
             var privateChannelId = string.Empty;
 
             if ((task.RealBotType ?? task.BotType) == EBotType.MID_JOURNEY)
@@ -1025,7 +1025,7 @@ namespace Midjourney.Infrastructure.Services
 
             if (string.IsNullOrWhiteSpace(privateChannelId))
             {
-                return SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "请配置私聊频道");
+                return SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "Please configure private chat channel");
             }
 
             try
@@ -1046,8 +1046,8 @@ namespace Midjourney.Infrastructure.Services
                     return SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, res.Description);
                 }
 
-                // 等待获取 seed messageId
-                // 等待最大超时 5min
+                // Wait to get seed messageId
+                // Maximum timeout 5min
                 var sw = new Stopwatch();
                 sw.Start();
 
@@ -1060,12 +1060,12 @@ namespace Midjourney.Infrastructure.Services
                     {
                         if (sw.ElapsedMilliseconds > 1000 * 60 * 3)
                         {
-                            return SubmitResultVO.Fail(ReturnCode.NOT_FOUND, "超时，未找到 seed messageId");
+                            return SubmitResultVO.Fail(ReturnCode.NOT_FOUND, "Timeout, seed messageId not found");
                         }
                     }
                 } while (string.IsNullOrWhiteSpace(task.SeedMessageId));
 
-                // 添加反应
+                // Add reaction
                 // https://discord.com/api/v9/channels/1256495659683676190/messages/1260598192333127701/reactions/✉️/@me?location=Message&type=0
                 var url = $"https://discord.com/api/v9/channels/{privateChannelId}/messages/{task.SeedMessageId}/reactions/%E2%9C%89%EF%B8%8F/%40me?location=Message&type=0";
                 var msgRes = await discordInstance.SeedMessagesAsync(url);
@@ -1084,12 +1084,12 @@ namespace Midjourney.Infrastructure.Services
                     {
                         if (sw.ElapsedMilliseconds > 1000 * 60 * 3)
                         {
-                            return SubmitResultVO.Fail(ReturnCode.NOT_FOUND, "超时，未找到 seed");
+                            return SubmitResultVO.Fail(ReturnCode.NOT_FOUND, "Timeout, seed not found");
                         }
                     }
                 } while (string.IsNullOrWhiteSpace(task.Seed));
 
-                // 保存任务
+                // Save task
                 _taskStoreService.Save(task);
             }
             finally
@@ -1097,11 +1097,11 @@ namespace Midjourney.Infrastructure.Services
                 discordInstance.RemoveRunningTask(task);
             }
 
-            return SubmitResultVO.Of(ReturnCode.SUCCESS, "成功", task.Seed);
+            return SubmitResultVO.Of(ReturnCode.SUCCESS, "Success", task.Seed);
         }
 
         /// <summary>
-        /// 执行 info setting 操作
+        /// Perform info setting operation
         /// </summary>
         /// <returns></returns>
         public async Task InfoSetting(string id)
@@ -1109,13 +1109,13 @@ namespace Midjourney.Infrastructure.Services
             var model = DbHelper.Instance.AccountStore.Get(id);
             if (model == null)
             {
-                throw new LogicException("未找到账号实例");
+                throw new LogicException("Account instance not found");
             }
 
             var discordInstance = _discordLoadBalancer.GetDiscordInstanceIsAlive(model.ChannelId);
             if (discordInstance == null)
             {
-                throw new LogicException("无可用的账号实例");
+                throw new LogicException("No available account instance");
             }
 
             if (discordInstance.Account.EnableMj == true)
@@ -1154,7 +1154,7 @@ namespace Midjourney.Infrastructure.Services
         }
 
         /// <summary>
-        /// 修改版本
+        /// Change version
         /// </summary>
         /// <param name="id"></param>
         /// <param name="version"></param>
@@ -1164,13 +1164,13 @@ namespace Midjourney.Infrastructure.Services
             var model = DbHelper.Instance.AccountStore.Get(id);
             if (model == null)
             {
-                throw new LogicException("未找到账号实例");
+                throw new LogicException("Account instance not found");
             }
 
             var discordInstance = _discordLoadBalancer.GetDiscordInstanceIsAlive(model.ChannelId);
             if (discordInstance == null)
             {
-                throw new LogicException("无可用的账号实例");
+                throw new LogicException("No available account instance");
             }
 
             var accsount = discordInstance.Account;
@@ -1189,7 +1189,7 @@ namespace Midjourney.Infrastructure.Services
         }
 
         /// <summary>
-        /// 执行操作
+        /// Perform action
         /// </summary>
         /// <param name="id"></param>
         /// <param name="customId"></param>
@@ -1200,13 +1200,13 @@ namespace Midjourney.Infrastructure.Services
             var model = DbHelper.Instance.AccountStore.Get(id);
             if (model == null)
             {
-                throw new LogicException("未找到账号实例");
+                throw new LogicException("Account instance not found");
             }
 
             var discordInstance = _discordLoadBalancer.GetDiscordInstanceIsAlive(model.ChannelId);
             if (discordInstance == null)
             {
-                throw new LogicException("无可用的账号实例");
+                throw new LogicException("No available account instance");
             }
 
             var accsount = discordInstance.Account;
@@ -1225,7 +1225,7 @@ namespace Midjourney.Infrastructure.Services
         }
 
         /// <summary>
-        /// MJ Plus 数据迁移
+        /// MJ Plus data migration
         /// </summary>
         /// <param name="dto"></param>
         /// <returns></returns>
@@ -1235,7 +1235,7 @@ namespace Midjourney.Infrastructure.Services
             var islock = AsyncLocalLock.IsLockAvailable(key);
             if (!islock)
             {
-                throw new LogicException("迁移任务执行中...");
+                throw new LogicException("Migration task in progress...");
             }
 
             _ = Task.Run(async () =>
@@ -1244,7 +1244,7 @@ namespace Midjourney.Infrastructure.Services
                 {
                     try
                     {
-                        // 账号迁移
+                        // Account migration
                         if (true)
                         {
                             var ids = DbHelper.Instance.AccountStore.GetAllIds().ToHashSet<string>();
@@ -1268,16 +1268,16 @@ namespace Midjourney.Infrastructure.Services
 
                                 foreach (var item in contentArray)
                                 {
-                                    // 反序列化基础 JSON
+                                    // Deserialize basic JSON
                                     var json = item.ToString();
                                     var accountJson = JsonConvert.DeserializeObject<dynamic>(json);
 
-                                    // 创建
-                                    // 创建 DiscordAccount 实例
+                                    // Create
+                                    // Create DiscordAccount instance
                                     var acc = new DiscordAccount
                                     {
                                         Sponsor = "by mjplus",
-                                        DayDrawLimit = -1, // 默认值 -1
+                                        DayDrawLimit = -1, // Default value -1
 
                                         ChannelId = accountJson.channelId,
                                         GuildId = accountJson.guildId,
@@ -1289,17 +1289,17 @@ namespace Midjourney.Infrastructure.Services
                                         Enable = accountJson.enable,
                                         EnableMj = true,
                                         EnableNiji = true,
-                                        CoreSize = accountJson.coreSize ?? 3, // 默认值 3
-                                        Interval = 1.2m, // 默认值 1.2
-                                        AfterIntervalMin = 1.2m, // 默认值 1.2
-                                        AfterIntervalMax = 1.2m, // 默认值 1.2
-                                        QueueSize = accountJson.queueSize ?? 10, // 默认值 10
-                                        MaxQueueSize = 100, // 默认值 100
-                                        TimeoutMinutes = accountJson.timeoutMinutes ?? 5, // 默认值 5
+                                        CoreSize = accountJson.coreSize ?? 3, // Default value 3
+                                        Interval = 1.2m, // Default value 1.2
+                                        AfterIntervalMin = 1.2m, // Default value 1.2
+                                        AfterIntervalMax = 1.2m, // Default value 1.2
+                                        QueueSize = accountJson.queueSize ?? 10, // Default value 10
+                                        MaxQueueSize = 100, // Default value 100
+                                        TimeoutMinutes = accountJson.timeoutMinutes ?? 5, // Default value 5
                                         Remark = accountJson.remark,
 
                                         DateCreated = DateTimeOffset.FromUnixTimeMilliseconds((long)accountJson.dateCreated).DateTime,
-                                        Weight = 1, // 假设 weight 来自 properties
+                                        Weight = 1, // Assume weight comes from properties
                                         WorkTime = null,
                                         FishingTime = null,
                                         Sort = ++sort,
@@ -1307,9 +1307,9 @@ namespace Midjourney.Infrastructure.Services
                                         Mode = Enum.TryParse<GenerationSpeedMode>((string)accountJson.mode, out var mode) ? mode : (GenerationSpeedMode?)null,
                                         AllowModes = new List<GenerationSpeedMode>(),
                                         Components = new List<Component>(),
-                                        IsBlend = true, // 默认 true
-                                        IsDescribe = true, // 默认 true
-                                        IsVerticalDomain = false, // 默认 false
+                                        IsBlend = true, // Default true
+                                        IsDescribe = true, // Default true
+                                        IsVerticalDomain = false, // Default false
                                         IsShorten = true,
                                         VerticalDomainIds = new List<string>(),
                                         SubChannels = new List<string>(),
@@ -1328,13 +1328,13 @@ namespace Midjourney.Infrastructure.Services
                                 isLastPage = (bool)responseObject["last"];
                                 pageNumber++;
 
-                                Log.Information($"账号迁移进度, 第 {pageNumber} 页, 每页 {pageSize} 条, 已完成");
+                                Log.Information($"Account migration progress, page {pageNumber}, {pageSize} items per page, completed");
                             }
 
-                            Log.Information("账号迁移完成");
+                            Log.Information("Account migration completed");
                         }
 
-                        // 任务迁移
+                        // Task migration
                         if (true)
                         {
                             var accounts = DbHelper.Instance.AccountStore.GetAll();
@@ -1359,14 +1359,14 @@ namespace Midjourney.Infrastructure.Services
 
                                 foreach (var item in contentArray)
                                 {
-                                    // 反序列化基础 JSON
+                                    // Deserialize basic JSON
                                     var json = item.ToString();
                                     var jsonObject = JsonConvert.DeserializeObject<dynamic>(json);
 
                                     string aid = jsonObject.properties?.discordInstanceId;
                                     var acc = accounts.FirstOrDefault(x => x.Id == aid);
 
-                                    // 创建 TaskInfo 实例
+                                    // Create TaskInfo instance
                                     var taskInfo = new TaskInfo
                                     {
                                         FinishTime = jsonObject.finishTime,
@@ -1410,21 +1410,21 @@ namespace Midjourney.Infrastructure.Services
                                 isLastPage = (bool)responseObject["last"];
                                 pageNumber++;
 
-                                Log.Information($"任务迁移进度, 第 {pageNumber} 页, 每页 {pageSize} 条, 已完成");
+                                Log.Information($"Task migration progress, page {pageNumber}, {pageSize} items per page, completed");
                             }
 
-                            Log.Information("任务迁移完成");
+                            Log.Information("Task migration completed");
                         }
                     }
                     catch (Exception ex)
                     {
-                        Log.Error(ex, "mjplus 迁移执行异常");
+                        Log.Error(ex, "mjplus migration execution exception");
                     }
                 });
 
                 if (!islock)
                 {
-                    Log.Warning("迁移任务执行中...");
+                    Log.Warning("Migration task in progress...");
                 }
             });
 
@@ -1432,7 +1432,7 @@ namespace Midjourney.Infrastructure.Services
         }
 
         /// <summary>
-        /// 获取分页数据
+        /// Get paginated data
         /// </summary>
         /// <param name="dto"></param>
         /// <param name="path"></param>

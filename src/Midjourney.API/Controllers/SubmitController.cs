@@ -91,7 +91,7 @@ namespace Midjourney.API.Controllers
                 {
                     // Not logged in
                     httpContextAccessor.HttpContext.Response.StatusCode = (int)HttpStatusCode.Forbidden;
-                    httpContextAccessor.HttpContext.Response.WriteAsync("未登录");
+                    httpContextAccessor.HttpContext.Response.WriteAsync("Not logged in");
                     return;
                 }
             }
@@ -122,7 +122,7 @@ namespace Midjourney.API.Controllers
             string prompt = imagineDTO.Prompt;
             if (string.IsNullOrWhiteSpace(prompt))
             {
-                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "prompt不能为空"));
+                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "Prompt cannot be empty"));
             }
 
             var base64Array = imagineDTO.Base64Array ?? [];
@@ -130,16 +130,17 @@ namespace Midjourney.API.Controllers
             var setting = GlobalConfiguration.Setting;
             if (!setting.EnableUserCustomUploadBase64 && base64Array.Count > 0)
             {
-                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "禁止上传"));
+                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "Upload is not allowed"));
             }
 
             prompt = prompt.Trim();
             var task = NewTask(imagineDTO);
             task.Action = TaskAction.IMAGINE;
             task.Prompt = prompt;
+            task.CustomerId = imagineDTO.CustomerId ?? string.Empty;
             task.BotType = GetBotType(imagineDTO.BotType);
 
-            // 转换 --niji 为 Niji Bot
+            // Convert --niji to Niji Bot
             if (GlobalConfiguration.Setting.EnableConvertNijiToNijiBot
                 && prompt.Contains("--niji")
                 && task.BotType == EBotType.MID_JOURNEY)
@@ -154,7 +155,7 @@ namespace Midjourney.API.Controllers
             }
             catch (BannedPromptException e)
             {
-                return Ok(SubmitResultVO.Fail(ReturnCode.BANNED_PROMPT, "可能包含敏感词")
+                return Ok(SubmitResultVO.Fail(ReturnCode.BANNED_PROMPT, "It may contain sensitive words")
                     .SetProperty("promptEn", promptEn)
                     .SetProperty("bannedWord", e.Message));
             }
@@ -166,8 +167,8 @@ namespace Midjourney.API.Controllers
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "base64格式转换异常");
-                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "base64格式错误"));
+                _logger.LogError(e, "Base64 format conversion error");
+                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "Invalid base64 format"));
             }
 
             task.PromptEn = promptEn;
@@ -190,13 +191,13 @@ namespace Midjourney.API.Controllers
             var setting = GlobalConfiguration.Setting;
             if (!setting.EnableUserCustomUploadBase64)
             {
-                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "禁止上传"));
+                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "Upload is not allowed"));
             }
 
             var base64Array = imagineDTO.Base64Array ?? new List<string>();
             if (base64Array.Count <= 0)
             {
-                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "base64 参数错误"));
+                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "Invalid base64 parameter"));
             }
 
             var dataUrls = new List<DataUrl>();
@@ -206,14 +207,14 @@ namespace Midjourney.API.Controllers
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "base64格式转换异常");
-                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "base64格式错误"));
+                _logger.LogError(e, "Base64 format conversion error");
+                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "Invalid base64 format"));
             }
 
             var instance = _discordLoadBalancer.ChooseInstance(imagineDTO.AccountFilter);
             if (instance == null)
             {
-                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "实例不存在或不可用"));
+                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "Instance does not exist or is unavailable"));
             }
 
             var imageUrls = new List<string>();
@@ -242,7 +243,7 @@ namespace Midjourney.API.Controllers
                 }
             }
 
-            var info = SubmitResultVO.Of(ReturnCode.SUCCESS, "提交成功", imageUrls);
+            var info = SubmitResultVO.Of(ReturnCode.SUCCESS, "Submission successful", imageUrls);
             return Ok(info);
         }
 
@@ -257,7 +258,7 @@ namespace Midjourney.API.Controllers
             string jobId = imagineDTO.JobId;
             if (string.IsNullOrWhiteSpace(jobId))
             {
-                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "请填写 job id 或 url"));
+                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "Please provide job ID or URL"));
             }
             jobId = jobId.Trim();
 
@@ -268,20 +269,20 @@ namespace Midjourney.API.Controllers
 
             if (string.IsNullOrWhiteSpace(jobId))
             {
-                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "job id 格式错误"));
+                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "Invalid job ID format"));
             }
 
             var model = DbHelper.Instance.TaskStore.Where(c => c.JobId == jobId && c.Status == TaskStatus.SUCCESS).FirstOrDefault();
             if (model != null)
             {
-                var info = SubmitResultVO.Of(ReturnCode.SUCCESS, "提交成功", model.Id)
+                var info = SubmitResultVO.Of(ReturnCode.SUCCESS, "Submission successful", model.Id)
                     .SetProperty(Constants.TASK_PROPERTY_DISCORD_INSTANCE_ID, model.InstanceId);
                 return Ok(info);
             }
 
             if (string.IsNullOrWhiteSpace(imagineDTO.AccountFilter?.InstanceId))
             {
-                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "show 命令必须指定实例"));
+                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "The 'show' command must specify an instance"));
             }
 
             var task = NewTask(imagineDTO);
@@ -308,7 +309,7 @@ namespace Midjourney.API.Controllers
             var changeParams = ConvertUtils.ConvertChangeParams(simpleChangeDTO.Content);
             if (changeParams == null)
             {
-                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "content 参数错误"));
+                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "Invalid content parameter"));
             }
             var changeDTO = new SubmitChangeDTO
             {
@@ -331,11 +332,11 @@ namespace Midjourney.API.Controllers
         {
             if (string.IsNullOrWhiteSpace(changeDTO.TaskId))
             {
-                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "taskId不能为空"));
+                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "Task ID cannot be empty"));
             }
             if (!new[] { TaskAction.UPSCALE, TaskAction.VARIATION, TaskAction.REROLL }.Contains(changeDTO.Action))
             {
-                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "action参数错误"));
+                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "Invalid action parameter"));
             }
             string description = $"/up {changeDTO.TaskId}";
             if (changeDTO.Action == TaskAction.REROLL)
@@ -349,15 +350,15 @@ namespace Midjourney.API.Controllers
             var targetTask = _taskStoreService.Get(changeDTO.TaskId);
             if (targetTask == null)
             {
-                return NotFound(SubmitResultVO.Fail(ReturnCode.NOT_FOUND, "关联任务不存在或已失效"));
+                return NotFound(SubmitResultVO.Fail(ReturnCode.NOT_FOUND, "The related task does not exist or has expired"));
             }
             if (targetTask.Status != TaskStatus.SUCCESS)
             {
-                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "关联任务状态错误"));
+                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "The related task status is invalid"));
             }
             if (!new[] { TaskAction.IMAGINE, TaskAction.VARIATION, TaskAction.REROLL, TaskAction.BLEND }.Contains(targetTask.Action.Value))
             {
-                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "关联任务不允许执行变化"));
+                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "The related task does not allow changes"));
             }
             var task = NewTask(changeDTO);
 
@@ -403,13 +404,13 @@ namespace Midjourney.API.Controllers
         {
             if (string.IsNullOrWhiteSpace(describeDTO.Base64))
             {
-                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "base64不能为空"));
+                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "Base64 cannot be empty"));
             }
 
             var setting = GlobalConfiguration.Setting;
             if (!setting.EnableUserCustomUploadBase64)
             {
-                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "禁止上传"));
+                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "Upload is not allowed"));
             }
 
             DataUrl dataUrl;
@@ -419,7 +420,7 @@ namespace Midjourney.API.Controllers
             }
             catch
             {
-                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "base64格式错误"));
+                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "Invalid base64 format"));
             }
 
             var task = NewTask(describeDTO);
@@ -458,7 +459,7 @@ namespace Midjourney.API.Controllers
             }
             catch (BannedPromptException e)
             {
-                return Ok(SubmitResultVO.Fail(ReturnCode.BANNED_PROMPT, "可能包含敏感词")
+                return Ok(SubmitResultVO.Fail(ReturnCode.BANNED_PROMPT, "It may contain sensitive words")
                     .SetProperty("promptEn", promptEn)
                     .SetProperty("bannedWord", e.Message));
             }
@@ -482,10 +483,10 @@ namespace Midjourney.API.Controllers
             List<string> base64Array = blendDTO.Base64Array;
             if (base64Array == null || base64Array.Count < 2 || base64Array.Count > 5)
             {
-                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "base64List参数错误"));
+                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "Invalid base64List parameter"));
             }
 
-            // blend 不限制上传
+            // blend does not restrict uploads
             //var setting = GlobalConfiguration.Setting;
             //if (!setting.EnableUserCustomUploadBase64)
             //{
@@ -494,7 +495,7 @@ namespace Midjourney.API.Controllers
 
             if (blendDTO.Dimensions == null)
             {
-                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "dimensions参数错误"));
+                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "Invalid dimensions parameter"));
             }
 
             List<DataUrl> dataUrlList = new List<DataUrl>();
@@ -504,9 +505,9 @@ namespace Midjourney.API.Controllers
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "base64格式错误");
+                _logger.LogError(e, "Base64 format conversion error");
 
-                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "base64格式错误"));
+                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "Invalid base64 format"));
             }
             var task = NewTask(blendDTO);
 
@@ -530,18 +531,18 @@ namespace Midjourney.API.Controllers
         {
             if (string.IsNullOrWhiteSpace(actionDTO.TaskId) || string.IsNullOrWhiteSpace(actionDTO.CustomId))
             {
-                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "参数错误"));
+                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "Invalid parameters"));
             }
 
             var targetTask = _taskStoreService.Get(actionDTO.TaskId);
             if (targetTask == null)
             {
-                return NotFound(SubmitResultVO.Fail(ReturnCode.NOT_FOUND, "关联任务不存在或已失效"));
+                return NotFound(SubmitResultVO.Fail(ReturnCode.NOT_FOUND, "The related task does not exist or has expired"));
             }
 
             if (targetTask.Status != TaskStatus.SUCCESS)
             {
-                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "关联任务状态错误"));
+                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "The related task status is invalid"));
             }
 
             var task = NewTask(actionDTO);
@@ -552,74 +553,74 @@ namespace Midjourney.API.Controllers
             task.RealBotType = targetTask.RealBotType;
             task.SubInstanceId = targetTask.SubInstanceId;
 
-            // 识别 mj action
+            // Recognize mj action
 
-            // 放大
+            // Upscale
             // MJ::JOB::upsample::2::898416ec-7c18-4762-bf03-8e428fee1860
             if (actionDTO.CustomId.StartsWith("MJ::JOB::upsample::"))
             {
                 task.Action = TaskAction.UPSCALE;
 
-                // 在进行 U 时，记录目标图片的 U 的 customId
+                // When performing U, record the target image's U customId
                 task.SetProperty(Constants.TASK_PROPERTY_REMIX_U_CUSTOM_ID, actionDTO.CustomId);
             }
-            // 微调
+            // Variation
             // MJ::JOB::variation::2::898416ec-7c18-4762-bf03-8e428fee1860
             else if (actionDTO.CustomId.StartsWith("MJ::JOB::variation::"))
             {
                 task.Action = TaskAction.VARIATION;
             }
-            // 重绘
+            // Reroll
             // MJ::JOB::reroll::0::898416ec-7c18-4762-bf03-8e428fee1860::SOLO
             else if (actionDTO.CustomId.StartsWith("MJ::JOB::reroll::"))
             {
                 task.Action = TaskAction.REROLL;
             }
-            // 强变化
+            // High variation
             // MJ::JOB::high_variation::1::7af96d1a-67c7-4d74-b173-8430c98c7631::SOLO
             else if (actionDTO.CustomId.StartsWith("MJ::JOB::high_variation::"))
             {
                 task.Action = TaskAction.VARIATION;
             }
-            // 弱变化
+            // Low variation
             // MJ::JOB::low_variation::1::7af96d1a-67c7-4d74-b173-8430c98c7631::SOLO
             else if (actionDTO.CustomId.StartsWith("MJ::JOB::low_variation::"))
             {
                 task.Action = TaskAction.VARIATION;
             }
-            // 变焦
+            // Outpaint
             // MJ::Outpaint::50::1::7af96d1a-67c7-4d74-b173-8430c98c7631::SOLO
             else if (actionDTO.CustomId.StartsWith("MJ::Outpaint::"))
             {
                 task.Action = TaskAction.ACTION;
             }
-            // 平移
+            // Pan
             // MJ::JOB::pan_left::1::7af96d1a-67c7-4d74-b173-8430c98c7631::SOLO
             else if (actionDTO.CustomId.StartsWith("MJ::JOB::pan_"))
             {
                 task.Action = TaskAction.PAN;
             }
-            // 高清 2x / 2x 创意
+            // HD 2x / 2x Creative
             // MJ::JOB::upsample_v6_2x_subtle::1::7af96d1a-67c7-4d74-b173-8430c98c7631::SOLO
             // MJ::JOB::upsample_v6_2x_creative::1::7af96d1a-67c7-4d74-b173-8430c98c7631::SOLO
             else if (actionDTO.CustomId.StartsWith("MJ::JOB::upsample_"))
             {
                 task.Action = TaskAction.ACTION;
             }
-            // 自定义变焦
+            // Custom zoom
             // "MJ::CustomZoom::439f8670-52e8-4f57-afaa-fa08f6d6c751"
             else if (actionDTO.CustomId.StartsWith("MJ::CustomZoom::"))
             {
                 task.Action = TaskAction.ACTION;
                 task.Description = "Waiting for window confirm";
             }
-            // 局部绘制
+            // Local painting
             // MJ::Inpaint::1::da2b1fda-0455-4952-9f0e-d4cb891f8b1e::SOLO
             else if (actionDTO.CustomId.StartsWith("MJ::Inpaint::"))
             {
                 task.Action = TaskAction.INPAINT;
             }
-            // describe 重新提交
+            // describe re-submit
             else if (actionDTO.CustomId.Contains("MJ::Picread::Retry"))
             {
                 task.ImageUrl = targetTask.ImageUrl;
@@ -643,13 +644,13 @@ namespace Midjourney.API.Controllers
         {
             if (string.IsNullOrWhiteSpace(actionDTO.TaskId) || string.IsNullOrWhiteSpace(actionDTO.Prompt))
             {
-                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "参数错误"));
+                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "Invalid parameters"));
             }
 
             var targetTask = _taskStoreService.Get(actionDTO.TaskId);
             if (targetTask == null)
             {
-                return NotFound(SubmitResultVO.Fail(ReturnCode.NOT_FOUND, "关联任务不存在或已失效"));
+                return NotFound(SubmitResultVO.Fail(ReturnCode.NOT_FOUND, "The related task does not exist or has expired"));
             }
 
             var prompt = actionDTO.Prompt;
@@ -662,12 +663,12 @@ namespace Midjourney.API.Controllers
             }
             catch (BannedPromptException e)
             {
-                return Ok(SubmitResultVO.Fail(ReturnCode.BANNED_PROMPT, "可能包含敏感词")
+                return Ok(SubmitResultVO.Fail(ReturnCode.BANNED_PROMPT, "It may contain sensitive words")
                     .SetProperty("promptEn", promptEn)
                     .SetProperty("bannedWord", e.Message));
             }
 
-            // 不检查
+            // Do not check
             DataUrl dataUrl = null;
             try
             {
@@ -675,9 +676,9 @@ namespace Midjourney.API.Controllers
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "base64格式转换异常");
+                _logger.LogError(e, "Base64 format conversion error");
 
-                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "base64格式错误"));
+                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "Invalid base64 format"));
             }
 
             if (string.IsNullOrWhiteSpace(task.Prompt))
@@ -687,7 +688,7 @@ namespace Midjourney.API.Controllers
 
             task.PromptEn = promptEn;
 
-            // 提交 modal 指示为 true
+            // Submit modal indicates true
             task.RemixAutoSubmit = true;
 
             return Ok(_taskService.SubmitModal(task, actionDTO, dataUrl));
@@ -722,11 +723,11 @@ namespace Midjourney.API.Controllers
 
             var now = new DateTimeOffset(DateTime.Now.Date).ToUnixTimeMilliseconds();
 
-            // 计算当前 ip 当日第几次绘图
-            // 如果不是白名单用户，则计算 ip 绘图限制
+            // Calculate the number of drawings for the current IP today
+            // If not a whitelist user, calculate the IP drawing limit
             if (user == null || user.IsWhite != true)
             {
-                // 访客绘图绘图上限验证
+                // Visitor drawing limit validation
                 if (user == null)
                 {
                     if (GlobalConfiguration.Setting.GuestDefaultDayLimit > 0)
@@ -734,7 +735,7 @@ namespace Midjourney.API.Controllers
                         var ipTodayDrawCount = (int)DbHelper.Instance.TaskStore.Count(x => x.SubmitTime >= now && x.ClientIp == _ip);
                         if (ipTodayDrawCount > GlobalConfiguration.Setting.GuestDefaultDayLimit)
                         {
-                            throw new LogicException("今日绘图次数已达上限");
+                            throw new LogicException("You have reached your daily drawing limit");
                         }
                     }
                 }
@@ -742,7 +743,7 @@ namespace Midjourney.API.Controllers
                 var ban = GlobalConfiguration.Setting.BannedLimiting;
                 if (ban?.Enable == true && ban?.Rules?.Count > 0)
                 {
-                    // 用户封锁验证
+                    // User blocking verification
                     if (!string.IsNullOrWhiteSpace(task.UserId))
                     {
                         // user band
@@ -753,13 +754,13 @@ namespace Midjourney.API.Controllers
                             var lockKey = $"banned:lock:{task.UserId}";
                             if (_memoryCache.TryGetValue(lockKey, out int lockValue) && lockValue > 0)
                             {
-                                throw new LogicException("账号已被临时封锁，请勿使用违规词作图");
+                                throw new LogicException("Your account has been temporarily blocked, please do not use disallowed words");
                             }
 
                             foreach (var item in ban.Rules.OrderByDescending(c => c.Key))
                             {
-                                // 触发次数
-                                // 设置封锁时间
+                                // Trigger count
+                                // Set lock time
                                 if (limit >= item.Key && item.Value > 0)
                                 {
                                     _memoryCache.Set(lockKey, limit, TimeSpan.FromMinutes(item.Value));
@@ -769,12 +770,12 @@ namespace Midjourney.API.Controllers
 
                             if (_memoryCache.TryGetValue(lockKey, out int lockValue2) && lockValue2 > 0)
                             {
-                                throw new LogicException("账号已被临时封锁，请勿使用违规词作图");
+                                throw new LogicException("Your account has been temporarily blocked, please do not use disallowed words");
                             }
                         }
                     }
 
-                    // 访客封锁验证
+                    // Visitor blocking verification
                     if (user == null)
                     {
                         // ip band
@@ -785,13 +786,13 @@ namespace Midjourney.API.Controllers
                             var lockKey = $"banned:lock:{task.ClientIp}";
                             if (_memoryCache.TryGetValue(lockKey, out int lockValue) && lockValue > 0)
                             {
-                                throw new LogicException("账号已被临时封锁，请勿使用违规词作图");
+                                throw new LogicException("Your account has been temporarily blocked, please do not use disallowed words");
                             }
 
                             foreach (var item in ban.Rules.OrderByDescending(c => c.Key))
                             {
-                                // 触发次数
-                                // 设置封锁时间
+                                // Trigger count
+                                // Set lock time
                                 if (limit >= item.Key && item.Value > 0)
                                 {
                                     _memoryCache.Set(lockKey, limit, TimeSpan.FromMinutes(item.Value));
@@ -801,14 +802,14 @@ namespace Midjourney.API.Controllers
 
                             if (_memoryCache.TryGetValue(lockKey, out int lockValue2) && lockValue2 > 0)
                             {
-                                throw new LogicException("账号已被临时封锁，请勿使用违规词作图");
+                                throw new LogicException("Your account has been temporarily blocked, please do not use disallowed words");
                             }
                         }
                     }
                 }
             }
 
-            // 计算当前用户当日第几次绘图
+            // Calculate the number of drawings for the current user today
             if (!string.IsNullOrWhiteSpace(user?.Id))
             {
                 if (user.DayDrawLimit > 0)
@@ -816,7 +817,7 @@ namespace Midjourney.API.Controllers
                     var userTodayDrawCount = (int)DbHelper.Instance.TaskStore.Count(x => x.SubmitTime >= now && x.UserId == user.Id);
                     if (userTodayDrawCount > user.DayDrawLimit)
                     {
-                        throw new LogicException("今日绘图次数已达上限");
+                        throw new LogicException("You have reached your daily drawing limit");
                     }
                 }
             }

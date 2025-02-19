@@ -44,7 +44,7 @@ using EventData = Midjourney.Infrastructure.Dto.EventData;
 namespace Midjourney.Infrastructure
 {
     /// <summary>
-    /// 机器人消息监听器。
+    /// Bot message listener.
     /// </summary>
     public class BotMessageListener : IDisposable
     {
@@ -79,7 +79,7 @@ namespace Midjourney.Infrastructure
 
         public async Task StartAsync()
         {
-            // 机器人 TOKEN 可选
+            // Bot TOKEN optional
             if (string.IsNullOrWhiteSpace(Account.BotToken))
             {
                 return;
@@ -99,7 +99,7 @@ namespace Midjourney.Infrastructure
                 : DefaultRestClientProvider.Create(true),
                 WebSocketProvider = DefaultWebSocketProvider.Create(_webProxy),
 
-                // 读取消息权限 GatewayIntents.MessageContent
+                // Read message permissions GatewayIntents.MessageContent
                 // GatewayIntents.AllUnprivileged & ~(GatewayIntents.GuildScheduledEvents | GatewayIntents.GuildInvites) | GatewayIntents.MessageContent
                 GatewayIntents = GatewayIntents.AllUnprivileged & ~(GatewayIntents.GuildScheduledEvents | GatewayIntents.GuildInvites) | GatewayIntents.MessageContent
             });
@@ -164,7 +164,7 @@ namespace Midjourney.Infrastructure
         }
 
         /// <summary>
-        /// 处理接收到的消息
+        /// Handle received messages
         /// </summary>
         /// <param name="arg"></param>
         /// <returns></returns>
@@ -182,19 +182,19 @@ namespace Midjourney.Infrastructure
                 {
                     foreach (var handler in _botMessageHandlers.OrderBy(h => h.Order()))
                     {
-                        // 消息加锁处理
+                        // Message lock processing
                         LocalLock.TryLock($"lock_{msg.Id}", TimeSpan.FromSeconds(10), () =>
                         {
                             handler.Handle(_discordInstance, MessageType.CREATE, msg);
                         });
                     }
                 }
-                // describe 重新提交
+                // describe resubmit
                 // MJ::Picread::Retry
                 else if (msg.Embeds.Count > 0 && msg.Author.IsBot && msg.Components.Count > 0
                     && msg.Components.First().Components.Any(x => x.CustomId?.Contains("PicReader") == true))
                 {
-                    // 消息加锁处理
+                    // Message lock processing
                     LocalLock.TryLock($"lock_{msg.Id}", TimeSpan.FromSeconds(10), () =>
                     {
                         var em = msg.Embeds.FirstOrDefault();
@@ -208,14 +208,14 @@ namespace Midjourney.Infrastructure
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "处理 bot 消息异常");
+                Log.Error(ex, "Exception handling bot message");
             }
 
             await Task.CompletedTask;
         }
 
         /// <summary>
-        /// 处理更新消息
+        /// Handle updated messages
         /// </summary>
         /// <param name="before"></param>
         /// <param name="after"></param>
@@ -250,19 +250,19 @@ namespace Midjourney.Infrastructure
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "处理 bot 更新消息异常");
+                Log.Error(ex, "Exception handling bot updated message");
             }
         }
 
         /// <summary>
-        /// 处理接收到用户 ws 消息
+        /// Handle received user ws messages
         /// </summary>
         /// <param name="raw"></param>
         public void OnMessage(JsonElement raw)
         {
             try
             {
-                _logger.Debug("用户收到消息 {@0}", raw.ToString());
+                _logger.Debug("User received message {@0}", raw.ToString());
 
                 if (!raw.TryGetProperty("t", out JsonElement messageTypeElement))
                 {
@@ -280,18 +280,18 @@ namespace Midjourney.Infrastructure
                     return;
                 }
 
-                // 触发 CF 真人验证
+                // Trigger CF human verification
                 if (messageType == MessageType.INTERACTION_IFRAME_MODAL_CREATE)
                 {
                     if (data.TryGetProperty("title", out var t))
                     {
                         if (t.GetString() == "Action required to continue")
                         {
-                            _logger.Warning("CF 验证 {@0}, {@1}", Account.ChannelId, raw.ToString());
+                            _logger.Warning("CF verification {@0}, {@1}", Account.ChannelId, raw.ToString());
 
-                            // 全局锁定中
-                            // 等待人工处理或者自动处理
-                            // 重试最多 3 次，最多处理 5 分钟
+                            // Global lock
+                            // Wait for manual or automatic processing
+                            // Retry up to 3 times, process up to 5 minutes
                             LocalLock.TryLock($"cf_{Account.ChannelId}", TimeSpan.FromSeconds(10), () =>
                             {
                                 try
@@ -306,8 +306,8 @@ namespace Midjourney.Infrastructure
                                         var hash = custom_id.Split("::").LastOrDefault();
                                         var hashUrl = $"https://{application_id}.discordsays.com/captcha/api/c/{hash}/ack?hash=1";
 
-                                        // 验证中，处于锁定模式
-                                        Account.DisabledReason = "CF 自动验证中...";
+                                        // Verification in progress, in lock mode
+                                        Account.DisabledReason = "CF automatic verification in progress...";
                                         Account.CfHashUrl = hashUrl;
                                         Account.CfHashCreated = DateTime.Now;
 
@@ -316,10 +316,10 @@ namespace Midjourney.Infrastructure
 
                                         try
                                         {
-                                            // 通知验证服务器
+                                            // Notify verification server
                                             if (!string.IsNullOrWhiteSpace(_properties.CaptchaNotifyHook) && !string.IsNullOrWhiteSpace(_properties.CaptchaServer))
                                             {
-                                                // 使用 restsharp 通知，最多 3 次
+                                                // Use restsharp to notify, up to 3 times
                                                 var notifyCount = 0;
                                                 do
                                                 {
@@ -345,8 +345,8 @@ namespace Midjourney.Infrastructure
                                                     var response = client.Execute(request);
                                                     if (response.StatusCode == System.Net.HttpStatusCode.OK)
                                                     {
-                                                        // 已通知自动验证服务器
-                                                        _logger.Information("CF 验证，已通知服务器 {@0}, {@1}", Account.ChannelId, hashUrl);
+                                                        // Notified automatic verification server
+                                                        _logger.Information("CF verification, notified server {@0}, {@1}", Account.ChannelId, hashUrl);
 
                                                         break;
                                                     }
@@ -354,13 +354,13 @@ namespace Midjourney.Infrastructure
                                                     Thread.Sleep(1000);
                                                 } while (true);
 
-                                                // 发送邮件
-                                                EmailJob.Instance.EmailSend(_properties.Smtp, $"CF自动真人验证-{Account.ChannelId}", hashUrl);
+                                                // Send email
+                                                EmailJob.Instance.EmailSend(_properties.Smtp, $"CF automatic human verification-{Account.ChannelId}", hashUrl);
                                             }
                                             else
                                             {
-                                                // 发送 hashUrl GET 请求, 返回 {"hash":"OOUxejO94EQNxsCODRVPbg","token":"dXDm-gSb4Zlsx-PCkNVyhQ"}
-                                                // 通过 hash 和 token 拼接验证 CF 验证 URL
+                                                // Send hashUrl GET request, return {"hash":"OOUxejO94EQNxsCODRVPbg","token":"dXDm-gSb4Zlsx-PCkNVyhQ"}
+                                                // Concatenate verification CF verification URL with hash and token
 
                                                 WebProxy webProxy = null;
                                                 var proxy = GlobalConfiguration.Setting.Proxy;
@@ -379,7 +379,7 @@ namespace Midjourney.Infrastructure
                                                 var con = response.Content.ReadAsStringAsync().Result;
                                                 if (!string.IsNullOrWhiteSpace(con))
                                                 {
-                                                    // 解析
+                                                    // Parse
                                                     var json = JsonSerializer.Deserialize<JsonElement>(con);
                                                     if (json.TryGetProperty("hash", out var h) && json.TryGetProperty("token", out var to))
                                                     {
@@ -388,23 +388,23 @@ namespace Midjourney.Infrastructure
 
                                                         if (!string.IsNullOrWhiteSpace(hashStr) && !string.IsNullOrWhiteSpace(token))
                                                         {
-                                                            // 发送验证 URL
-                                                            // 通过 hash 和 token 拼接验证 CF 验证 URL
+                                                            // Send verification URL
+                                                            // Concatenate verification CF verification URL with hash and token
                                                             // https://editor.midjourney.com/captcha/challenge/index.html?hash=OOUxejO94EQNxsCODRVPbg&token=dXDm-gSb4Zlsx-PCkNVyhQ
 
                                                             var url = $"https://editor.midjourney.com/captcha/challenge/index.html?hash={hashStr}&token={token}";
 
-                                                            _logger.Information($"{Account.ChannelId}, CF 真人验证 URL: {url}");
+                                                            _logger.Information($"{Account.ChannelId}, CF human verification URL: {url}");
 
                                                             Account.CfUrl = url;
 
-                                                            // 发送邮件
-                                                            EmailJob.Instance.EmailSend(_properties.Smtp, $"CF手动真人验证-{Account.ChannelId}", url);
+                                                            // Send email
+                                                            EmailJob.Instance.EmailSend(_properties.Smtp, $"CF manual human verification-{Account.ChannelId}", url);
                                                         }
                                                     }
                                                 }
 
-                                                Account.DisabledReason = "CF 人工验证...";
+                                                Account.DisabledReason = "CF manual verification...";
 
                                                 DbHelper.Instance.AccountStore.Update(Account);
                                                 _discordInstance.ClearAccountCache(Account.Id);
@@ -412,13 +412,13 @@ namespace Midjourney.Infrastructure
                                         }
                                         catch (Exception ex)
                                         {
-                                            _logger.Error(ex, "CF 真人验证处理失败 {@0}", Account.ChannelId);
+                                            _logger.Error(ex, "CF human verification processing failed {@0}", Account.ChannelId);
                                         }
                                     }
                                 }
                                 catch (Exception ex)
                                 {
-                                    _logger.Error(ex, "CF 真人验证处理异常 {@0}", Account.ChannelId);
+                                    _logger.Error(ex, "CF human verification processing exception {@0}", Account.ChannelId);
                                 }
                             });
 
@@ -427,14 +427,14 @@ namespace Midjourney.Infrastructure
                     }
                 }
 
-                // 内容
+                // Content
                 var contentStr = string.Empty;
                 if (data.TryGetProperty("content", out JsonElement content))
                 {
                     contentStr = content.GetString();
                 }
 
-                // 作者
+                // Author
                 var authorName = string.Empty;
                 var authId = string.Empty;
                 if (data.TryGetProperty("author", out JsonElement author)
@@ -445,14 +445,14 @@ namespace Midjourney.Infrastructure
                     authId = uid.GetString();
                 }
 
-                // 应用 ID 即机器人 ID
+                // Application ID is the bot ID
                 var applicationId = string.Empty;
                 if (data.TryGetProperty("application_id", out JsonElement application))
                 {
                     applicationId = application.GetString();
                 }
 
-                // 交互元数据 id
+                // Interaction metadata id
                 var metaId = string.Empty;
                 var metaName = string.Empty;
                 if (data.TryGetProperty("interaction_metadata", out JsonElement meta) && meta.TryGetProperty("id", out var mid))
@@ -462,7 +462,7 @@ namespace Midjourney.Infrastructure
                     metaName = meta.TryGetProperty("name", out var n) ? n.GetString() : string.Empty;
                 }
 
-                // 处理 remix 开关
+                // Handle remix switch
                 if (metaName == "prefer remix" && !string.IsNullOrWhiteSpace(contentStr))
                 {
                     // MJ
@@ -531,10 +531,10 @@ namespace Midjourney.Infrastructure
 
                     return;
                 }
-                // 同步 settings 和 remix
+                // Sync settings and remix
                 else if (metaName == "settings")
                 {
-                    // settings 指令
+                    // settings command
                     var eventDataMsg = data.Deserialize<EventData>();
                     if (eventDataMsg != null && eventDataMsg.InteractionMetadata?.Name == "settings" && eventDataMsg.Components?.Count > 0)
                     {
@@ -552,7 +552,7 @@ namespace Midjourney.Infrastructure
                         }
                     }
                 }
-                // 切换 fast 和 relax
+                // Switch fast and relax
                 else if (metaName == "fast" || metaName == "relax" || metaName == "turbo")
                 {
                     // MJ
@@ -681,7 +681,7 @@ namespace Midjourney.Infrastructure
                     return;
                 }
 
-                // 私信频道
+                // Private channel
                 var isPrivareChannel = false;
                 if (data.TryGetProperty("channel_id", out JsonElement channelIdElement))
                 {
@@ -696,13 +696,13 @@ namespace Midjourney.Infrastructure
                         isPrivareChannel = false;
                     }
 
-                    // 都不相同
-                    // 如果有渠道 id，但不是当前渠道 id，则忽略
+                    // All different
+                    // If there is a channel id, but it is not the current channel id, ignore it
                     if (cid != Account.ChannelId
                         && cid != Account.PrivateChannelId
                         && cid != Account.NijiBotChannelId)
                     {
-                        // 如果也不是子频道 id, 则忽略
+                        // If it is not a sub-channel id, ignore it
                         if (!Account.SubChannelValues.ContainsKey(cid))
                         {
                             return;
@@ -712,24 +712,24 @@ namespace Midjourney.Infrastructure
 
                 if (isPrivareChannel)
                 {
-                    // 私信频道
+                    // Private channel
                     if (messageType == MessageType.CREATE && data.TryGetProperty("id", out JsonElement subIdElement))
                     {
                         var id = subIdElement.GetString();
 
-                        // 定义正则表达式模式
+                        // Define regex pattern
                         // "**girl**\n**Job ID**: 6243686b-7ab1-4174-a9fe-527cca66a829\n**seed** 1259687673"
                         var pattern = @"\*\*Job ID\*\*:\s*(?<jobId>[a-fA-F0-9-]{36})\s*\*\*seed\*\*\s*(?<seed>\d+)";
 
-                        // 创建正则表达式对象
+                        // Create regex object
                         var regex = new Regex(pattern);
 
-                        // 尝试匹配输入字符串
+                        // Try to match input string
                         var match = regex.Match(contentStr);
 
                         if (match.Success)
                         {
-                            // 提取 Job ID 和 seed
+                            // Extract Job ID and seed
                             var jobId = match.Groups["jobId"].Value;
                             var seed = match.Groups["seed"].Value;
 
@@ -749,8 +749,8 @@ namespace Midjourney.Infrastructure
                         }
                         else
                         {
-                            // 获取附件对象 attachments 中的第一个对象的 url 属性
-                            // seed 消息处理
+                            // Get the url property of the first object in the attachments array
+                            // seed message processing
                             if (data.TryGetProperty("attachments", out JsonElement attachments) && attachments.ValueKind == JsonValueKind.Array)
                             {
                                 if (attachments.EnumerateArray().Count() > 0)
@@ -787,20 +787,20 @@ namespace Midjourney.Infrastructure
                     return;
                 }
 
-                // 任务 id
-                // 任务 nonce
+                // Task id
+                // Task nonce
                 if (data.TryGetProperty("id", out JsonElement idElement))
                 {
                     var id = idElement.GetString();
 
-                    _logger.Information($"用户消息, {messageType}, {Account.GetDisplay()} - id: {id}, mid: {metaId}, {authorName}, content: {contentStr}");
+                    _logger.Information($"User message, {messageType}, {Account.GetDisplay()} - id: {id}, mid: {metaId}, {authorName}, content: {contentStr}");
 
                     var isEm = data.TryGetProperty("embeds", out var em);
                     if ((messageType == MessageType.CREATE || messageType == MessageType.UPDATE) && isEm)
                     {
                         if (metaName == "info" && messageType == MessageType.UPDATE)
                         {
-                            // info 指令
+                            // info command
                             if (em.ValueKind == JsonValueKind.Array)
                             {
                                 foreach (JsonElement item in em.EnumerateArray())
@@ -843,7 +843,7 @@ namespace Midjourney.Infrastructure
                         }
                         else if (metaName == "settings" && data.TryGetProperty("components", out var components))
                         {
-                            // settings 指令
+                            // settings command
                             var eventDataMsg = data.Deserialize<EventData>();
                             if (eventDataMsg != null && eventDataMsg.InteractionMetadata?.Name == "settings" && eventDataMsg.Components?.Count > 0)
                             {
@@ -868,42 +868,42 @@ namespace Midjourney.Infrastructure
                             return;
                         }
 
-                        // em 是一个 JSON 数组
+                        // em is a JSON array
                         if (em.ValueKind == JsonValueKind.Array)
                         {
                             foreach (JsonElement item in em.EnumerateArray())
                             {
                                 if (item.TryGetProperty("title", out var emTitle))
                                 {
-                                    // 判断账号是否用量已经用完
+                                    // Determine if the account usage is exhausted
                                     var title = emTitle.GetString();
 
                                     // 16711680 error, 65280 success, 16776960 warning
                                     var color = item.TryGetProperty("color", out var colorEle) ? colorEle.GetInt32() : 0;
 
-                                    // 描述
+                                    // Description
                                     var desc = item.GetProperty("description").GetString();
 
-                                    _logger.Information($"用户 embeds 消息, {messageType}, {Account.GetDisplay()} - id: {id}, mid: {metaId}, {authorName}, embeds: {title}, {color}, {desc}");
+                                    _logger.Information($"User embeds message, {messageType}, {Account.GetDisplay()} - id: {id}, mid: {metaId}, {authorName}, embeds: {title}, {color}, {desc}");
 
-                                    // 无效参数、违规的提示词、无效提示词
+                                    // Invalid parameter, banned prompt, invalid prompt
                                     var errorTitles = new[] {
-                                        "Invalid prompt", // 无效提示词
-                                        "Invalid parameter", // 无效参数
-                                        "Banned prompt detected", // 违规提示词
-                                        "Invalid link", // 无效链接
+                                        "Invalid prompt", // Invalid prompt
+                                        "Invalid parameter", // Invalid parameter
+                                        "Banned prompt detected", // Banned prompt
+                                        "Invalid link", // Invalid link
                                         "Request cancelled due to output filters",
-                                        "Queue full", // 执行中的队列已满
+                                        "Queue full", // Queue full
                                     };
 
-                                    // 跳过的 title
+                                    // Skipped titles
                                     var continueTitles = new[] { "Action needed to continue" };
 
-                                    // fast 用量已经使用完了
+                                    // fast usage exhausted
                                     if (title == "Credits exhausted")
                                     {
-                                        // 你的处理逻辑
-                                        _logger.Information($"账号 {Account.GetDisplay()} 用量已经用完");
+                                        // Your processing logic
+                                        _logger.Information($"Account {Account.GetDisplay()} usage exhausted");
 
                                         var task = _discordInstance.FindRunningTask(c => c.MessageId == id).FirstOrDefault();
                                         if (task == null && !string.IsNullOrWhiteSpace(metaId))
@@ -913,14 +913,14 @@ namespace Midjourney.Infrastructure
 
                                         if (task != null)
                                         {
-                                            task.Fail("账号用量已经用完");
+                                            task.Fail("Account usage exhausted");
                                         }
 
 
-                                        // 标记快速模式已经用完了
+                                        // Mark fast mode exhausted
                                         Account.FastExhausted = true;
 
-                                        // 自动设置慢速，如果快速用完
+                                        // Automatically set to relax if fast is exhausted
                                         if (Account.FastExhausted == true && Account.EnableAutoSetRelax == true)
                                         {
                                             Account.AllowModes = new List<GenerationSpeedMode>() { GenerationSpeedMode.RELAX };
@@ -934,13 +934,13 @@ namespace Midjourney.Infrastructure
                                         DbHelper.Instance.AccountStore.Update("AllowModes,FastExhausted,CoreSize", Account);
                                         _discordInstance?.ClearAccountCache(Account.Id);
 
-                                        // 如果开启自动切换慢速模式
+                                        // If auto switch to relax mode is enabled
                                         if (Account.EnableFastToRelax == true)
                                         {
-                                            // 切换到慢速模式
-                                            // 加锁切换到慢速模式
-                                            // 执行切换慢速命令
-                                            // 如果当前不是慢速，则切换慢速，加锁切换
+                                            // Switch to relax mode
+                                            // Lock switch to relax mode
+                                            // Execute switch relax command
+                                            // If not currently in relax mode, switch to relax mode, lock switch
                                             if (Account.MjFastModeOn || Account.NijiFastModeOn)
                                             {
                                                 _ = AsyncLocalLock.TryLockAsync($"relax:{Account.ChannelId}", TimeSpan.FromSeconds(5), async () =>
@@ -955,54 +955,54 @@ namespace Midjourney.Infrastructure
                                                     }
                                                     catch (Exception ex)
                                                     {
-                                                        _logger.Error(ex, "切换慢速异常 {@0}", Account.ChannelId);
+                                                        _logger.Error(ex, "Exception switching to relax mode {@0}", Account.ChannelId);
                                                     }
                                                 });
                                             }
                                         }
                                         else
                                         {
-                                            // 你的处理逻辑
-                                            _logger.Warning($"账号 {Account.GetDisplay()} 用量已经用完, 自动禁用账号");
+                                            // Your processing logic
+                                            _logger.Warning($"Account {Account.GetDisplay()} usage exhausted, auto disable account");
 
-                                            // 5s 后禁用账号
+                                            // Disable account after 5s
                                             Task.Run(() =>
                                             {
                                                 try
                                                 {
                                                     Thread.Sleep(5 * 1000);
 
-                                                    // 保存
+                                                    // Save
                                                     Account.Enable = false;
-                                                    Account.DisabledReason = "账号用量已经用完";
+                                                    Account.DisabledReason = "Account usage exhausted";
 
                                                     DbHelper.Instance.AccountStore.Update(Account);
                                                     _discordInstance?.ClearAccountCache(Account.Id);
                                                     _discordInstance?.Dispose();
 
 
-                                                    // 发送邮件
-                                                    EmailJob.Instance.EmailSend(_properties.Smtp, $"MJ账号禁用通知-{Account.ChannelId}",
+                                                    // Send email
+                                                    EmailJob.Instance.EmailSend(_properties.Smtp, $"MJ account disable notification-{Account.ChannelId}",
                                                         $"{Account.ChannelId}, {Account.DisabledReason}");
                                                 }
                                                 catch (Exception ex)
                                                 {
-                                                    Log.Error(ex, "账号用量已经用完, 禁用账号异常 {@0}", Account.ChannelId);
+                                                    Log.Error(ex, "Account usage exhausted, exception disabling account {@0}", Account.ChannelId);
                                                 }
                                             });
                                         }
 
                                         return;
                                     }
-                                    // 临时禁止/订阅取消/订阅过期/订阅暂停
+                                    // Temporarily banned/subscription cancelled/subscription expired/subscription paused
                                     else if (title == "Pending mod message"
                                         || title == "Blocked"
                                         || title == "Plan Cancelled"
                                         || title == "Subscription required"
                                         || title == "Subscription paused")
                                     {
-                                        // 你的处理逻辑
-                                        _logger.Warning($"账号 {Account.GetDisplay()} {title}, 自动禁用账号");
+                                        // Your processing logic
+                                        _logger.Warning($"Account {Account.GetDisplay()} {title}, auto disable account");
 
                                         var task = _discordInstance.FindRunningTask(c => c.MessageId == id).FirstOrDefault();
                                         if (task == null && !string.IsNullOrWhiteSpace(metaId))
@@ -1015,14 +1015,14 @@ namespace Midjourney.Infrastructure
                                             task.Fail(title);
                                         }
 
-                                        // 5s 后禁用账号
+                                        // Disable account after 5s
                                         Task.Run(() =>
                                         {
                                             try
                                             {
                                                 Thread.Sleep(5 * 1000);
 
-                                                // 保存
+                                                // Save
                                                 Account.Enable = false;
                                                 Account.DisabledReason = $"{title}, {desc}";
 
@@ -1031,19 +1031,19 @@ namespace Midjourney.Infrastructure
                                                 _discordInstance?.ClearAccountCache(Account.Id);
                                                 _discordInstance?.Dispose();
 
-                                                // 发送邮件
-                                                EmailJob.Instance.EmailSend(_properties.Smtp, $"MJ账号禁用通知-{Account.ChannelId}",
+                                                // Send email
+                                                EmailJob.Instance.EmailSend(_properties.Smtp, $"MJ account disable notification-{Account.ChannelId}",
                                                     $"{Account.ChannelId}, {Account.DisabledReason}");
                                             }
                                             catch (Exception ex)
                                             {
-                                                Log.Error(ex, "{@0}, 禁用账号异常 {@1}", title, Account.ChannelId);
+                                                Log.Error(ex, "{@0}, exception disabling account {@1}", title, Account.ChannelId);
                                             }
                                         });
 
                                         return;
                                     }
-                                    // 执行中的任务已满（一般超过 3 个时）
+                                    // Running tasks full (usually more than 3)
                                     else if (title == "Job queued")
                                     {
                                         if (data.TryGetProperty("nonce", out JsonElement noneEle))
@@ -1051,13 +1051,13 @@ namespace Midjourney.Infrastructure
                                             var nonce = noneEle.GetString();
                                             if (!string.IsNullOrWhiteSpace(id) && !string.IsNullOrWhiteSpace(nonce))
                                             {
-                                                // 设置 none 对应的任务 id
+                                                // Set task id corresponding to none
                                                 var task = _discordInstance.GetRunningTaskByNonce(nonce);
                                                 if (task != null)
                                                 {
                                                     if (messageType == MessageType.CREATE)
                                                     {
-                                                        // 不需要赋值
+                                                        // No need to assign
                                                         //task.MessageId = id;
 
                                                         task.Description = $"{title}, {desc}";
@@ -1071,12 +1071,12 @@ namespace Midjourney.Infrastructure
                                             }
                                         }
                                     }
-                                    // 暂时跳过的业务处理
+                                    // Temporarily skipped business processing
                                     else if (continueTitles.Contains(title))
                                     {
-                                        _logger.Warning("跳过 embeds {@0}, {@1}", Account.ChannelId, data.ToString());
+                                        _logger.Warning("Skipped embeds {@0}, {@1}", Account.ChannelId, data.ToString());
                                     }
-                                    // 其他错误消息
+                                    // Other error messages
                                     else if (errorTitles.Contains(title)
                                         || color == 16711680
                                         || title.Contains("Invalid")
@@ -1089,11 +1089,11 @@ namespace Midjourney.Infrastructure
                                             var nonce = noneEle.GetString();
                                             if (!string.IsNullOrWhiteSpace(id) && !string.IsNullOrWhiteSpace(nonce))
                                             {
-                                                // 设置 none 对应的任务 id
+                                                // Set task id corresponding to none
                                                 var task = _discordInstance.GetRunningTaskByNonce(nonce);
                                                 if (task != null)
                                                 {
-                                                    // 需要用户同意 Tos
+                                                    // User needs to agree to Tos
                                                     if (title.Contains("Tos not accepted"))
                                                     {
                                                         try
@@ -1111,18 +1111,18 @@ namespace Midjourney.Infrastructure
 
                                                                 if (tosRes?.Code == ReturnCode.SUCCESS)
                                                                 {
-                                                                    _logger.Information("处理 Tos 成功 {@0}", Account.ChannelId);
+                                                                    _logger.Information("Successfully processed Tos {@0}", Account.ChannelId);
                                                                     return;
                                                                 }
                                                                 else
                                                                 {
-                                                                    _logger.Information("处理 Tos 失败 {@0}, {@1}", Account.ChannelId, tosRes);
+                                                                    _logger.Information("Failed to process Tos {@0}, {@1}", Account.ChannelId, tosRes);
                                                                 }
                                                             }
                                                         }
                                                         catch (Exception ex)
                                                         {
-                                                            _logger.Error(ex, "处理 Tos 异常 {@0}", Account.ChannelId);
+                                                            _logger.Error(ex, "Exception processing Tos {@0}", Account.ChannelId);
                                                         }
                                                     }
 
@@ -1142,11 +1142,11 @@ namespace Midjourney.Infrastructure
                                         }
                                         else
                                         {
-                                            // 如果 meta 是 show
-                                            // 说明是 show 任务出错了
+                                            // If meta is show
+                                            // Indicates that the show task failed
                                             if (metaName == "show" && !string.IsNullOrWhiteSpace(desc))
                                             {
-                                                // 设置 none 对应的任务 id
+                                                // Set task id corresponding to none
                                                 var task = _discordInstance.GetRunningTasks().Where(c => c.Action == TaskAction.SHOW && desc.Contains(c.JobId)).FirstOrDefault();
                                                 if (task != null)
                                                 {
@@ -1168,7 +1168,7 @@ namespace Midjourney.Infrastructure
                                             }
                                             else
                                             {
-                                                // 没有获取到 none 尝试使用 mid 获取 task
+                                                // If no none is obtained, try to use mid to get task
                                                 var task = _discordInstance.GetRunningTasks()
                                                     .Where(c => c.MessageId == metaId || c.MessageIds.Contains(metaId) || c.InteractionMetadataId == metaId)
                                                     .FirstOrDefault();
@@ -1179,13 +1179,13 @@ namespace Midjourney.Infrastructure
                                                 }
                                                 else
                                                 {
-                                                    // 如果没有获取到 none
-                                                    _logger.Error("未知 embeds 错误 {@0}, {@1}", Account.ChannelId, data.ToString());
+                                                    // If no none is obtained
+                                                    _logger.Error("Unknown embeds error {@0}, {@1}", Account.ChannelId, data.ToString());
                                                 }
                                             }
                                         }
                                     }
-                                    // 未知消息
+                                    // Unknown message
                                     else
                                     {
                                         if (data.TryGetProperty("nonce", out JsonElement noneEle))
@@ -1193,7 +1193,7 @@ namespace Midjourney.Infrastructure
                                             var nonce = noneEle.GetString();
                                             if (!string.IsNullOrWhiteSpace(id) && !string.IsNullOrWhiteSpace(nonce))
                                             {
-                                                // 设置 none 对应的任务 id
+                                                // Set task id corresponding to none
                                                 var task = _discordInstance.GetRunningTaskByNonce(nonce);
                                                 if (task != null)
                                                 {
@@ -1207,7 +1207,7 @@ namespace Midjourney.Infrastructure
                                                             task.MessageIds.Add(id);
                                                         }
 
-                                                        _logger.Warning($"未知消息: {title}, {desc}, {Account.ChannelId}");
+                                                        _logger.Warning($"Unknown message: {title}, {desc}, {Account.ChannelId}");
                                                     }
                                                 }
                                             }
@@ -1223,28 +1223,28 @@ namespace Midjourney.Infrastructure
                     {
                         var nonce = noneElement.GetString();
 
-                        _logger.Debug($"用户消息, {messageType}, id: {id}, nonce: {nonce}");
+                        _logger.Debug($"User message, {messageType}, id: {id}, nonce: {nonce}");
 
                         if (!string.IsNullOrWhiteSpace(id) && !string.IsNullOrWhiteSpace(nonce))
                         {
-                            // 设置 none 对应的任务 id
+                            // Set task id corresponding to none
                             var task = _discordInstance.GetRunningTaskByNonce(nonce);
                             if (task != null && task.Status != TaskStatus.SUCCESS && task.Status != TaskStatus.FAILURE)
                             {
                                 if (isPrivareChannel)
                                 {
-                                    // 私信频道
+                                    // Private channel
                                 }
                                 else
                                 {
-                                    // 绘画频道
+                                    // Drawing channel
 
-                                    // MJ 交互成功后
+                                    // MJ interaction success
                                     if (messageType == MessageType.INTERACTION_SUCCESS)
                                     {
                                         task.InteractionMetadataId = id;
                                     }
-                                    // MJ 局部重绘完成后
+                                    // MJ partial redraw complete
                                     else if (messageType == MessageType.INTERACTION_IFRAME_MODAL_CREATE
                                         && data.TryGetProperty("custom_id", out var custom_id))
                                     {
@@ -1267,12 +1267,12 @@ namespace Midjourney.Infrastructure
                                         }
                                     }
 
-                                    // 只有 CREATE 才会设置消息 id
+                                    // Only CREATE will set message id
                                     if (messageType == MessageType.CREATE)
                                     {
                                         task.MessageId = id;
 
-                                        // 设置 prompt 完整词
+                                        // Set prompt full text
                                         if (!string.IsNullOrWhiteSpace(contentStr) && contentStr.Contains("(Waiting to start)"))
                                         {
                                             if (string.IsNullOrWhiteSpace(task.PromptFull))
@@ -1282,7 +1282,7 @@ namespace Midjourney.Infrastructure
                                         }
                                     }
 
-                                    // 如果任务是 remix 自动提交任务
+                                    // If the task is remix auto submit task
                                     if (task.RemixAutoSubmit
                                         && task.RemixModaling == true
                                         && messageType == MessageType.INTERACTION_SUCCESS)
@@ -1297,8 +1297,8 @@ namespace Midjourney.Infrastructure
 
                 var eventData = data.Deserialize<EventData>();
 
-                // 如果消息类型是 CREATE
-                // 则再次处理消息确认事件，确保消息的高可用
+                // If the message type is CREATE
+                // Then process the message confirmation event again to ensure high availability of the message
                 if (messageType == MessageType.CREATE)
                 {
                     Thread.Sleep(50);
@@ -1308,13 +1308,13 @@ namespace Midjourney.Infrastructure
                     {
                         foreach (var messageHandler in _userMessageHandlers.OrderBy(h => h.Order()))
                         {
-                            // 处理过了
+                            // Processed
                             if (eventData.GetProperty<bool?>(Constants.MJ_MESSAGE_HANDLED, default) == true)
                             {
                                 return;
                             }
 
-                            // 消息加锁处理
+                            // Message lock processing
                             LocalLock.TryLock($"lock_{eventData.Id}", TimeSpan.FromSeconds(10), () =>
                             {
                                 messageHandler.Handle(_discordInstance, messageType.Value, eventData);
@@ -1322,12 +1322,12 @@ namespace Midjourney.Infrastructure
                         }
                     }
                 }
-                // describe 重新提交
+                // describe resubmit
                 // MJ::Picread::Retry
                 else if (eventData.Embeds.Count > 0 && eventData.Author?.Bot == true && eventData.Components.Count > 0
                     && eventData.Components.First().Components.Any(x => x.CustomId?.Contains("PicReader") == true))
                 {
-                    // 消息加锁处理
+                    // Message lock processing
                     LocalLock.TryLock($"lock_{eventData.Id}", TimeSpan.FromSeconds(10), () =>
                     {
                         var em = eventData.Embeds.FirstOrDefault();
@@ -1344,7 +1344,7 @@ namespace Midjourney.Infrastructure
                           && eventData.Content.Contains("%")
                           && eventData.Author?.Bot == true)
                     {
-                        // 消息加锁处理
+                        // Message lock processing
                         LocalLock.TryLock($"lock_{eventData.Id}", TimeSpan.FromSeconds(10), () =>
                         {
                             var handler = _userMessageHandlers.FirstOrDefault(x => x.GetType() == typeof(UserStartAndProgressHandler));
@@ -1353,7 +1353,7 @@ namespace Midjourney.Infrastructure
                     }
                     else if (eventData.InteractionMetadata?.Name == "describe")
                     {
-                        // 消息加锁处理
+                        // Message lock processing
                         LocalLock.TryLock($"lock_{eventData.Id}", TimeSpan.FromSeconds(10), () =>
                         {
                             var handler = _userMessageHandlers.FirstOrDefault(x => x.GetType() == typeof(UserDescribeSuccessHandler));
@@ -1364,7 +1364,7 @@ namespace Midjourney.Infrastructure
                         // shorten show details -> PromptAnalyzerExtended
                         || eventData.Embeds?.FirstOrDefault()?.Footer?.Text.Contains("Click on a button to imagine one of the shortened prompts") == true)
                     {
-                        // 消息加锁处理
+                        // Message lock processing
                         LocalLock.TryLock($"lock_{eventData.Id}", TimeSpan.FromSeconds(10), () =>
                         {
                             var handler = _userMessageHandlers.FirstOrDefault(x => x.GetType() == typeof(UserShortenSuccessHandler));
@@ -1375,7 +1375,7 @@ namespace Midjourney.Infrastructure
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "处理用户消息异常 {@0}", raw.ToString());
+                Log.Error(ex, "Exception handling user message {@0}", raw.ToString());
             }
         }
 

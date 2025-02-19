@@ -25,14 +25,14 @@
 namespace Midjourney.Infrastructure.Services
 {
     /// <summary>
-    /// 通知服务接口，用于通知任务状态变更。
+    /// Notification service interface for notifying task status changes.
     /// </summary>
     public interface INotifyService
     {
         /// <summary>
-        /// 通知任务状态变更。
+        /// Notifies task status change.
         /// </summary>
-        /// <param name="task">任务实例。</param>
+        /// <param name="task">The task instance.</param>
         Task NotifyTaskChange(TaskInfo task);
     }
 }

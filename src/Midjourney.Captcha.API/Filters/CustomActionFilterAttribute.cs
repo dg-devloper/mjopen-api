@@ -28,7 +28,7 @@ using Serilog;
 namespace Midjourney.Captcha.API
 {
     /// <summary>
-    /// 自定义方法过滤器
+    /// Custom action filter
     /// </summary>
     public class CustomActionFilterAttribute : ActionFilterAttribute
     {
@@ -36,21 +36,21 @@ namespace Midjourney.Captcha.API
         {
             if (context.HttpContext.Response.StatusCode == StatusCodes.Status401Unauthorized)
             {
-                var result = Result.Fail("请重新登录");
+                var result = Result.Fail("Please log in again");
                 context.Result = new JsonResult(result);
             }
             else if (context.HttpContext.Response.StatusCode == StatusCodes.Status403Forbidden)
             {
-                var result = Result.Fail("您无权限访问");
+                var result = Result.Fail("You do not have permission to access");
                 context.Result = new JsonResult(result);
             }
             else
             {
                 if (!context.ModelState.IsValid)
                 {
-                    var error = context.ModelState.Values.FirstOrDefault()?.Errors?.FirstOrDefault()?.ErrorMessage ?? "参数异常";
+                    var error = context.ModelState.Values.FirstOrDefault()?.Errors?.FirstOrDefault()?.ErrorMessage ?? "Parameter error";
 
-                    Log.Logger.Warning("参数异常 {@0} - {@1}", context.HttpContext?.Request?.GetUrl() ?? "", error);
+                    Log.Logger.Warning("Parameter error {@0} - {@1}", context.HttpContext?.Request?.GetUrl() ?? "", error);
 
                     context.Result = new JsonResult(Result.Fail(error));
                 }
@@ -64,7 +64,7 @@ namespace Midjourney.Captcha.API
             {
                 if (objectResult?.Value is Result result && result.Success && result.Message == null)
                 {
-                    result.Message = "操作成功";
+                    result.Message = "Operation successful";
                     context.Result = new JsonResult(result);
                 }
             }

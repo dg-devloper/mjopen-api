@@ -44,6 +44,12 @@ namespace Midjourney.Infrastructure.Dto
         public string Prompt { get; set; }
 
         /// <summary>
+        /// Customer ID
+        /// </summary>
+        [SwaggerSchema("Customer ID")]
+        public string CustomerId { get; set; }
+
+        /// <summary>
         /// Base64 list
         /// </summary>
         [SwaggerSchema("Base64 list")]

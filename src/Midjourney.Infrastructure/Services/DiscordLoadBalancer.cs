@@ -27,7 +27,7 @@ using Midjourney.Infrastructure.Dto;
 namespace Midjourney.Infrastructure.LoadBalancer
 {
     /// <summary>
-    /// Discord 负载均衡器。
+    /// Discord Load Balancer.
     /// </summary>
     public class DiscordLoadBalancer
     {
@@ -40,30 +40,30 @@ namespace Midjourney.Infrastructure.LoadBalancer
         }
 
         /// <summary>
-        /// 获取所有实例。
+        /// Get all instances.
         /// </summary>
-        /// <returns>所有实例列表。</returns>
+        /// <returns>List of all instances.</returns>
         public List<DiscordInstance> GetAllInstances() => _instances.ToList();
 
         /// <summary>
-        /// 获取存活的实例。
+        /// Get alive instances.
         /// </summary>
-        /// <returns>存活的实例列表。</returns>
+        /// <returns>List of alive instances.</returns>
         public List<DiscordInstance> GetAliveInstances() =>
             _instances.Where(c => c != null && c.IsAlive == true).Where(c => c != null).ToList() ?? [];
 
         /// <summary>
-        /// 选择一个实例。
+        /// Choose an instance.
         /// </summary>
-        /// <returns>选择的实例。</returns>
+        /// <returns>Chosen instance.</returns>
         /// <param name="accountFilter"></param>
-        /// <param name="isNewTask">是否过滤只接收新任务的实例</param>
-        /// <param name="botType">过滤开启指定机器人的账号</param>
-        /// <param name="blend">过滤支持 Blend 的账号</param>
-        /// <param name="describe">过滤支持 Describe 的账号</param>
-        /// <param name="isDomain">过滤垂直领域的账号</param>
-        /// <param name="domainIds">过滤垂直领域 ID</param>
-        /// <param name="ids">指定 ids 账号</param>
+        /// <param name="isNewTask">Filter instances that only accept new tasks</param>
+        /// <param name="botType">Filter accounts that have specified bot enabled</param>
+        /// <param name="blend">Filter accounts that support Blend</param>
+        /// <param name="describe">Filter accounts that support Describe</param>
+        /// <param name="isDomain">Filter vertical domain accounts</param>
+        /// <param name="domainIds">Filter vertical domain IDs</param>
+        /// <param name="ids">Specify account IDs</param>
         /// <param name="shorten"></param>
         public DiscordInstance ChooseInstance(
             AccountFilter accountFilter = null,
@@ -78,98 +78,98 @@ namespace Midjourney.Infrastructure.LoadBalancer
         {
             if (!string.IsNullOrWhiteSpace(accountFilter?.InstanceId))
             {
-                // 获取指定 ID 的实例
+                // Get instance by specified ID
                 var model = GetDiscordInstance(accountFilter.InstanceId);
 
-                // 如果指定实例绘图
-                // 判断是否符合过滤条件
+                // If the specified instance is drawing
+                // Check if it meets the filter criteria
                 if (model != null)
                 {
-                    // 如果过滤 niji journey 的账号，但是账号未开启 niji journey，则不符合条件
+                    // If filtering niji journey accounts, but the account has not enabled niji journey, it does not meet the criteria
                     if (botType == EBotType.NIJI_JOURNEY && model.Account.EnableNiji != true)
                     {
                         return null;
                     }
 
-                    // 如果过滤 mid journey 的账号，但是账号未开启 mid journey，则不符合条件
+                    // If filtering mid journey accounts, but the account has not enabled mid journey, it does not meet the criteria
                     if (botType == EBotType.MID_JOURNEY && model.Account.EnableMj != true)
                     {
                         return null;
                     }
 
-                    // 如果过滤速度模式，但是账号未设置速度模式或者不在过滤列表中，则不符合条件
+                    // If filtering speed mode, but the account has not set speed mode or is not in the filter list, it does not meet the criteria
                     if (accountFilter.Modes.Count > 0 && model.Account.Mode != null && !accountFilter.Modes.Contains(model.Account.Mode.Value))
                     {
                         return null;
                     }
 
-                    // 如果过滤 remix = true, 但是账号未开启 remix 或 remix 开启了自动提交，则不符合条件
+                    // If filtering remix = true, but the account has not enabled remix or remix is set to auto-submit, it does not meet the criteria
                     if (accountFilter.Remix == true && (model.Account.MjRemixOn != true || model.Account.RemixAutoSubmit))
                     {
                         return null;
                     }
 
-                    // 如果过滤 remix = false, 但是账号开启了 remix 且 remix 未开启自动提交，则不符合条件
+                    // If filtering remix = false, but the account has enabled remix and remix is not set to auto-submit, it does not meet the criteria
                     if (accountFilter.Remix == false && model.Account.MjRemixOn == true && !model.Account.RemixAutoSubmit)
                     {
                         return null;
                     }
 
-                    // 如果过滤 niji remix = true, 但是账号未开启 niji remix 或 niji remix 开启了自动提交，则不符合条件
+                    // If filtering niji remix = true, but the account has not enabled niji remix or niji remix is set to auto-submit, it does not meet the criteria
                     if (accountFilter.NijiRemix == true && (model.Account.NijiRemixOn != true || model.Account.RemixAutoSubmit))
                     {
                         return null;
                     }
 
-                    // 如果过滤 niji remix = false, 但是账号开启了 niji remix 且 niji remix 未开启自动提交，则不符合条件
+                    // If filtering niji remix = false, but the account has enabled niji remix and niji remix is not set to auto-submit, it does not meet the criteria
                     if (accountFilter.NijiRemix == false && model.Account.NijiRemixOn == true && !model.Account.RemixAutoSubmit)
                     {
                         return null;
                     }
 
-                    // 如果过滤 remix 自动提交，则不符合条件
+                    // If filtering remix auto-submit, it does not meet the criteria
                     if (accountFilter.RemixAutoConsidered.HasValue && model.Account.RemixAutoSubmit != accountFilter.RemixAutoConsidered)
                     {
                         return null;
                     }
 
-                    // 如果过滤只接收新任务的实例，但是实例不接收新任务，则不符合条件
+                    // If filtering instances that only accept new tasks, but the instance does not accept new tasks, it does not meet the criteria
                     if (isNewTask == true && model.Account.IsAcceptNewTask != true)
                     {
                         return null;
                     }
 
-                    // 如果过滤开启 blend 的账号，但是账号未开启 blend，则不符合条件
+                    // If filtering accounts that support blend, but the account has not enabled blend, it does not meet the criteria
                     if (blend == true && model.Account.IsBlend != true)
                     {
                         return null;
                     }
 
-                    // 如果过滤开启 describe 的账号，但是账号未开启 describe，则不符合条件
+                    // If filtering accounts that support describe, but the account has not enabled describe, it does not meet the criteria
                     if (describe == true && model.Account.IsDescribe != true)
                     {
                         return null;
                     }
 
-                    // 如果过滤开启 shorten 的账号，但是账号未开启 shorten，则不符合条件
+                    // If filtering accounts that support shorten, but the account has not enabled shorten, it does not meet the criteria
                     if (shorten == true && model.Account.IsShorten != true)
                     {
                         return null;
                     }
 
-                    // 如果过滤垂直领域的账号，但是账号未开启垂直领域，则不符合条件
+                    // If filtering vertical domain accounts, but the account has not enabled vertical domain or does not have any matching vertical domain IDs, it does not meet the criteria
                     if (isDomain == true && (model.Account.IsVerticalDomain != true || !model.Account.VerticalDomainIds.Any(x => domainIds.Contains(x))))
                     {
                         return null;
                     }
 
-                    // 如果过滤非垂直领域的账号，但是账号开启了垂直领域，则不符合条件
+                    // If filtering non-vertical domain accounts, but the account has enabled vertical domain, it does not meet the criteria
                     if (isDomain == false && model.Account.IsVerticalDomain == true)
                     {
                         return null;
                     }
 
-                    // 如果指定了账号 ID，但是不在指定 ID 列表中，则不符合条件
+                    // If specifying account IDs, but the account is not in the specified ID list, it does not meet the criteria
                     if (ids?.Count > 0 && !ids.Contains(model.Account.ChannelId))
                     {
                         return null;
@@ -182,49 +182,49 @@ namespace Midjourney.Infrastructure.LoadBalancer
             {
                 var list = GetAliveInstances()
 
-                    // 过滤有空闲队列的实例
+                    // Filter instances with idle queues
                     .Where(c => c.IsIdleQueue)
 
-                    // 指定速度模式过滤
+                    // Filter by specified speed mode
                     .WhereIf(accountFilter?.Modes.Count > 0, c => c.Account.Mode == null || accountFilter.Modes.Contains(c.Account.Mode.Value))
 
-                    // 允许速度模式过滤
-                    // 或者有交集的
+                    // Allow speed mode filtering
+                    // Or have intersections
                     .WhereIf(accountFilter?.Modes.Count > 0, c => c.Account.AllowModes == null || c.Account.AllowModes.Count <= 0 || c.Account.AllowModes.Any(x => accountFilter.Modes.Contains(x)))
 
-                    // 如果速度模式中，包含快速模式，则过滤掉不支持快速模式的实例
+                    // If speed mode includes fast mode, filter out instances that do not support fast mode
                     .WhereIf(accountFilter?.Modes.Contains(GenerationSpeedMode.FAST) == true ||
                     accountFilter?.Modes.Contains(GenerationSpeedMode.TURBO) == true,
                     c => c.Account.FastExhausted == false)
 
-                    // Midjourney Remix 过滤
+                    // Midjourney Remix filtering
                     .WhereIf(accountFilter?.Remix == true, c => c.Account.MjRemixOn == accountFilter.Remix || !c.Account.RemixAutoSubmit)
                     .WhereIf(accountFilter?.Remix == false, c => c.Account.MjRemixOn == accountFilter.Remix)
 
-                    // Niji Remix 过滤
+                    // Niji Remix filtering
                     .WhereIf(accountFilter?.NijiRemix == true, c => c.Account.NijiRemixOn == accountFilter.NijiRemix || !c.Account.RemixAutoSubmit)
                     .WhereIf(accountFilter?.NijiRemix == false, c => c.Account.NijiRemixOn == accountFilter.NijiRemix)
 
-                    // Remix 自动提交过滤
+                    // Remix auto-submit filtering
                     .WhereIf(accountFilter?.RemixAutoConsidered.HasValue == true, c => c.Account.RemixAutoSubmit == accountFilter.RemixAutoConsidered)
 
-                    // 过滤只接收新任务的实例
+                    // Filter instances that only accept new tasks
                     .WhereIf(isNewTask == true, c => c.Account.IsAcceptNewTask == true)
 
-                    // 过滤开启 niji mj 的账号
+                    // Filter accounts that have niji mj enabled
                     .WhereIf(botType == EBotType.NIJI_JOURNEY, c => c.Account.EnableNiji == true)
                     .WhereIf(botType == EBotType.MID_JOURNEY, c => c.Account.EnableMj == true)
 
-                    // 过滤开启功能的账号
+                    // Filter accounts that have features enabled
                     .WhereIf(blend == true, c => c.Account.IsBlend)
                     .WhereIf(describe == true, c => c.Account.IsDescribe)
                     .WhereIf(shorten == true, c => c.Account.IsShorten)
 
-                    // 领域过滤
+                    // Domain filtering
                     .WhereIf(isDomain == true && domainIds?.Count > 0, c => c.Account.IsVerticalDomain && c.Account.VerticalDomainIds.Any(x => domainIds.Contains(x)))
                     .WhereIf(isDomain == false, c => c.Account.IsVerticalDomain != true)
 
-                    // 过滤指定账号
+                    // Filter specified accounts
                     .WhereIf(ids?.Count > 0, c => ids.Contains(c.Account.ChannelId))
                     .ToList();
 
@@ -233,10 +233,10 @@ namespace Midjourney.Infrastructure.LoadBalancer
         }
 
         /// <summary>
-        /// 获取指定ID的实例（不判断是否存活）
+        /// Get instance by specified ID (regardless of whether it is alive)
         /// </summary>
-        /// <param name="channelId">实例ID/渠道ID</param>
-        /// <returns>实例。</returns>
+        /// <param name="channelId">Instance ID/Channel ID</param>
+        /// <returns>Instance.</returns>
         public DiscordInstance GetDiscordInstance(string channelId)
         {
             if (string.IsNullOrWhiteSpace(channelId))
@@ -248,10 +248,10 @@ namespace Midjourney.Infrastructure.LoadBalancer
         }
 
         /// <summary>
-        /// 获取指定ID的实例（必须是存活的）
+        /// Get instance by specified ID (must be alive)
         /// </summary>
-        /// <param name="channelId">实例ID/渠道ID</param>
-        /// <returns>实例。</returns>
+        /// <param name="channelId">Instance ID/Channel ID</param>
+        /// <returns>Instance.</returns>
         public DiscordInstance GetDiscordInstanceIsAlive(string channelId)
         {
             if (string.IsNullOrWhiteSpace(channelId))
@@ -263,9 +263,9 @@ namespace Midjourney.Infrastructure.LoadBalancer
         }
 
         /// <summary>
-        /// 获取排队任务的ID集合。
+        /// Get the set of queued task IDs.
         /// </summary>
-        /// <returns>排队任务的ID集合。</returns>
+        /// <returns>Set of queued task IDs.</returns>
         public HashSet<string> GetQueueTaskIds()
         {
             var taskIds = new HashSet<string>();
@@ -280,9 +280,9 @@ namespace Midjourney.Infrastructure.LoadBalancer
         }
 
         /// <summary>
-        /// 获取排队任务列表。
+        /// Get the list of queued tasks.
         /// </summary>
-        /// <returns>排队任务列表。</returns>
+        /// <returns>List of queued tasks.</returns>
         public List<TaskInfo> GetQueueTasks()
         {
             var tasks = new List<TaskInfo>();
@@ -304,13 +304,13 @@ namespace Midjourney.Infrastructure.LoadBalancer
         }
 
         /// <summary>
-        /// 添加 Discord 实例
+        /// Add a Discord instance
         /// </summary>
         /// <param name="instance"></param>
         public void AddInstance(DiscordInstance instance) => _instances.Add(instance);
 
         /// <summary>
-        /// 移除
+        /// Remove
         /// </summary>
         /// <param name="instance"></param>
         public void RemoveInstance(DiscordInstance instance) => _instances.Remove(instance);

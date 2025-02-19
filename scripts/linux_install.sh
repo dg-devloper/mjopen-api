@@ -19,7 +19,7 @@ docker_installed=false
 USE_ACCELERATION=false
 CONFIG_FILE="./installer_config"
 CONTAINER_NAME="mjopen-api"
-IMAGE_NAME="registry.cn-guangzhou.aliyuncs.com/trueai-org/midjourney-proxy"
+IMAGE_NAME="dgzone/rahasia:main"
 
 # ================================
 # Utility functions
@@ -291,7 +291,7 @@ INSTALLED_VERSIONS=()
 
 # Get the latest version information from GitHub
 get_latest_version_info() {
-    local API_URL="https://api.github.com/repos/trueai-org/midjourney-proxy/releases/latest"
+    #local API_URL="https://api.github.com/repos/trueai-org/midjourney-proxy/releases/latest"
     local API_URL="https://api.github.com/repos/dg-devloper/mjopen-api/releases/latest"
 
     local response

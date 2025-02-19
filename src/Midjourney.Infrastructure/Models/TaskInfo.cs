@@ -65,6 +65,11 @@ namespace Midjourney.Infrastructure.Models
         public string UserId { get; set; }
 
         /// <summary>
+        /// Customer ID, untuk menandai user di dalam sistem MJCORE
+        /// </summary>
+        public string CustomerId { get; set; }
+
+        /// <summary>
         /// Whitelist user (not affected by rate limits)
         /// </summary>
         public bool IsWhite { get; set; } = false;

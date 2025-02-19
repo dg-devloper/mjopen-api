@@ -25,12 +25,12 @@
 namespace Midjourney.Infrastructure.Storage
 {
     /// <summary>
-    /// 存储服务
+    /// Storage Service
     /// </summary>
     public interface IStorageService
     {
         /// <summary>
-        /// 上传
+        /// Upload
         /// </summary>
         /// <param name="mediaBinaryStream"></param>
         /// <param name="key"></param>
@@ -39,22 +39,22 @@ namespace Midjourney.Infrastructure.Storage
         UploadResult SaveAsync(Stream mediaBinaryStream, string key, string mimeType);
 
         /// <summary>
-        /// 删除文件
+        /// Delete file
         /// </summary>
-        /// <param name="isDeleteMedia">是否标识删除记录</param>
+        /// <param name="isDeleteMedia">Indicate whether to delete record</param>
         /// <param name="keys"></param>
         /// <returns></returns>
         Task DeleteAsync(bool isDeleteMedia = false, params string[] keys);
 
         /// <summary>
-        /// 获取文件流数据
+        /// Get file stream data
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
         Stream GetObject(string key);
 
         ///// <summary>
-        ///// 获取文件流数据,返回文件类型
+        ///// Get file stream data, return file type
         ///// </summary>
         ///// <param name="key"></param>
         ///// <param name="contentType"></param>
@@ -62,7 +62,7 @@ namespace Midjourney.Infrastructure.Storage
         //Stream GetObject(string key, out string contentType);
 
         /// <summary>
-        /// 移动文件
+        /// Move file
         /// </summary>
         /// <param name="key"></param>
         /// <param name="newKey"></param>
@@ -72,14 +72,14 @@ namespace Midjourney.Infrastructure.Storage
         Task MoveAsync(string key, string newKey, bool isCopy = false);
 
         /// <summary>
-        /// 判断文件是否存在
+        /// Check if file exists
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
         Task<bool> ExistsAsync(string key);
 
         /// <summary>
-        /// 覆盖保存文件
+        /// Overwrite save file
         /// </summary>
         /// <param name="mediaBinaryStream"></param>
         /// <param name="key"></param>

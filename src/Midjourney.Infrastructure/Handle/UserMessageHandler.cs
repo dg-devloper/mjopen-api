@@ -30,7 +30,7 @@ using Serilog;
 namespace Midjourney.Infrastructure.Handle
 {
     /// <summary>
-    /// 用户消息处理程序
+    /// User message handler
     /// </summary>
     public abstract class UserMessageHandler
     {
@@ -90,17 +90,17 @@ namespace Midjourney.Infrastructure.Handle
 
         protected void FindAndFinishImageTask(DiscordInstance instance, TaskAction action, string finalPrompt, EventData message)
         {
-            // 跳过 Waiting to start 消息
+            // Skip "Waiting to start" messages
             if (!string.IsNullOrWhiteSpace(message.Content) && message.Content.Contains("(Waiting to start)"))
             {
                 return;
             }
 
-            // 判断消息是否处理过了
+            // Check if the message has already been processed
             CacheHelper<string, bool>.TryAdd(message.Id, false);
             if (CacheHelper<string, bool>.Get(message.Id))
             {
-                Log.Debug("USER 消息已经处理过了 {@0}", message.Id);
+                Log.Debug("USER message has been processed {@0}", message.Id);
                 return;
             }
 
@@ -118,18 +118,18 @@ namespace Midjourney.Infrastructure.Handle
             {
                 task = instance.FindRunningTask(c => (c.Status == TaskStatus.IN_PROGRESS || c.Status == TaskStatus.SUBMITTED) && c.InteractionMetadataId == message.InteractionMetadata.Id).FirstOrDefault();
 
-                // 如果通过 meta id 找到任务，但是 full prompt 为空，则更新 full prompt
+                // If the task is found through meta id but the full prompt is empty, update the full prompt
                 if (task != null && string.IsNullOrWhiteSpace(task.PromptFull))
                 {
                     task.PromptFull = fullPrompt;
                 }
             }
 
-            // 如果依然找不到任务，可能是 NIJI 任务
+            // If the task still cannot be found, it might be a NIJI task
             // 不判断 && botType == EBotType.NIJI_JOURNEY
             var botType = GetBotType(message);
 
-            // 优先使用 full prompt 进行匹配
+            // Prioritize matching with full prompt
             if (task == null)
             {
                 if (!string.IsNullOrWhiteSpace(fullPrompt))
@@ -155,7 +155,7 @@ namespace Midjourney.Infrastructure.Handle
                 }
                 else
                 {
-                    // 如果最终提示词为空，则可能是重绘、混图等任务
+                    // If the final prompt is empty, it might be a redraw or blend task
                     task = instance
                         .FindRunningTask(c => (c.Status == TaskStatus.IN_PROGRESS || c.Status == TaskStatus.SUBMITTED)
                         && (c.BotType == botType || c.RealBotType == botType) && c.Action == action)
@@ -164,7 +164,7 @@ namespace Midjourney.Infrastructure.Handle
             }
 
 
-            // 如果依然找不到任务，保留 prompt link 进行匹配
+            // If the task still cannot be found, retain prompt link for matching
             if (task == null)
             {
                 var prompt = finalPrompt.FormatPromptParam();
@@ -237,10 +237,10 @@ namespace Midjourney.Infrastructure.Handle
 
             task.Success();
 
-            // 表示消息已经处理过了
+            // Indicate that the message has been processed
             CacheHelper<string, bool>.AddOrUpdate(message.Id.ToString(), true);
 
-            Log.Debug("由 USER 确认消息处理完成 {@0}", message.Id);
+            Log.Debug("Message processing completed by USER {@0}", message.Id);
         }
 
         protected bool HasImage(EventData message)

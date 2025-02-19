@@ -28,7 +28,7 @@ using System.Net;
 namespace Midjourney.Infrastructure.Storage
 {
     /// <summary>
-    /// 全局单例存储服务
+    /// Global singleton storage service
     /// </summary>
     public class StorageHelper
     {
@@ -37,7 +37,7 @@ namespace Midjourney.Infrastructure.Storage
         public static IStorageService Instance => _instance;
 
         /// <summary>
-        /// 配置 IStorageService 并初始化
+        /// Configure and initialize IStorageService
         /// </summary>
         public static void Configure()
         {
@@ -62,7 +62,7 @@ namespace Midjourney.Infrastructure.Storage
         }
 
         /// <summary>
-        /// 下载并保存图片
+        /// Download and save image
         /// </summary>
         /// <param name="taskInfo"></param>
         public static void DownloadFile(TaskInfo taskInfo)
@@ -92,18 +92,17 @@ namespace Midjourney.Infrastructure.Storage
                 Proxy = webProxy,
             };
 
-            // 创建保存路径
+            // Create save path
             var uri = new Uri(imageUrl);
             var localPath = uri.AbsolutePath.TrimStart('/');
 
-
-            // 换脸放到私有附件中
+            // Face swap to private attachments
             if (isReplicate)
             {
                 localPath = $"pri/{localPath}";
             }
 
-            // 阿里云 OSS
+            // Aliyun OSS
             if (setting.ImageStorageType == ImageStorageType.OSS)
             {
                 var opt = setting.AliyunOss;
@@ -114,15 +113,15 @@ namespace Midjourney.Infrastructure.Storage
                     return;
                 }
 
-                // 本地锁
+                // Local lock
                 LocalLock.TryLock(lockKey, TimeSpan.FromSeconds(10), () =>
                 {
                     var oss = new AliyunOssStorageService();
 
-                    // 替换 url
+                    // Replace url
                     var url = $"{cdn?.Trim()?.Trim('/')}/{localPath}{uri?.Query}";
 
-                    // 下载图片并保存
+                    // Download image and save
                     using (HttpClient client = new HttpClient(hch))
                     {
                         client.Timeout = TimeSpan.FromMinutes(15);
@@ -139,7 +138,7 @@ namespace Midjourney.Infrastructure.Storage
 
                         oss.SaveAsync(stream, localPath, mm);
 
-                        // 如果配置了链接有效期，则生成带签名的链接
+                        // If link expiration is configured, generate signed link
                         if (opt.ExpiredMinutes > 0)
                         {
                             var priUri = oss.GetSignKey(localPath, opt.ExpiredMinutes);
@@ -154,7 +153,7 @@ namespace Midjourney.Infrastructure.Storage
                     }
                     else if (action == TaskAction.SWAP_FACE)
                     {
-                        // 换脸不格式化 url
+                        // Do not format url for face swap
                         imageUrl = url;
                         thumbnailUrl = url;
                     }
@@ -165,7 +164,7 @@ namespace Midjourney.Infrastructure.Storage
                     }
                 });
             }
-            // 腾讯云 COS
+            // Tencent COS
             else if (setting.ImageStorageType == ImageStorageType.COS)
             {
                 var opt = setting.TencentCos;
@@ -176,15 +175,15 @@ namespace Midjourney.Infrastructure.Storage
                     return;
                 }
 
-                // 本地锁
+                // Local lock
                 LocalLock.TryLock(lockKey, TimeSpan.FromSeconds(10), () =>
                 {
                     var cos = new TencentCosStorageService();
 
-                    // 替换 url
+                    // Replace url
                     var url = $"{cdn?.Trim()?.Trim('/')}/{localPath}{uri?.Query}";
 
-                    // 下载图片并保存
+                    // Download image and save
                     using (HttpClient client = new HttpClient(hch))
                     {
                         client.Timeout = TimeSpan.FromMinutes(15);
@@ -201,7 +200,7 @@ namespace Midjourney.Infrastructure.Storage
 
                         cos.SaveAsync(stream, localPath, mm);
 
-                        // 如果配置了链接有效期，则生成带签名的链接
+                        // If link expiration is configured, generate signed link
                         if (opt.ExpiredMinutes > 0)
                         {
                             var priUri = cos.GetSignKey(localPath, opt.ExpiredMinutes);
@@ -216,7 +215,7 @@ namespace Midjourney.Infrastructure.Storage
                     }
                     else if (action == TaskAction.SWAP_FACE)
                     {
-                        // 换脸不格式化 url
+                        // Do not format url for face swap
                         imageUrl = url;
                         thumbnailUrl = url;
                     }
@@ -238,15 +237,15 @@ namespace Midjourney.Infrastructure.Storage
                     return;
                 }
 
-                // 本地锁
+                // Local lock
                 LocalLock.TryLock(lockKey, TimeSpan.FromSeconds(10), () =>
                 {
                     var r2 = new CloudflareR2StorageService();
 
-                    // 替换 url
+                    // Replace url
                     var url = $"{cdn?.Trim()?.Trim('/')}/{localPath}{uri?.Query}";
 
-                    // 下载图片并保存
+                    // Download image and save
                     using (HttpClient client = new HttpClient(hch))
                     {
                         client.Timeout = TimeSpan.FromMinutes(15);
@@ -263,7 +262,7 @@ namespace Midjourney.Infrastructure.Storage
 
                         r2.SaveAsync(stream, localPath, mm);
 
-                        // 如果配置了链接有效期，则生成带签名的链接
+                        // If link expiration is configured, generate signed link
                         if (opt.ExpiredMinutes > 0)
                         {
                             var priUri = r2.GetSignKey(localPath, opt.ExpiredMinutes);
@@ -278,7 +277,7 @@ namespace Midjourney.Infrastructure.Storage
                     }
                     else if (action == TaskAction.SWAP_FACE)
                     {
-                        // 换脸不格式化 url
+                        // Do not format url for face swap
                         imageUrl = url;
                         thumbnailUrl = url;
                     }
@@ -291,10 +290,10 @@ namespace Midjourney.Infrastructure.Storage
 
             }
             // https://cdn.discordapp.com/attachments/1265095688782614602/1266300100989161584/03ytbus_LOGO_design_A_warrior_frog_Muscles_like_Popeye_Freehand_06857373-4fd9-403d-a5df-c2f27f9be269.png?ex=66a4a55e&is=66a353de&hm=c597e9d6d128c493df27a4d0ae41204655ab73f7e885878fc1876a8057a7999f&
-            // 将图片保存到本地，并替换 url，并且保持原 url和参数
-            // 默认保存根目录为 /wwwroot
-            // 保存图片
-            // 如果处理过了，则不再处理
+            // Save image to local, replace url, and keep original url and parameters
+            // Default save root directory is /wwwroot
+            // Save image
+            // If processed, do not process again
             else if (setting.ImageStorageType == ImageStorageType.LOCAL)
             {
                 var opt = setting.LocalStorage;
@@ -305,13 +304,13 @@ namespace Midjourney.Infrastructure.Storage
                     return;
                 }
 
-                // 本地锁
+                // Local lock
                 LocalLock.TryLock(lockKey, TimeSpan.FromSeconds(10), () =>
                 {
-                    // 如果路径是 ephemeral-attachments 或 attachments 才处理
+                    // If path is ephemeral-attachments or attachments, process
 
-                    // 如果是本地文件，则依然放到 attachments
-                    // 换脸放到附件中
+                    // If local file, still put in attachments
+                    // Face swap to attachments
                     if (isReplicate)
                     {
                         localPath = $"attachments/{localPath}";
@@ -324,7 +323,7 @@ namespace Midjourney.Infrastructure.Storage
                     {
                         Directory.CreateDirectory(directoryPath);
 
-                        // 下载图片并保存
+                        // Download image and save
                         using (HttpClient client = new HttpClient(hch))
                         {
                             var response = client.GetAsync(imageUrl).Result;
@@ -333,7 +332,7 @@ namespace Midjourney.Infrastructure.Storage
                             File.WriteAllBytes(savePath, imageBytes);
                         }
 
-                        // 替换 url
+                        // Replace url
                         imageUrl = $"{cdn?.Trim()?.Trim('/')}/{localPath}{uri?.Query}";
                     }
                 });

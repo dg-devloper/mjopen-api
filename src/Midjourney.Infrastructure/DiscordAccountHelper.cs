@@ -35,7 +35,7 @@ using System.Text.Json;
 namespace Midjourney.Infrastructure
 {
     /// <summary>
-    /// Discord账号辅助类，用于创建和管理Discord实例。
+    /// Discord account helper class for creating and managing Discord instances.
     /// </summary>
     public class DiscordAccountHelper
     {
@@ -92,11 +92,11 @@ namespace Midjourney.Infrastructure
         }
 
         /// <summary>
-        /// 创建Discord实例。
+        /// Creates a Discord instance.
         /// </summary>
-        /// <param name="account">Discord账号信息。</param>
-        /// <returns>Discord实例。</returns>
-        /// <exception cref="ArgumentException">当guildId, channelId或userToken为空时抛出。</exception>
+        /// <param name="account">Discord account information.</param>
+        /// <returns>Discord instance.</returns>
+        /// <exception cref="ArgumentException">Thrown when guildId, channelId, or userToken is empty.</exception>
         public async Task<DiscordInstance> CreateDiscordInstance(DiscordAccount account)
         {
             if (string.IsNullOrWhiteSpace(account.GuildId) || string.IsNullOrWhiteSpace(account.ChannelId) || string.IsNullOrWhiteSpace(account.UserToken))
@@ -109,7 +109,7 @@ namespace Midjourney.Infrastructure
                 account.UserAgent = Constants.DEFAULT_DISCORD_USER_AGENT;
             }
 
-            // Bot 消息监听器
+            // Bot message listener
             WebProxy webProxy = null;
             if (!string.IsNullOrEmpty(_properties.Proxy?.Host))
             {
@@ -128,12 +128,12 @@ namespace Midjourney.Infrastructure
 
             if (account.Enable == true)
             {
-                // bot 消息监听
+                // Bot message listener
                 var messageListener = new BotMessageListener(_discordHelper, webProxy);
                 messageListener.Init(discordInstance, _botMessageHandlers, _userMessageHandlers);
                 await messageListener.StartAsync();
 
-                // 用户 WebSocket 连接
+                // User WebSocket connection
                 var webSocket = new WebSocketManager(
                     _discordHelper,
                     messageListener,
@@ -142,7 +142,7 @@ namespace Midjourney.Infrastructure
                     _memoryCache);
                 await webSocket.StartAsync();
 
-                // 跟踪 wss 连接
+                // Track WebSocket connection
                 discordInstance.BotMessageListener = messageListener;
                 discordInstance.WebSocketManager = webSocket;
             }
@@ -151,7 +151,7 @@ namespace Midjourney.Infrastructure
         }
 
         /// <summary>
-        /// 验证账号是否可用
+        /// Validates if the account is available.
         /// </summary>
         /// <param name="account"></param>
         /// <returns></returns>
@@ -199,14 +199,14 @@ namespace Midjourney.Infrastructure
             var data = JsonDocument.Parse(json).RootElement;
             if (data.TryGetProperty("message", out var message))
             {
-                throw new Exception(message.GetString() ?? "账号验证异常");
+                throw new Exception(message.GetString() ?? "Account validation exception");
             }
 
             return false;
         }
 
         /// <summary>
-        /// 获取私信 ID
+        /// Gets the private message ID.
         /// </summary>
         /// <param name="account"></param>
         /// <param name="botType"></param>
@@ -259,7 +259,7 @@ namespace Midjourney.Infrastructure
                 }
             }
 
-            throw new Exception($"获取私信 ID 失败 {response?.StatusCode}, {response?.Content}");
+            throw new Exception($"Failed to get private message ID {response?.StatusCode}, {response?.Content}");
         }
     }
 }
