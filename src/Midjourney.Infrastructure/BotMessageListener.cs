@@ -798,44 +798,78 @@ namespace Midjourney.Infrastructure
                     var isEm = data.TryGetProperty("embeds", out var em);
                     if ((messageType == MessageType.CREATE || messageType == MessageType.UPDATE) && isEm)
                     {
+
                         if (metaName == "info" && messageType == MessageType.UPDATE)
                         {
+
                             // info command
                             if (em.ValueKind == JsonValueKind.Array)
                             {
                                 foreach (JsonElement item in em.EnumerateArray())
                                 {
-                                    if (item.TryGetProperty("title", out var emtitle) && emtitle.GetString().Contains("Your info"))
+                                    if (item.TryGetProperty("title", out var emtitle))
                                     {
-                                        if (item.TryGetProperty("description", out var description))
+                                        if (emtitle.GetString().Contains("Your info"))
                                         {
-                                            var dic = ParseDiscordData(description.GetString());
-                                            foreach (var d in dic)
+                                            if (item.TryGetProperty("description", out var description))
                                             {
-                                                if (d.Key == "Job Mode")
+                                                var dic = ParseDiscordData(description.GetString());
+                                                foreach (var d in dic)
                                                 {
-                                                    if (applicationId == Constants.NIJI_APPLICATION_ID)
+                                                    if (d.Key == "Job Mode")
                                                     {
-                                                        Account.SetProperty($"Niji {d.Key}", d.Value);
+                                                        if (applicationId == Constants.NIJI_APPLICATION_ID)
+                                                        {
+                                                            Account.SetProperty($"Niji {d.Key}", d.Value);
+                                                        }
+                                                        else if (applicationId == Constants.MJ_APPLICATION_ID)
+                                                        {
+                                                            Account.SetProperty(d.Key, d.Value);
+                                                        }
                                                     }
-                                                    else if (applicationId == Constants.MJ_APPLICATION_ID)
+                                                    else
                                                     {
                                                         Account.SetProperty(d.Key, d.Value);
                                                     }
                                                 }
-                                                else
-                                                {
-                                                    Account.SetProperty(d.Key, d.Value);
-                                                }
+
+                                                var db = DbHelper.Instance.AccountStore;
+                                                Account.InfoUpdated = DateTime.Now;
+
+                                                db.Update("InfoUpdated,Properties", Account);
+                                                _discordInstance?.ClearAccountCache(Account.Id);
                                             }
-
-                                            var db = DbHelper.Instance.AccountStore;
-                                            Account.InfoUpdated = DateTime.Now;
-
-                                            db.Update("InfoUpdated,Properties", Account);
-                                            _discordInstance?.ClearAccountCache(Account.Id);
                                         }
                                     }
+
+                                    if (emtitle.GetString().Contains("You are blocked."))
+                                    {
+                                        if (item.TryGetProperty("description", out var description))
+                                        {
+                                            _logger.Debug("Accont disabled, {0} , {0}", Account.Id, description.GetString());
+                                            if (description.GetString().Contains("You have been blocked from accessing Midjourney."))
+                                            {
+
+                                                try
+                                                {
+                                                    Account.Enable = false;
+                                                    Account.DisabledReason = description.GetString();
+                                                    DbHelper.Instance.AccountStore.Update("Enable,DisabledReason", Account);
+                                                    _discordInstance?.ClearAccountCache(Account.Id);
+
+                                                    EmailJob.Instance.EmailSend(_properties.Smtp, $"MJ account disable notification-{Account.Id}",
+                                                        $"{Account.Id}, {Account.DisabledReason}");
+                                                }
+                                                catch (Exception ex)
+                                                {
+                                                    _logger.Error(ex, "Account blocked, Exception disabling account {@0}", Account.Id);
+                                                }
+
+                                                return;
+                                            }
+                                        }
+                                    }
+
                                 }
                             }
 
