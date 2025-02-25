@@ -180,8 +180,8 @@ namespace Midjourney.API
 
                 c.AddSecurityDefinition("ApiKey", new OpenApiSecurityScheme
                 {
-                    Description = "在下框中输入请求头中需要添加的授权 Authorization: {Token}",
-                    Name = "Authorization", // 或者 "Mj-Api-Secret" 视具体需求而定
+                    Description = "Enter the authorization token in the following format: Authorization: {Token}",
+                    Name = "Authorization", // or "Mj-Api-Secret" depending on specific requirements
                     In = ParameterLocation.Header,
                     Type = SecuritySchemeType.ApiKey,
                     Scheme = "ApiKeyScheme"
@@ -218,7 +218,7 @@ namespace Midjourney.API
                     }
                 }
 
-                // 当前程序集名称
+                // Current assembly name
                 var assemblyMame = Assembly.GetExecutingAssembly().GetName().Name;
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, $"{assemblyMame}.xml");
                 if (File.Exists(xmlPath))

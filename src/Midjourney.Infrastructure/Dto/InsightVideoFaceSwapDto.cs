@@ -26,32 +26,32 @@ using Microsoft.AspNetCore.Http;
 namespace Midjourney.Infrastructure.Dto
 {
     /// <summary>
-    /// 视频换脸 InsightFace 提交参数。
+    /// Video face swap submission parameters for InsightFace.
     /// </summary>
     public class InsightVideoFaceSwapDto : BaseSubmitDTO
     {
         /// <summary>
-        /// 人脸源图片base64 或 URL
+        /// Face source image base64 or URL
         /// </summary>
         public string SourceBase64 { get; set; }
 
         /// <summary>
-        /// 人脸源图片URL 或 base64
+        /// Face source image URL or base64
         /// </summary>
         public string SourceUrl { get; set; }
 
         /// <summary>
-        /// 目标文件 - 视频文件
+        /// Target file - video file
         /// </summary>
         public IFormFile TargetFile { get; set; }
 
         /// <summary>
-        /// 目标文件URL - 视频 URL
+        /// Target file URL - video URL
         /// </summary>
         public string TargetUrl { get; set; }
 
         /// <summary>
-        /// 账号过滤
+        /// Account filter
         /// </summary>
         public AccountFilter AccountFilter { get; set; }
     }

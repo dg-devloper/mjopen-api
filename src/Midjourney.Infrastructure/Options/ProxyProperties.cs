@@ -28,152 +28,152 @@ using Midjourney.Infrastructure.Data;
 namespace Midjourney.Infrastructure
 {
     /// <summary>
-    /// 代理配置属性类.
+    /// Proxy configuration property class.
     /// </summary>
     public class ProxyProperties : DomainObject
     {
         /// <summary>
-        /// MongoDB 默认连接字符串
+        /// MongoDB default connection string.
         /// </summary>
         public string MongoDefaultConnectionString { get; set; }
 
         /// <summary>
-        /// MongoDB 默认数据库
+        /// MongoDB default database.
         /// </summary>
         public string MongoDefaultDatabase { get; set; }
 
         /// <summary>
-        /// 是否使用
+        /// Whether to use it or not.
         /// </summary>
         [BsonIgnore]
         public bool IsMongo { get; set; } 
 
         /// <summary>
-        /// 是否启动本地数据自动迁移到 MongoDB
+        /// Whether to enable local data auto migration to MongoDB.
         /// </summary>
         public bool IsMongoAutoMigrate { get; set; }
 
         /// <summary>
-        /// 保存最大数据
+        /// Store maximum data.
         /// </summary>
         public int MaxCount { get; set; } = 500000;
 
         /// <summary>
-        /// Discord账号选择规则.
+        /// Discord account selection rules.
         /// </summary>
         public AccountChooseRule AccountChooseRule { get; set; } = AccountChooseRule.BestWaitIdle;
 
         /// <summary>
-        /// Discord单账号配置.
+        /// Discord single account configuration.
         /// </summary>
         [BsonIgnore]
         public DiscordAccountConfig Discord { get; set; } = new DiscordAccountConfig();
 
         /// <summary>
-        /// Discord账号池配置.
+        /// Discord account pool configuration.
         /// </summary>
         [BsonIgnore]
         public List<DiscordAccountConfig> Accounts { get; set; } = new List<DiscordAccountConfig>();
 
         /// <summary>
-        /// 代理配置.
+        /// Proxy configuration.
         /// </summary>
         public ProxyConfig Proxy { get; set; } = new ProxyConfig();
 
         /// <summary>
-        /// 反代配置.
+        /// Reverse proxy configuration.
         /// </summary>
         public NgDiscordConfig NgDiscord { get; set; } = new NgDiscordConfig();
 
         /// <summary>
-        /// 百度翻译配置.
+        /// Baidu translation configuration.
         /// </summary>
         public BaiduTranslateConfig BaiduTranslate { get; set; } = new BaiduTranslateConfig();
 
         /// <summary>
-        /// OpenAI配置.
+        /// OpenAI configuration.
         /// </summary>
         public OpenaiConfig Openai { get; set; } = new OpenaiConfig();
 
         /// <summary>
-        /// 中文prompt翻译方式.
+        /// Method of translating Chinese prompt.
         /// </summary>
         public TranslateWay TranslateWay { get; set; } = TranslateWay.NULL;
 
         /// <summary>
-        /// 任务状态变更回调地址.
+        /// Task status change callback address.
         /// </summary>
         public string NotifyHook { get; set; }
 
         /// <summary>
-        /// 通知回调线程池大小.
+        /// Notification callback thread pool size.
         /// </summary>
         public int NotifyPoolSize { get; set; } = 10;
 
         /// <summary>
-        /// 邮件发送配置
+        /// Email sending configuration.
         /// </summary>
         public SmtpConfig Smtp { get; set; }
 
         /// <summary>
-        /// CF 验证服务器地址
+        /// CF verification server address.
         /// </summary>
         public string CaptchaServer { get; set; }
 
         /// <summary>
-        /// CF 验证通知地址（验证通过后的回调通知，默认就是你的当前域名）
+        /// CF verification notification address (callback after successful verification).
         /// </summary>
         public string CaptchaNotifyHook { get; set; }
 
         /// <summary>
-        /// CF 验证通知回调的密钥，防止篡改
+        /// CF verification notification callback secret to prevent tampering.
         /// </summary>
         public string CaptchaNotifySecret { get; set; }
 
         /// <summary>
-        /// 图片存储方式
+        /// Image storage method.
         /// </summary>
         public ImageStorageType ImageStorageType { get; set; } = ImageStorageType.NONE;
 
         /// <summary>
-        /// 阿里云存储配置
+        /// Alibaba Cloud storage configuration.
         /// </summary>
         public AliyunOssOptions AliyunOss { get; set; } = new AliyunOssOptions();
 
         /// <summary>
-        /// 腾讯云存储配置
+        /// Tencent Cloud storage configuration.
         /// </summary>
         public TencentCosOptions TencentCos { get; set; } = new TencentCosOptions();
 
         /// <summary>
-        /// Cloudflare R2 存储配置
+        /// Cloudflare R2 storage configuration.
         /// </summary>
         public CloudflareR2Options CloudflareR2 { get; set; } = new CloudflareR2Options();
 
         /// <summary>
-        /// 换脸配置
+        /// Face swap configuration.
         /// </summary>
         public ReplicateOptions Replicate { get; set; } = new ReplicateOptions();
 
         /// <summary>
-        /// 本地存储配置
+        /// Local storage configuration.
         /// </summary>
         public LocalStorageOptions LocalStorage { get; set; } = new LocalStorageOptions();
     }
 
     /// <summary>
-    /// 本地存储配置
+    /// Local storage configuration.
     /// </summary>
     public class LocalStorageOptions
     {
         /// <summary>
-        /// 加速域名，可用于图片加速和图片审核使用
+        /// Acceleration domain, can be used for image acceleration or checks.
         /// </summary>
         public string CustomCdn { get; set; }
     }
 
     /// <summary>
-    /// Cloudflare R2 存储配置
+    /// Cloudflare R2 storage configuration.
     /// </summary>
     public class CloudflareR2Options
     {
@@ -198,22 +198,22 @@ namespace Midjourney.Infrastructure
         public string Bucket { get; set; }
 
         /// <summary>
-        /// 加速域名，可用于图片加速和图片审核使用
+        /// Acceleration domain, can be used for image acceleration or checks.
         /// </summary>
         public string CustomCdn { get; set; }
 
         /// <summary>
-        /// 默认图片样式
+        /// Default image style.
         /// </summary>
         public string ImageStyle { get; set; }
 
         /// <summary>
-        /// 默认缩略图图片样式
+        /// Default thumbnail image style.
         /// </summary>
         public string ThumbnailImageStyle { get; set; }
 
         /// <summary>
-        /// 视频截帧
+        /// Video snapshot.
         /// https://cloud.tencent.com/document/product/436/55671
         /// </summary>
         public string VideoSnapshotStyle { get; set; }
@@ -226,13 +226,13 @@ namespace Midjourney.Infrastructure
         //public string StorageClass { get; set; }
 
         /// <summary>
-        /// 链接默认有效时间
+        /// Default link validity time.
         /// </summary>
         public int ExpiredMinutes { get; set; } = 0;
     }
 
     /// <summary>
-    /// 腾讯云存储配置
+    /// Tencent Cloud storage configuration.
     /// </summary>
     public class TencentCosOptions
     {
@@ -264,22 +264,22 @@ namespace Midjourney.Infrastructure
         public string Bucket { get; set; }
 
         /// <summary>
-        /// 加速域名，可用于图片加速和图片审核使用
+        /// Acceleration domain, can be used for image acceleration or checks.
         /// </summary>
         public string CustomCdn { get; set; }
 
         /// <summary>
-        /// 默认图片样式
+        /// Default image style.
         /// </summary>
         public string ImageStyle { get; set; }
 
         /// <summary>
-        /// 默认缩略图图片样式
+        /// Default thumbnail image style.
         /// </summary>
         public string ThumbnailImageStyle { get; set; }
 
         /// <summary>
-        /// 视频截帧
+        /// Video snapshot.
         /// https://cloud.tencent.com/document/product/436/55671
         /// </summary>
         public string VideoSnapshotStyle { get; set; }
@@ -292,87 +292,87 @@ namespace Midjourney.Infrastructure
         //public string StorageClass { get; set; }
 
         /// <summary>
-        /// 链接默认有效时间
+        /// Default link validity time.
         /// </summary>
         public int ExpiredMinutes { get; set; } = 0;
     }
 
     /// <summary>
-    /// 邮件发送配置项
+    /// Email sending configuration.
     /// </summary>
     public class SmtpConfig
     {
         /// <summary>
-        /// SMTP服务器信息
+        /// SMTP server info.
         /// smtp.mxhichina.com
         /// </summary>
         public string Host { get; set; }
 
         /// <summary>
-        /// SMTP端口，一般为587或465，具体依据你的SMTP服务器而定
+        /// SMTP port, typically 587 or 465 depending on the server.
         /// </summary>
         public int Port { get; set; } = 465;
 
         /// <summary>
-        /// 根据你的SMTP服务器要求设置
+        /// Set according to your SMTP server requirements.
         /// </summary>
         public bool EnableSsl { get; set; } = true;
 
         /// <summary>
-        /// 发件人昵称
+        /// Sender nickname.
         /// system
         /// </summary>
         public string FromName { get; set; }
 
         /// <summary>
-        /// 发件人邮箱地址
+        /// Sender email address.
         /// system@trueai.org
         /// </summary>
         public string FromEmail { get; set; }
 
         /// <summary>
-        /// 你的邮箱密码或应用专用密码
+        /// Your email password or app-specific password.
         /// </summary>
         public string FromPassword { get; set; }
 
         /// <summary>
-        /// 收件人
+        /// Recipients.
         /// </summary>
         public string To { get; set; }
     }
 
     /// <summary>
-    /// Discord账号配置.
+    /// Discord account configuration.
     /// </summary>
     public class DiscordAccountConfig
     {
         /// <summary>
-        /// 服务器ID
+        /// Server ID
         /// </summary>
         public string GuildId { get; set; }
 
         /// <summary>
-        /// 频道ID.
+        /// Channel ID.
         /// </summary>
         public string ChannelId { get; set; }
 
         /// <summary>
-        /// MJ 私信频道ID, 用来接收 seed 值
+        /// MJ direct message channel ID, used to receive seed value.
         /// </summary>
         public string PrivateChannelId { get; set; }
 
         /// <summary>
-        /// Niji 私信频道ID, 用来接收 seed 值
+        /// Niji direct message channel ID, used to receive seed value.
         /// </summary>
         public string NijiBotChannelId { get; set; }
 
         /// <summary>
-        /// 用户 Token.
+        /// User token.
         /// </summary>
         public string UserToken { get; set; }
 
         /// <summary>
-        /// 机器人 Token
+        /// Bot token
         ///
         /// 1. 创建应用
         /// https://discord.com/developers/applications
@@ -388,27 +388,27 @@ namespace Midjourney.Infrastructure
         public string BotToken { get; set; }
 
         /// <summary>
-        /// 用户UserAgent.
+        /// User UserAgent.
         /// </summary>
         public string UserAgent { get; set; } = Constants.DEFAULT_DISCORD_USER_AGENT;
 
         /// <summary>
-        /// 是否可用.
+        /// Whether it's available.
         /// </summary>
         public bool Enable { get; set; }
 
         /// <summary>
-        /// 开启 Midjourney 绘图
+        /// Enable Midjourney drawing.
         /// </summary>
         public bool EnableMj { get; set; } = true;
 
         /// <summary>
-        /// 开启 Niji 绘图
+        /// Enable Niji drawing.
         /// </summary>
         public bool EnableNiji { get; set; } = true;
 
         /// <summary>
-        /// 启用快速模式用完自动切换到慢速模式
+        /// Enable fast mode and automatically switch to slow mode after usage.
         /// </summary>
         public bool EnableFastToRelax { get; set; }
 
@@ -424,201 +424,201 @@ namespace Midjourney.Infrastructure
         public bool? EnableAutoSetRelax { get; set; }
 
         /// <summary>
-        /// 并发数.
+        /// Concurrency.
         /// </summary>
         public int CoreSize { get; set; } = 3;
 
         /// <summary>
-        /// 等待队列长度.
+        /// Waiting queue length.
         /// </summary>
         public int QueueSize { get; set; } = 10;
 
         /// <summary>
-        /// 等待最大队列长度
+        /// Maximum waiting queue length.
         /// </summary>
         public int MaxQueueSize { get; set; } = 100;
 
         /// <summary>
-        /// 任务超时时间(分钟).
+        /// Task timeout (minutes).
         /// </summary>
         public int TimeoutMinutes { get; set; } = 5;
 
         /// <summary>
-        /// 指定生成速度模式 --fast, --relax, or --turbo parameter at the end.
+        /// Specify generation speed mode (--fast, --relax, or --turbo).
         /// </summary>
         public GenerationSpeedMode? Mode { get; set; }
 
         /// <summary>
-        /// 允许速度模式（如果出现不允许的速度模式，将会自动清除关键词）
+        /// Allowed speed modes (invalid modes will remove keywords).
         /// </summary>
         public List<GenerationSpeedMode> AllowModes { get; set; } = new List<GenerationSpeedMode>();
 
         /// <summary>
-        /// 开启 Blend 功能
+        /// Enable Blend feature.
         /// </summary>
         public bool IsBlend { get; set; } = true;
 
         /// <summary>
-        /// 开启 Describe 功能
+        /// Enable Describe feature.
         /// </summary>
         public bool IsDescribe { get; set; } = true;
 
         /// <summary>
-        /// 开启 Shoren 功能
+        /// Enable Shorten feature.
         /// </summary>
         public bool IsShorten { get; set; } = true;
 
         /// <summary>
-        /// 日绘图最大次数限制，默认 0 不限制
+        /// Daily max drawing limit (0 means no limit).
         /// </summary>
         public int DayDrawLimit { get; set; } = -1;
 
         /// <summary>
-        /// 开启垂直领域
+        /// Enable vertical domain.
         /// </summary>
         public bool IsVerticalDomain { get; set; }
 
         /// <summary>
-        /// 垂直领域 IDS
+        /// Vertical domain IDs.
         /// </summary>
         public List<string> VerticalDomainIds { get; set; } = new List<string>();
 
         /// <summary>
-        /// 子频道列表
+        /// Sub-channel list.
         /// </summary>
         public List<string> SubChannels { get; set; } = new List<string>();
 
         /// <summary>
-        /// 备注
+        /// Remark.
         /// </summary>
         public string Remark { get; set; }
 
         /// <summary>
-        /// 赞助商（富文本）
+        /// Sponsor (rich text).
         /// </summary>
         public string Sponsor { get; set; }
 
         /// <summary>
-        /// 是否赞助者
+        /// Whether it's a sponsor.
         /// </summary>
         public bool IsSponsor { get; set; }
 
         /// <summary>
-        /// 排序
+        /// Sort.
         /// </summary>
         public int Sort { get; set; }
 
         /// <summary>
-        /// 任务执行间隔时间（秒，默认：1.2s）。
+        /// Task execution interval (seconds, default: 1.2s).
         /// </summary>
         public decimal Interval { get; set; } = 1.2m;
 
         /// <summary>
-        /// 任务执行后最小间隔时间（秒，默认：1.2s）
+        /// Minimum interval time after task execution (seconds, default: 1.2s).
         /// </summary>
         public decimal AfterIntervalMin { get; set; } = 1.2m;
 
         /// <summary>
-        /// 任务执行后最大间隔时间（秒，默认：1.2s）
+        /// Maximum interval time after task execution (seconds, default: 1.2s).
         /// </summary>
         public decimal AfterIntervalMax { get; set; } = 1.2m;
 
         /// <summary>
-        /// 工作时间
+        /// Work time.
         /// </summary>
         public string WorkTime { get; set; }
 
         /// <summary>
-        /// 摸鱼时间段（只接收变化任务，不接收新的任务）
+        /// Slacking off time (accept changed tasks only).
         /// </summary>
         public string FishingTime { get; set; }
 
         /// <summary>
-        /// 当前频道的永久邀请链接
+        /// Permanent invitation link of the current channel.
         /// </summary>
         public string PermanentInvitationLink { get; set; }
 
         /// <summary>
-        /// 权重
+        /// Weight.
         /// </summary>
         public int Weight { get; set; }
 
         /// <summary>
-        /// Remix 自动提交
+        /// Remix auto submit.
         /// </summary>
         public bool RemixAutoSubmit { get; set; }
     }
 
     /// <summary>
-    /// 百度翻译配置.
+    /// Baidu translation configuration.
     /// </summary>
     public class BaiduTranslateConfig
     {
         /// <summary>
-        /// 百度翻译的APP_ID.
+        /// App ID for Baidu translation.
         /// </summary>
         public string Appid { get; set; }
 
         /// <summary>
-        /// 百度翻译的密钥.
+        /// App secret for Baidu translation.
         /// </summary>
         public string AppSecret { get; set; }
     }
 
     /// <summary>
-    /// OpenAI配置.
+    /// OpenAI configuration.
     /// </summary>
     public class OpenaiConfig
     {
         /// <summary>
-        /// 自定义gpt的api-url.
+        /// Custom GPT API URL.
         /// </summary>
         public string GptApiUrl { get; set; }
 
         /// <summary>
-        /// gpt的api-key.
+        /// GPT API key.
         /// </summary>
         public string GptApiKey { get; set; }
 
         /// <summary>
-        /// 超时时间.
+        /// Timeout.
         /// </summary>
         public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(30);
 
         /// <summary>
-        /// 使用的模型.
+        /// Used model.
         /// </summary>
         public string Model { get; set; } = "gpt-4o-mini";
 
         /// <summary>
-        /// 返回结果的最大分词数.
+        /// Maximum token count for the returned result.
         /// </summary>
         public int MaxTokens { get; set; } = 2048;
 
         /// <summary>
-        /// 相似度，取值 0-2.
+        /// Similarity, range 0-2.
         /// </summary>
         public double Temperature { get; set; } = 0;
     }
 
     /// <summary>
-    /// 代理配置.
+    /// Proxy configuration.
     /// </summary>
     public class ProxyConfig
     {
         /// <summary>
-        /// 代理host.
+        /// Proxy host.
         /// </summary>
         public string Host { get; set; }
 
         /// <summary>
-        /// 代理端口.
+        /// Proxy port.
         /// </summary>
         public int? Port { get; set; }
     }
 
     /// <summary>
-    /// 反代配置.
+    /// Reverse proxy configuration.
     /// </summary>
     public class NgDiscordConfig
     {
@@ -659,7 +659,7 @@ namespace Midjourney.Infrastructure
     }
 
     /// <summary>
-    /// 阿里云 OSS 配置
+    /// Alibaba Cloud storage configuration.
     /// <see cref="https://help.aliyun.com/document_detail/31947.html"/>
     /// </summary>
     public class AliyunOssOptions
@@ -675,7 +675,7 @@ namespace Midjourney.Infrastructure
         //public bool EnableAutoMigrate { get; set; }
 
         /// <summary>
-        /// 存储空间是您用于存储对象（Object）的容器，所有的对象都必须隶属于某个存储空间。
+        /// The storage bucket used to store objects.
         /// </summary>
         public string BucketName { get; set; }
 
@@ -685,37 +685,37 @@ namespace Midjourney.Infrastructure
         //public string Region { get; set; }
 
         /// <summary>
-        /// AccessKeyId用于标识用户，AccessKeySecret是用户用于加密签名字符串和OSS用来验证签名字符串的密钥，其中AccessKeySecret 必须保密。
+        /// AccessKeyId is used to identify the user, and AccessKeySecret must be kept confidential.
         /// </summary>
         public string AccessKeyId { get; set; }
 
         /// <summary>
-        /// AccessKeyId用于标识用户，AccessKeySecret是用户用于加密签名字符串和OSS用来验证签名字符串的密钥，其中AccessKeySecret 必须保密。
+        /// AccessKeyId is used to identify the user, and AccessKeySecret must be kept confidential.
         /// </summary>
         public string AccessKeySecret { get; set; }
 
         /// <summary>
-        /// Endpoint 表示OSS对外服务的访问域名。
+        /// Endpoint indicates the external domain for OSS.
         /// </summary>
         public string Endpoint { get; set; }
 
         /// <summary>
-        /// 阿里云加速域名，可用于图片加速和图片审核使用
+        /// Alibaba Cloud acceleration domain, can be used for image acceleration or checks.
         /// </summary>
         public string CustomCdn { get; set; }
 
         /// <summary>
-        /// 阿里云 OSS 默认图片样式
+        /// Alibaba Cloud OSS default image style.
         /// </summary>
         public string ImageStyle { get; set; }
 
         /// <summary>
-        /// 阿里云 OSS 默认缩略图图片样式 x-oss-process=style/w320
+        /// Alibaba Cloud OSS default thumbnail image style x-oss-process=style/w320
         /// </summary>
         public string ThumbnailImageStyle { get; set; }
 
         /// <summary>
-        /// 阿里云 OSS 视频截帧
+        /// Alibaba Cloud OSS video snapshot.
         /// x-oss-process=video/snapshot,t_6000,f_jpg,w_400,m_fast
         /// </summary>
         public string VideoSnapshotStyle { get; set; }
@@ -726,7 +726,7 @@ namespace Midjourney.Infrastructure
         //public bool IsAutoMigrationLocalFile { get; set; }
 
         /// <summary>
-        /// 链接默认有效时间
+        /// Default link validity time.
         /// </summary>
         public int ExpiredMinutes { get; set; } = 0;
     }
@@ -753,70 +753,70 @@ namespace Midjourney.Infrastructure
         public string Token { get; set; }
 
         /// <summary>
-        /// 启用换脸
+        /// Enable face swap.
         /// </summary>
         public bool EnableFaceSwap { get; set; }
 
         /// <summary>
-        /// 换脸版本
+        /// Face swap version.
         /// 默认（$0.002/次）：https://replicate.com/codeplugtech/face-swap -> 278a81e7ebb22db98bcba54de985d22cc1abeead2754eb1f2af717247be69b34
         /// 快速（$0.019/次）：https://replicate.com/omniedgeio/face-swap -> d28faa318942bf3f1cbed9714def03594f99b3c69b2eb279c39fc60993cee9ac
         /// </summary>
         public string FaceSwapVersion { get; set; } = "278a81e7ebb22db98bcba54de985d22cc1abeead2754eb1f2af717247be69b34";
 
         /// <summary>
-        /// 换脸并发数
+        /// Face swap concurrency.
         /// </summary>
         public int FaceSwapCoreSize { get; set; } = 3;
 
         /// <summary>
-        /// 换脸等待队列长度。
+        /// Face swap waiting queue length.
         /// </summary>
         public int FaceSwapQueueSize { get; set; } = 10;
 
         /// <summary>
-        /// 换脸任务超时
+        /// Face swap task timeout.
         /// </summary>
         public int FaceSwapTimeoutMinutes { get; set; } = 10;
 
         /// <summary>
-        /// 启用视频换脸
+        /// Enable video face swap.
         /// </summary>
         public bool EnableVideoFaceSwap { get; set; }
 
         /// <summary>
-        /// 视频换脸模型版本
+        /// Video face swap model version.
         /// https://replicate.com/xrunda/hello
         /// </summary>
         public string VideoFaceSwapVersion { get; set; } = "104b4a39315349db50880757bc8c1c996c5309e3aa11286b0a3c84dab81fd440";
 
         /// <summary>
-        /// 视频换脸并发数
+        /// Video face swap concurrency.
         /// </summary>
         public int VideoFaceSwapCoreSize { get; set; } = 3;
 
         /// <summary>
-        /// 视频换脸等待队列长度。
+        /// Video face swap queue length.
         /// </summary>
         public int VideoFaceSwapQueueSize { get; set; } = 10;
 
         /// <summary>
-        /// 视频换脸任务超时
+        /// Video face swap task timeout.
         /// </summary>
         public int VideoFaceSwapTimeoutMinutes { get; set; } = 30;
 
         /// <summary>
-        /// 最大文件大小限制
+        /// Max file size limit.
         /// </summary>
         public long MaxFileSize { get; set; } = 10 * 1024 * 1024;
 
         /// <summary>
-        /// 回调通知
+        /// Webhook notification.
         /// </summary>
         public string Webhook { get; set; }
 
         /// <summary>
-        /// 回调通知事件过滤
+        /// Webhook events filter.
         /// start：预测开始时立即
         /// output：每次预测都会产生一个输出（请注意，预测可以产生多个输出）
         /// logs：每次日志输出都是由预测生成的

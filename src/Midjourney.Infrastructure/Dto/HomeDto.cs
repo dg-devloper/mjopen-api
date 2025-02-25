@@ -24,52 +24,52 @@
 namespace Midjourney.Infrastructure.Dto
 {
     /// <summary>
-    /// 首页信息
+    /// Home page information.
     /// </summary>
     public class HomeDto
     {
         /// <summary>
-        /// 是否显示注册入口
+        /// Whether to display registration entry.
         /// </summary>
         public bool IsRegister { get; set; }
 
         /// <summary>
-        /// 是否开启了访客入口
+        /// Whether the guest entry is enabled.
         /// </summary>
         public bool IsGuest { get; set; }
 
         /// <summary>
-        /// 网站配置为演示模式
+        /// The website is configured for demo mode.
         /// </summary>
         public bool IsDemoMode { get; set; }
 
         /// <summary>
-        /// 版本号
+        /// Version number.
         /// </summary>
         public string Version { get; set; }
 
         /// <summary>
-        /// 今日绘图
+        /// Today's drawings.
         /// </summary>
         public int TodayDraw { get; set; }
 
         /// <summary>
-        /// 昨日绘图
+        /// Yesterday's drawings.
         /// </summary>
         public int YesterdayDraw { get; set; }
 
         /// <summary>
-        /// 总绘图
+        /// Total drawings.
         /// </summary>
         public int TotalDraw { get; set; }
 
         /// <summary>
-        /// 首页公告
+        /// Home page announcement.
         /// </summary>
         public string Notify { get; set; }
 
         /// <summary>
-        /// 绘图客户端 top 5
+        /// Top 5 drawing clients.
         /// </summary>
         public Dictionary<string, int> Tops { get; set; } = new Dictionary<string, int>();
     }

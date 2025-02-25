@@ -26,15 +26,15 @@ using Swashbuckle.AspNetCore.Annotations;
 namespace Midjourney.Infrastructure.Dto
 {
     /// <summary>
-    /// 简单变化任务提交参数。
+    /// Simple Variation Submission Parameter.
     /// </summary>
-    [SwaggerSchema("变化任务提交参数-simple")]
+    [SwaggerSchema("Simple Variation Submission Parameter-simple")]
     public class SubmitSimpleChangeDTO : BaseSubmitDTO
     {
         /// <summary>
-        /// 变化描述: ID $action$index。
+        /// Variation Description: ID $action$index.
         /// </summary>
-        [SwaggerSchema("变化描述: ID $action$index", Description = "1320098173412546 U2")]
+        [SwaggerSchema("Variation Description: ID $action$index", Description = "1320098173412546 U2")]
         public string Content { get; set; }
     }
 }

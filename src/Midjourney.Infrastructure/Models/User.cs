@@ -27,7 +27,7 @@ using MongoDB.Bson.Serialization.Attributes;
 namespace Midjourney.Infrastructure.Models
 {
     /// <summary>
-    /// 用户
+    /// User
     /// </summary>
     [BsonCollection("user")]
     [MongoDB.Bson.Serialization.Attributes.BsonIgnoreExtraElements]
@@ -40,90 +40,90 @@ namespace Midjourney.Infrastructure.Models
         }
 
         /// <summary>
-        /// 用户昵称
+        /// User
         /// </summary>
         public string Name { get; set; }
 
         /// <summary>
-        /// 邮箱
+        /// Email
         /// </summary>
         public string Email { get; set; }
 
         /// <summary>
-        /// 手机号
+        /// Phone number
         /// </summary>
         public string Phone { get; set; }
 
         /// <summary>
-        /// 头像
+        /// Avatar
         /// </summary>
         public string Avatar { get; set; }
 
         /// <summary>
-        /// 角色 ADMIN | USER
+        /// Role (ADMIN or USER)
         /// </summary>
         public EUserRole? Role { get; set; }
 
         /// <summary>
-        /// 状态
+        /// Status
         /// </summary>
         public EUserStatus? Status { get; set; }
 
         /// <summary>
-        /// 用户令牌
+        /// User token
         /// </summary>
         public string Token { get; set; }
 
         /// <summary>
-        /// 最后登录 ip
+        /// Last login IP
         /// </summary>
         public string LastLoginIp { get; set; }
 
         /// <summary>
-        /// 最后登录时间
+        /// Last login time
         /// </summary>
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime? LastLoginTime { get; set; }
 
         /// <summary>
-        /// 最后登录时间格式化
+        /// Last login time formatted
         /// </summary>
         public string LastLoginTimeFormat => LastLoginTime?.ToString("yyyy-MM-dd HH:mm");
 
         /// <summary>
-        /// 注册 ip
+        /// Register IP
         /// </summary>
         public string RegisterIp { get; set; }
 
         /// <summary>
-        /// 注册时间
+        /// Register time
         /// </summary>
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime RegisterTime { get; set; } = DateTime.Now;
 
         /// <summary>
-        /// 注册时间格式化
+        /// Register time formatted
         /// </summary>
         public string RegisterTimeFormat => RegisterTime.ToString("yyyy-MM-dd HH:mm");
 
         /// <summary>
-        /// 日绘图最大次数限制，默认 0 不限制
+        /// Daily drawing limit, default 0 means no limit
         /// </summary>
         public int DayDrawLimit { get; set; }
 
         /// <summary>
-        /// 白名单用户（加入白名单不受限流控制）
+        /// Whitelist user (not subject to rate-limiting)
         /// </summary>
         public bool IsWhite { get; set; } = false;
 
         /// <summary>
-        /// 创建时间
+        /// Creation time
         /// </summary>
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime CreateTime { get; set; } = DateTime.Now;
 
         /// <summary>
-        /// 更新时间
+        /// Update time
         /// </summary>
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime UpdateTime { get; set; } = DateTime.Now;

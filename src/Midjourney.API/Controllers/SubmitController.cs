@@ -37,7 +37,7 @@ using TaskStatus = Midjourney.Infrastructure.TaskStatus;
 namespace Midjourney.API.Controllers
 {
     /// <summary>
-    /// 任务提交控制器
+    /// Task submission controller
     /// </summary>
     [ApiController]
     [Route("mj/submit")]
@@ -83,13 +83,13 @@ namespace Midjourney.API.Controllers
 
             var user = _workContext.GetUser();
 
-            // 如果非演示模式、未开启访客，如果没有登录，直接返回 403 错误
+            // If not in demo mode or if guest is not enabled and if not logged in, return 403 error
             if (GlobalConfiguration.IsDemoMode != true
                 && GlobalConfiguration.Setting.EnableGuest != true)
             {
                 if (user == null)
                 {
-                    // 如果是普通用户, 并且不是匿名控制器，则返回 403
+                    // Not logged in
                     httpContextAccessor.HttpContext.Response.StatusCode = (int)HttpStatusCode.Forbidden;
                     httpContextAccessor.HttpContext.Response.WriteAsync("未登录");
                     return;
@@ -112,10 +112,10 @@ namespace Midjourney.API.Controllers
         }
 
         /// <summary>
-        /// 提交Imagine任务
+        /// Submit an Imagine task
         /// </summary>
-        /// <param name="imagineDTO">提交Imagine任务的DTO</param>
-        /// <returns>提交结果</returns>
+        /// <param name="imagineDTO">DTO for submitting an Imagine task</param>
+        /// <returns>Submission result</returns>
         [HttpPost("imagine")]
         public ActionResult<SubmitResultVO> Imagine([FromBody] SubmitImagineDTO imagineDTO)
         {
@@ -180,7 +180,7 @@ namespace Midjourney.API.Controllers
         }
 
         /// <summary>
-        /// 上传图片到 Discord
+        /// Upload images to Discord
         /// </summary>
         /// <param name="imagineDTO"></param>
         /// <returns></returns>
@@ -247,7 +247,7 @@ namespace Midjourney.API.Controllers
         }
 
         /// <summary>
-        /// 提交 show 任务
+        /// Submit show task
         /// </summary>
         /// <param name="imagineDTO"></param>
         /// <returns></returns>
@@ -298,10 +298,10 @@ namespace Midjourney.API.Controllers
         }
 
         /// <summary>
-        /// 简单变化
+        /// Simple change
         /// </summary>
-        /// <param name="simpleChangeDTO">提交简单变化任务的DTO</param>
-        /// <returns>提交结果</returns>
+        /// <param name="simpleChangeDTO">DTO for submitting a simple change task</param>
+        /// <returns>Submission result</returns>
         [HttpPost("simple-change")]
         public ActionResult<SubmitResultVO> SimpleChange([FromBody] SubmitSimpleChangeDTO simpleChangeDTO)
         {
@@ -322,10 +322,10 @@ namespace Midjourney.API.Controllers
         }
 
         /// <summary>
-        /// 任务变化
+        /// Task change
         /// </summary>
-        /// <param name="changeDTO">提交变化任务的DTO</param>
-        /// <returns>提交结果</returns>
+        /// <param name="changeDTO">DTO for submitting a change task</param>
+        /// <returns>Submission result</returns>
         [HttpPost("change")]
         public ActionResult<SubmitResultVO> Change([FromBody] SubmitChangeDTO changeDTO)
         {
@@ -394,10 +394,10 @@ namespace Midjourney.API.Controllers
         }
 
         /// <summary>
-        /// 提交Describe任务
+        /// Submit a Describe task
         /// </summary>
-        /// <param name="describeDTO">提交Describe任务的DTO</param>
-        /// <returns>提交结果</returns>
+        /// <param name="describeDTO">DTO for submitting a Describe task</param>
+        /// <returns>Submission result</returns>
         [HttpPost("describe")]
         public ActionResult<SubmitResultVO> Describe([FromBody] SubmitDescribeDTO describeDTO)
         {
@@ -436,7 +436,7 @@ namespace Midjourney.API.Controllers
         }
 
         /// <summary>
-        /// 上传一个较长的提示词，mj 可以返回一组简要的提示词
+        /// Upload a longer prompt so MJ can return a set of short prompts
         /// </summary>
         /// <param name="dto"></param>
         /// <returns></returns>
@@ -472,10 +472,10 @@ namespace Midjourney.API.Controllers
         }
 
         /// <summary>
-        /// 提交Blend任务
+        /// Submit a Blend task
         /// </summary>
-        /// <param name="blendDTO">提交Blend任务的DTO</param>
-        /// <returns>提交结果</returns>
+        /// <param name="blendDTO">DTO for submitting a Blend task</param>
+        /// <returns>Submission result</returns>
         [HttpPost("blend")]
         public ActionResult<SubmitResultVO> Blend([FromBody] SubmitBlendDTO blendDTO)
         {
@@ -520,7 +520,7 @@ namespace Midjourney.API.Controllers
         }
 
         /// <summary>
-        /// 执行动作
+        /// Execute action
         /// MJ::JOB::upsample::2::3dbbd469-36af-4a0f-8f02-df6c579e7011
         /// </summary>
         /// <param name="actionDTO"></param>
@@ -634,7 +634,7 @@ namespace Midjourney.API.Controllers
         }
 
         /// <summary>
-        /// 提交 Modal
+        /// Submit Modal
         /// </summary>
         /// <param name="actionDTO"></param>
         /// <returns></returns>
@@ -694,7 +694,7 @@ namespace Midjourney.API.Controllers
         }
 
         /// <summary>
-        /// 创建新的任务对象
+        /// Create a new task object
         /// </summary>
         /// <param name="baseDTO"></param>
         /// <returns></returns>
@@ -833,7 +833,7 @@ namespace Midjourney.API.Controllers
         }
 
         /// <summary>
-        /// 处理 account filter 和 mode
+        /// Handle account filter and mode
         /// </summary>
         /// <param name="task"></param>
         /// <param name="accountFilter"></param>
@@ -857,11 +857,11 @@ namespace Midjourney.API.Controllers
         }
 
         /// <summary>
-        /// 翻译提示词
+        /// Translate prompt
         /// </summary>
-        /// <param name="prompt">提示词</param>
+        /// <param name="prompt">Prompt</param>
         /// <param name="botType"></param>
-        /// <returns>翻译后的提示词</returns>
+        /// <returns>Translated prompt</returns>
         private string TranslatePrompt(string prompt, EBotType botType)
         {
             var setting = GlobalConfiguration.Setting;
@@ -922,7 +922,7 @@ namespace Midjourney.API.Controllers
         }
 
         /// <summary>
-        /// 获取机器人类型
+        /// Get bot type
         /// </summary>
         /// <param name="botType"></param>
         /// <returns></returns>

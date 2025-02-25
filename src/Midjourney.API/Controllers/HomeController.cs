@@ -31,7 +31,7 @@ using Midjourney.Infrastructure.Dto;
 namespace Midjourney.API.Controllers
 {
     /// <summary>
-    /// 用于获取首页等信息的控制器
+    /// Controller for obtaining homepage and other information
     /// </summary>
     [ApiController]
     [Route("mj/home")]
@@ -46,7 +46,7 @@ namespace Midjourney.API.Controllers
         }
 
         /// <summary>
-        /// 首页
+        /// Homepage
         /// </summary>
         /// <returns></returns>
         [HttpGet()]
@@ -74,7 +74,7 @@ namespace Midjourney.API.Controllers
                 dto.YesterdayDraw = (int)DbHelper.Instance.TaskStore.Count(x => x.SubmitTime >= yesterday && x.SubmitTime < now);
                 dto.TotalDraw = (int)DbHelper.Instance.TaskStore.Count(x => true);
 
-                // 今日绘图客户端 top 10
+                // Top 10 drawing clients today
                 var top10 = DbHelper.Instance.TaskStore.Where(x => x.SubmitTime >= now)
                     .ToList()
                     .GroupBy(c => string.Join(".", c.ClientIp?.Split('.')?.Take(2) ?? []) + ".x.x")

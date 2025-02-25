@@ -26,12 +26,12 @@ namespace Midjourney.Infrastructure.Dto
     public class MjPlusMigrationDto
     {
         /// <summary>
-        /// 网站地址
+        /// Site address
         /// </summary>
         public string Host { get; set; }
 
         /// <summary>
-        /// API 令牌
+        /// API token
         /// </summary>
         public string ApiSecret { get; set; }
     }

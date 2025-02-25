@@ -4,14 +4,14 @@
 # MidJourney Proxy Installer
 # =====================================
 
-# 定义颜色
+# Define colors
 readonly RED='\033[0;31m'
 readonly GREEN='\033[0;32m'
 readonly YELLOW='\033[1;33m'
 readonly BLUE='\033[0;34m'
-readonly NC='\033[0m' # 无颜色
+readonly NC='\033[0m' # No color
 
-# 全局变量
+# Global variables
 ARCH=""
 PKG_MANAGER=""
 docker_try=false
@@ -22,73 +22,73 @@ CONTAINER_NAME="mjopen-api"
 IMAGE_NAME="registry.cn-guangzhou.aliyuncs.com/trueai-org/midjourney-proxy"
 
 # ================================
-# 工具函数
+# Utility functions
 # ================================
 
-# 启动提示信息
+# Startup information
 start_info() {
-    echo -e "${BLUE}MidJourney Proxy 安装脚本${NC}"
-    echo -e "${BLUE}正在执行启动前检查...${NC}"
+    echo -e "${BLUE}MidJourney Proxy Installation Script${NC}"
+    echo -e "${BLUE}Performing pre-launch checks...${NC}"
 }
 
-# 彩色打印消息
+# Print colored message
 print_msg() {
     local color="$1"
     local message="$2"
     echo -e "${color}${message}${NC}"
 }
 
-# 打印错误并退出
+# Print error and exit
 exit_with_error() {
     local message="$1"
     print_msg "${RED}" "$message"
     exit 1
 }
 
-# 检测包管理器
+# Detect package manager
 detect_package_manager() {
     if command -v dnf &>/dev/null; then
         PKG_MANAGER="dnf"
-        print_msg "${GREEN}" "检测到dnf包管理器"
+        print_msg "${GREEN}" "Detected dnf package manager"
     elif command -v yum &>/dev/null; then
         PKG_MANAGER="yum"
-        print_msg "${GREEN}" "检测到yum包管理器"
+        print_msg "${GREEN}" "Detected yum package manager"
     elif command -v apt-get &>/dev/null; then
         PKG_MANAGER="apt-get"
-        print_msg "${GREEN}" "检测到apt-get包管理器"
+        print_msg "${GREEN}" "Detected apt-get package manager"
     else
-        exit_with_error "不支持的Linux发行版。"
+        exit_with_error "Unsupported Linux distribution."
     fi
 }
 
-# 安装必要的软件包
+# Install necessary packages
 install_package() {
     local package="$1"
-    print_msg "${YELLOW}" "正在安装 $package..."
+    print_msg "${YELLOW}" "Installing $package..."
     case "$PKG_MANAGER" in
     apt-get)
-        print_msg "${BLUE}" "正在更新apt-get..."
+        print_msg "${BLUE}" "Updating apt-get..."
         apt-get update -y
-        apt-get install "$package" -y || exit_with_error "安装 $package 失败。"
+        apt-get install "$package" -y || exit_with_error "Installation of $package failed."
         ;;
     yum)
         yum makecache -y
-        yum install "$package" -y || exit_with_error "安装 $package 失败。"
+        yum install "$package" -y || exit_with_error "Installation of $package failed."
         ;;
     dnf)
-        print_msg "${BLUE}" "正在更新dnf..."
+        print_msg "${BLUE}" "Updating dnf..."
         dnf makecache -y
-        dnf install "$package" -y || exit_with_error "安装 $package 失败。"
+        dnf install "$package" -y || exit_with_error "Installation of $package failed."
         ;;
     *)
-        exit_with_error "未知的包管理器。"
+        exit_with_error "Unknown package manager."
         ;;
     esac
 }
 
-# 检查并安装依赖
+# Check and install dependencies
 check_dependencies() {
-    print_msg "${BLUE}" "正在检查并安装依赖..."
+    print_msg "${BLUE}" "Checking and installing dependencies..."
     for dep in curl jq; do
         if ! command -v "$dep" &>/dev/null; then
             install_package "$dep"
@@ -96,60 +96,60 @@ check_dependencies() {
     done
 }
 
-# 检查CPU架构
+# Check CPU architecture
 check_architecture() {
     local arch
     arch=$(uname -m)
     case "$arch" in
     x86_64)
         ARCH="x64"
-        print_msg "${GREEN}" "检测到x64架构"
+        print_msg "${GREEN}" "Detected x64 architecture"
         ;;
     aarch64)
         ARCH="arm64"
-        print_msg "${GREEN}" "检测到arm64架构"
+        print_msg "${GREEN}" "Detected arm64 architecture"
         ;;
     *)
-        exit_with_error "不支持的架构: $arch"
+        exit_with_error "Unsupported architecture: $arch"
         ;;
     esac
 }
 
-# 读取配置并应用加速
+# Load configuration and apply acceleration
 load_config() {
     if [ -f "$CONFIG_FILE" ]; then
         source "$CONFIG_FILE"
-        print_msg "${GREEN}" "已加载配置文件"
+        print_msg "${GREEN}" "Config file loaded"
     else
-        print_msg "${YELLOW}" "未发现配置文件"
+        print_msg "${YELLOW}" "No config file found"
         ask_acceleration
     fi
 }
 
-# 创建运行版本配置文件
+# Create running versions configuration file
 create_running_versions_file() {
     local file="running_versions.conf"
-    # 如果文件不存在，则创建一个空文件
+    # If the file does not exist, create an empty file
     if [ ! -f "$file" ]; then
         touch "$file"
-        # print_msg "${GREEN}" "已创建运行版本配置文件：$file"
+        # print_msg "${GREEN}" "Created running versions configuration file: $file"
     fi
 }
 
 check_docker_installed() {
     if ! command -v docker &>/dev/null; then
         docker_installed=false
-        print_msg "${YELLOW}" "未安装Docker"
+        print_msg "${YELLOW}" "Docker not installed"
     else
         docker_installed=true
-        print_msg "${GREEN}" "已安装Docker"
+        print_msg "${GREEN}" "Docker is installed"
     fi
 }
 
-# 询问是否启用加速
+# Ask if acceleration should be enabled
 ask_acceleration() {
     while true; do
-        read -rp "是否启用加速（解决国内无法连接 Docker 和 GitHub 的问题）？[Y/n]: " choice
+        read -rp "Would you like to enable acceleration (fix Docker/GitHub connection issues in China)? [Y/n]: " choice
         choice=$(echo "$choice" | tr '[:upper:]' '[:lower:]')
         if [[ "$choice" == "y" || "$choice" == "" ]]; then
             USE_ACCELERATION=true
@@ -160,76 +160,76 @@ ask_acceleration() {
             save_config
             break
         else
-            print_msg "${YELLOW}" "请输入 Y 或 N。"
+            print_msg "${YELLOW}" "Please enter Y or N."
         fi
     done
 }
 
-# 保存配置
+# Save configuration
 save_config() {
     echo "USE_ACCELERATION=$USE_ACCELERATION" >"$CONFIG_FILE"
-    print_msg "${GREEN}" "已保存配置文件"
+    print_msg "${GREEN}" "Config file saved"
 }
 
 # ================================
-# Docker操作函数
+# Docker operation functions
 # ================================
 
 install_docker() {
     if ! command -v docker &>/dev/null; then
         if [ "$docker_try" = true ]; then
-            exit_with_error "已使用Docker官方脚本安装但无法启用，请手动检查。"
+            exit_with_error "Docker installation failed, please check error info and retry."
         fi
-        print_msg "${YELLOW}" "Docker 未安装，正在使用官方脚本安装 Docker..."
+        print_msg "${YELLOW}" "Using official script to install Docker..."
         if $USE_ACCELERATION; then
             if curl -fsSL https://get.docker.com | bash -s docker --mirror Aliyun; then
                 docker_try=true
                 install_docker
             else
-                exit_with_error "Docker 安装失败，请检查错误信息并重试。"
+                exit_with_error "Docker installation failed, please check error info and retry."
             fi
         else
             if curl -fsSL https://get.docker.com | bash -s docker; then
                 docker_try=true
                 install_docker
             else
-                exit_with_error "Docker 安装失败，请检查错误信息并重试。"
+                exit_with_error "Docker installation failed, please check error info and retry."
             fi
         fi
     else
         docker_installed=true
-        print_msg "${GREEN}" "Docker 已安装，无需进行操作。"
+        print_msg "${GREEN}" "Docker is installed, no action needed."
     fi
 }
 
 run_docker_container() {
-    print_msg "${BLUE}" "正在拉取最新的 Docker 镜像..."
-    docker pull ${IMAGE_NAME} || exit_with_error "拉取 Docker 镜像失败。"
+    print_msg "${BLUE}" "Pulling the latest Docker image..."
+    docker pull ${IMAGE_NAME} || exit_with_error "Failed to pull Docker image."
 
-    # 停止并删除现有容器
+    # Stop and remove existing container
     if [ "$(docker ps -q -f name=${CONTAINER_NAME})" ]; then
-        print_msg "${BLUE}" "停止现有的容器 ${CONTAINER_NAME}..."
+        print_msg "${BLUE}" "Stopping existing container ${CONTAINER_NAME}..."
         docker stop ${CONTAINER_NAME}
         if [ $? -ne 0 ]; then
-            print_msg "${RED}" "停止容器失败，请手动检查。"
+            print_msg "${RED}" "Failed to stop container, please manually check."
             return 1
         fi
     fi
 
     if [ "$(docker ps -aq -f status=exited -f name=${CONTAINER_NAME})" ]; then
-        print_msg "${BLUE}" "移除现有的容器 ${CONTAINER_NAME}..."
+        print_msg "${BLUE}" "Removing existing container ${CONTAINER_NAME}..."
         docker rm ${CONTAINER_NAME}
         if [ $? -ne 0 ]; then
-            print_msg "${RED}" "移除容器失败，请手动检查。"
+            print_msg "${RED}" "Failed to remove container, please manually check."
             return 1
         fi
     fi
 
-    # 提示用户输入端口
-    read -rp "请设定外部端口（输入enter选择默认，默认8088）: " external_port
-    external_port=${external_port:-8088}  # 使用默认端口8088
+    # Prompt user to input port
+    read -rp "Please set external port (press enter for default, default 8088): " external_port
+    external_port=${external_port:-8088}  # Use default port 8088
 
-    print_msg "${BLUE}" "启动 Docker 容器..."
+    print_msg "${BLUE}" "Starting Docker container..."
     docker run --name ${CONTAINER_NAME} -d --restart=always \
         -p $external_port:8080 --user root \
         -v /root/mjopen-api/logs:/app/logs:rw \
@@ -239,57 +239,57 @@ run_docker_container() {
         -e TZ=Asia/Shanghai \
         -v /etc/localtime:/etc/localtime:ro \
         -v /etc/timezone:/etc/timezone:ro \
-        ${IMAGE_NAME} || exit_with_error "启动 Docker 容器失败。"
+        ${IMAGE_NAME} || exit_with_error "Failed to start Docker container."
 
-    # 获取本机公网和内网IP
+    # Get public and private IP addresses
     local public_ip
     local private_ip
     public_ip=$(curl -s ifconfig.me)
     private_ip=$(hostname -I | awk '{print $1}')
 
-    print_msg "${GREEN}" "Docker 容器 ${CONTAINER_NAME} 已成功启动，请确认端口设置："
-    print_msg "${GREEN}" "内网地址: http://$private_ip:8080"
-    print_msg "${GREEN}" "外网地址: http://$public_ip:$external_port"
+    print_msg "${GREEN}" "Container ${CONTAINER_NAME} started successfully, please confirm port settings:"
+    print_msg "${GREEN}" "LAN address: http://$private_ip:8080"
+    print_msg "${GREEN}" "Public address: http://$public_ip:$external_port"
 }
 
 start_docker_container() {
     if [ "$(docker ps -q -f name=${CONTAINER_NAME})" ]; then
-        print_msg "${YELLOW}" "容器 ${CONTAINER_NAME} 已在运行。"
+        print_msg "${YELLOW}" "Container ${CONTAINER_NAME} is already running."
     else
-        docker start ${CONTAINER_NAME} && print_msg "${GREEN}" "容器 ${CONTAINER_NAME} 已启动。" || print_msg "${RED}" "启动容器失败。"
-    fi
+        docker start ${CONTAINER_NAME} && print_msg "${GREEN}" "Container ${CONTAINER_NAME} started." || print_msg "${RED}" "Failed to start container."
+    }
 }
 
 stop_docker_container() {
     if [ "$(docker ps -q -f name=${CONTAINER_NAME})" ]; then
-        docker stop ${CONTAINER_NAME} && print_msg "${GREEN}" "容器 ${CONTAINER_NAME} 已停止。" || print_msg "${RED}" "停止容器失败。"
+        docker stop ${CONTAINER_NAME} && print_msg "${GREEN}" "Container ${CONTAINER_NAME} stopped." || print_msg "${RED}" "Failed to stop container."
     else
-        print_msg "${YELLOW}" "容器 ${CONTAINER_NAME} 未在运行。"
-    fi
+        print_msg "${YELLOW}" "Container ${CONTAINER_NAME} is not running."
+    }
 }
 
 check_docker_status() {
     if [ "$docker_installed" = false ]; then
-        print_msg "${YELLOW}" "Docker 未安装。"
+        print_msg "${YELLOW}" "Docker not installed."
     else
         if [ "$(docker ps -q -f name=${CONTAINER_NAME})" ]; then
-            print_msg "${GREEN}" "容器 ${CONTAINER_NAME} 正在运行。"
+            print_msg "${GREEN}" "Container ${CONTAINER_NAME} is running."
         else
-            print_msg "${YELLOW}" "Docker 已安装，容器未启动。"
+            print_msg "${YELLOW}" "Docker is installed, container not started."
         fi
     fi
 }
 
 # ================================
-# Linux版本安装函数
+# Linux version installation functions
 # ================================
 
-# 全局变量
+# Global variables
 LATEST_VERSION=""
 DOWNLOAD_URL=""
 INSTALLED_VERSIONS=()
 
-# 从GitHub获取最新版本信息
+# Get the latest version information from GitHub
 get_latest_version_info() {
     local API_URL="https://api.github.com/repos/trueai-org/midjourney-proxy/releases/latest"
     local API_URL="https://api.github.com/repos/dg-devloper/mjopen-api/releases/latest"
@@ -302,7 +302,7 @@ get_latest_version_info() {
 
     response=$(curl -s "$API_URL")
     if [ $? -ne 0 ]; then
-        print_msg "${RED}" "获取最新版本信息失败。"
+        print_msg "${RED}" "Failed to get the latest version info."
         return
     fi
 
@@ -310,12 +310,12 @@ get_latest_version_info() {
     DOWNLOAD_URL=$(echo "$response" | jq -r --arg ARCH "$ARCH" '.assets[] | select(.name | test("midjourney-proxy-linux-\($ARCH)")) | .browser_download_url')
 
     if [ -z "$LATEST_VERSION" ] || [ -z "$DOWNLOAD_URL" ]; then
-        print_msg "${RED}" "获取最新版本信息失败。"
+        print_msg "${RED}" "Failed to get the latest version info."
         return
     fi
 }
 
-# 列出已安装的版本
+# List installed versions
 list_installed_versions() {
     INSTALLED_VERSIONS=()
     for version_dir in v*; do
@@ -325,19 +325,19 @@ list_installed_versions() {
     done
 
     if [ "${#INSTALLED_VERSIONS[@]}" -gt 0 ]; then
-        echo -e "${BLUE}已安装的linux版本:${NC}"
+        echo -e "${BLUE}Installed Linux versions:${NC}"
         for version in "${INSTALLED_VERSIONS[@]}"; do
             echo -e "  $version"
         done
     fi
 }
 
-# 安装指定版本
+# Install specified version
 install_version() {
     local version="$1"
 
     if [ -d "$version" ]; then
-        print_msg "${YELLOW}" "版本 $version 已安装。"
+        print_msg "${YELLOW}" "Version $version is already installed."
         return 1
     fi
 
@@ -350,7 +350,7 @@ install_version() {
     local response
     response=$(curl -s "$specific_api_url")
     if [ $? -ne 0 ]; then
-        print_msg "${RED}" "获取版本 $version 的信息失败。"
+        print_msg "${RED}" "Failed to get version $version info."
         return
     fi
 
@@ -362,77 +362,77 @@ install_version() {
     ')
 
     if [ -z "$tar_url" ]; then
-        print_msg "${RED}" "找不到指定版本的下载链接：$version"
+        print_msg "${RED}" "Couldn't find the specified version's download link: $version"
         return
     fi
 
-    # 创建临时目录
+    # Create temporary directory
     local temp_dir
     temp_dir=$(mktemp -d)
     if [ ! -d "$temp_dir" ]; then
-        print_msg "${RED}" "创建临时目录失败。"
+        print_msg "${RED}" "Failed to create temporary directory."
         return
     fi
     trap 'rm -rf "$temp_dir"' EXIT
 
-    cd "$temp_dir" || { print_msg "${RED}" "进入临时目录失败。"; return; }
+    cd "$temp_dir" || { print_msg "${RED}" "Failed to enter temporary directory."; return; }
 
-    # 下载压缩包
+    # Download tarball
     download_file "$tar_url" "midjourney-proxy-linux-${ARCH}-${version}.tar.gz" || {
-        print_msg "${RED}" "下载失败。"
+        print_msg "${RED}" "Download failed."
         return
     }
 
-    # 创建目标目录
+    # Create target directory
     mkdir -p "$OLDPWD/$version"
 
-    # 解压到目标目录
+    # Extract to target directory
     if ! tar -xzf "midjourney-proxy-linux-${ARCH}-${version}.tar.gz" -C "$OLDPWD/$version"; then
-        print_msg "${RED}" "解压文件失败。"
+        print_msg "${RED}" "Failed to extract file."
         return
     fi
 
-    cd "$OLDPWD" || { print_msg "${RED}" "返回原目录失败。"; return; }
+    cd "$OLDPWD" || { print_msg "${RED}" "Failed to return to original directory."; return; }
 
-    print_msg "${GREEN}" "版本 $version 安装完成。"
+    print_msg "${GREEN}" "Version $version installed successfully."
 }
 
-# 删除指定版本
+# Delete specified version
 delete_version() {
-    read -rp "请输入要删除的版本（例如：v2.3.7）： " version
+    read -rp "Please enter the version to delete (e.g., v2.3.7): " version
     if [[ "$version" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
         if [ -d "$version" ]; then
-            read -rp "确定要删除 $version 吗？ [y/N]: " confirm
+            read -rp "Are you sure you want to delete $version? [y/N]: " confirm
             confirm=$(echo "$confirm" | tr '[:upper:]' '[:lower:]')
             if [ "$confirm" == "y" ]; then
-                rm -rf "$version" && print_msg "${GREEN}" "版本 $version 已删除。" || print_msg "${RED}" "删除版本 $version 失败。"
+                rm -rf "$version" && print_msg "${GREEN}" "Version $version deleted." || print_msg "${RED}" "Failed to delete version $version."
             else
-                print_msg "${YELLOW}" "已取消删除。"
+                print_msg "${YELLOW}" "Deletion canceled."
             fi
         else
-            print_msg "${RED}" "版本 $version 未安装。"
+            print_msg "${RED}" "Version $version is not installed."
         fi
     else
-        print_msg "${RED}" "无效的版本格式。"
+        print_msg "${RED}" "Invalid version format."
     fi
 }
 
-# 下载文件，支持使用加速
+# Download file with optional acceleration
 download_file() {
     local url="$1"
     local output="$2"
 
     if $USE_ACCELERATION; then
         local proxy_url="https://ghproxy.com/${url#https://}"
-        print_msg "${BLUE}" "正在使用加速下载 $proxy_url..."
+        print_msg "${BLUE}" "Using acceleration to download $proxy_url..."
         if ! curl -L -o "$output" "$proxy_url"; then
-            print_msg "${RED}" "下载失败，请检查网络连接。"
+            print_msg "${RED}" "Download failed, please check network connection."
             return 1
         fi
     else
-        print_msg "${BLUE}" "正在下载 $url..."
+        print_msg "${BLUE}" "Downloading $url..."
         if ! curl -L -o "$output" "$url"; then
-            print_msg "${RED}" "下载失败，请检查网络连接。"
+            print_msg "${RED}" "Download failed, please check network connection."
             return 1
         fi
     fi
@@ -442,7 +442,7 @@ start_version() {
     local version="$1"
 
     if [ ! -d "$version" ]; then
-        print_msg "${RED}" "版本 $version 未安装。"
+        print_msg "${RED}" "Version $version is not installed."
         return 1
     fi
 
@@ -452,27 +452,27 @@ start_version() {
     elif [ -f "$version/appsettings.json" ]; then
         cp "$version/appsettings.json" "$version/appsettings.Production.json"
         if [ ! -f "$version/appsettings.Production.json" ]; then
-            print_msg "${RED}" "复制配置文件失败。"
+            print_msg "${RED}" "Failed to copy config file."
             return 1
         fi
         settings_file="$version/appsettings.Production.json"
     else
-        print_msg "${RED}" "未找到配置文件。"
+        print_msg "${RED}" "No config file found."
         return 1
     fi
 
-    # 创建一个临时文件来存储无注释的 JSON
+    # Create a temporary file to store uncommented JSON
     local temp_json
     temp_json=$(mktemp)
 
-    # 移除注释（行注释和行内注释）
+    # Remove comments (line comments and inline comments)
     sed -E 's,([^:])(//.*),\1,g' "$settings_file" > "$temp_json"
 
     local urls
     urls=$(jq -r '.urls' "$temp_json")
-    rm -f "$temp_json"  # 删除临时文件
+    rm -f "$temp_json"  # Delete temporary file
 
-    # 获取本机公网和内网IP
+    # Get public and private IP addresses
     local public_ip
     local private_ip
     public_ip=$(curl -s ifconfig.me)
@@ -481,34 +481,34 @@ start_version() {
     local flag=true
 
     if [ -z "$urls" ] || [ "$urls" == "null" ]; then
-        print_msg "${YELLOW}" "未在配置文件中找到 'urls' 字段。"
+        print_msg "${YELLOW}" "No 'urls' field found in config file."
         flag=false
     fi
 
-    cd "$version" || { print_msg "${RED}" "无法进入目录 $version"; return 1; }
+    cd "$version" || { print_msg "${RED}" "Cannot enter directory $version"; return 1; }
     chmod +x ./run_app.sh
     nohup ./run_app.sh > "../$version.log" 2>&1 &
 
     local pid=$!
     cd - > /dev/null || return 1
 
-    # 等待3秒
+    # Wait for 3 seconds
     sleep 3
 
-    # 检查进程是否仍在运行
+    # Check if the process is still running
     if ps -p "$pid" > /dev/null 2>&1; then
-        # 将版本号和 PID 写入运行版本配置文件
+        # Write version number and PID to running versions configuration file
         echo "$version:$pid" >> "running_versions.conf"
-        print_msg "${GREEN}" "版本 $version 已启动，PID: $pid。"
+        print_msg "${GREEN}" "Version $version started, PID: $pid."
 
         if $flag; then
             local private_url="${urls//\*/$private_ip}"
             local public_url="${urls//\*/$public_ip}"
-            print_msg "${GREEN}" "内网地址: $private_url"
-            print_msg "${GREEN}" "外网地址: $public_url"
+            print_msg "${GREEN}" "LAN address: $private_url"
+            print_msg "${GREEN}" "Public address: $public_url"
         fi
     else
-        print_msg "${RED}" "版本 $version 启动失败，请检查日志文件：$version.log"
+        print_msg "${RED}" "Version $version failed to start, please check the log file: $version.log"
         return 1
     fi
 }
@@ -517,29 +517,29 @@ stop_version() {
     local version="$1"
 
     if [ ! -s "running_versions.conf" ]; then
-        print_msg "${YELLOW}" "版本 $version 未在运行。"
+        print_msg "${YELLOW}" "Version $version is not running."
         return 1
     fi
 
     local pid
     pid=$(awk -F":" -v ver="$version" '$1 == ver {print $2}' "running_versions.conf")
     if [ -z "$pid" ]; then
-        print_msg "${YELLOW}" "版本 $version 未在运行。"
+        print_msg "${YELLOW}" "Version $version is not running."
         return 1
     fi
 
     if kill "$pid" > /dev/null 2>&1; then
-        print_msg "${GREEN}" "已停止版本 $version，PID: $pid"
+        print_msg "${GREEN}" "Stopped version $version, PID: $pid"
         grep -vE "^$version:$pid$|^$" "running_versions.conf" > "running_versions.tmp" && mv "running_versions.tmp" "running_versions.conf"
     else
-        print_msg "${RED}" "停止版本 $version 失败，可能进程已不存在。"
+        print_msg "${RED}" "Failed to stop version $version, the process may not exist."
         grep -vE "^$version:$pid$|^$" "running_versions.conf" > "running_versions.tmp" && mv "running_versions.tmp" "running_versions.conf"
     fi
 }
 
 list_running_versions() {
     if [ ! -s "running_versions.conf" ]; then
-        print_msg "${YELLOW}" "没有正在运行的版本。"
+        print_msg "${YELLOW}" "No version is currently running."
         return
     fi
 
@@ -551,7 +551,7 @@ list_running_versions() {
             updated_entries+=("$version:$pid")
         else
             if [[ -n "$version" ]]; then
-                print_msg "${YELLOW}" "版本 $version (PID: $pid) 已停止，移除记录。"
+                print_msg "${YELLOW}" "Stopped, removing record."
             fi
         fi
     done < "running_versions.conf"
@@ -559,12 +559,12 @@ list_running_versions() {
     printf "%s\n" "${updated_entries[@]}" > "running_versions.conf"
 
     if [ "${#running_versions[@]}" -gt 0 ]; then
-        print_msg "${GREEN}" "正在运行的版本："
+        print_msg "${GREEN}" "Running versions:"
         for entry in "${running_versions[@]}"; do
             echo "  $entry"
         done
     else
-        print_msg "${YELLOW}" "没有正在运行的版本。"
+        print_msg "${YELLOW}" "No version is currently running."
     fi
 }
 
@@ -572,94 +572,94 @@ update_version() {
     local version="$1"
 
     if [ ! -d "$version" ]; then
-        print_msg "${RED}" "版本 $version 未安装，无法更新。"
+        print_msg "${RED}" "Version $version is not installed, cannot update."
         return 1
     fi
 
     stop_version "$version"
 
-    print_msg "${BLUE}" "正在更新版本 $version ..."
+    print_msg "${BLUE}" "Updating version $version ..."
 
-    # 获取最新版本信息
+    # Get the latest version information
     get_latest_version_info
     if [ -z "$LATEST_VERSION" ] || [ -z "$DOWNLOAD_URL" ]; then
-        print_msg "${RED}" "获取最新版本信息失败。"
+        print_msg "${RED}" "Failed to get the latest version info."
         return 1
     fi
 
-    # 检查版本是否需要更新
+    # Check if the version needs to be updated
     if [ "$version" == "$LATEST_VERSION" ]; then
-        print_msg "${GREEN}" "版本 $version 已是最新，无需更新。"
+        print_msg "${GREEN}" "Version $version is already the latest, no update needed."
         return 0
     fi
 
-    # 在更新前备份配置文件
+    # Backup configuration file before updating
     if [ ! -f "$version/appsettings.Production.json" ]; then
         if [ -f "$version/appsettings.json" ]; then
             cp "$version/appsettings.json" "$version/appsettings.Production.json"
-            print_msg "${GREEN}" "已将 appsettings.json 复制为 appsettings.Production.json"
+            print_msg "${GREEN}" "Copied appsettings.json to appsettings.Production.json"
         else
-            print_msg "${YELLOW}" "警告：未发现 appsettings.json"
+            print_msg "${YELLOW}" "Warning: appsettings.json not found"
         fi
     fi
 
-    # 下载最新版本的安装包
+    # Download the latest version package
     local temp_dir
     temp_dir=$(mktemp -d)
     if [ ! -d "$temp_dir" ]; then
-        print_msg "${RED}" "创建临时目录失败。"
+        print_msg "${RED}" "Failed to create temporary directory."
         return 1
     fi
     trap 'rm -rf "$temp_dir"' EXIT
 
-    cd "$temp_dir" || { print_msg "${RED}" "进入临时目录失败。"; return 1; }
+    cd "$temp_dir" || { print_msg "${RED}" "Failed to enter temporary directory."; return 1; }
 
-    # 下载最新版本的压缩包
-    print_msg "${BLUE}" "正在下载最新版本的安装包..."
+    # Download the latest version tarball
+    print_msg "${BLUE}" "Downloading the latest version package..."
     download_file "$DOWNLOAD_URL" "midjourney-proxy-linux-${ARCH}-${LATEST_VERSION}.tar.gz" || {
-        print_msg "${RED}" "下载失败。"
+        print_msg "${RED}" "Download failed."
         return 1
     }
 
-    # 解压到版本目录，覆盖安装
+    # Extract to version directory, overwrite installation
     if ! tar -xzf "midjourney-proxy-linux-${ARCH}-${LATEST_VERSION}.tar.gz" -C "$OLDPWD/$version"; then
-        print_msg "${RED}" "解压文件失败。"
+        print_msg "${RED}" "Failed to extract file."
         return 1
     fi
 
     if ! cd "$OLDPWD"; then
-        exit_with_error "在安装更新时返回原目录失败。"
+        exit_with_error "Failed to go back to original directory."
     fi
 
-    # 更新成功后重命名目录
+    # Rename directory after successful update
     if ! mv "$version" "${LATEST_VERSION}"; then
-        print_msg "${RED}" "重命名目录失败。"
+        print_msg "${RED}" "Failed to rename directory."
         return 1
     fi
 
-    print_msg "${GREEN}" "版本 $version 已更新到最新版本 $LATEST_VERSION 并重命名目录。"
+    print_msg "${GREEN}" "Version $version updated to the latest version $LATEST_VERSION."
 }
 
 # ================================
-# 主菜单
+# Main menu
 # ================================
 
 main_menu() {
     while true; do
         echo
-        echo -e "${BLUE}Midjourney Proxy 安装脚本${NC}"
+        echo -e "${BLUE}Midjourney Proxy Installation Script${NC}"
         check_docker_status
         list_installed_versions
         list_running_versions
-        echo -e "1. ${GREEN}Docker版本（推荐，仅支持x64）${NC}"
-        echo -e "2. ${GREEN}Linux版本（支持x64和arm64）${NC}"
-        echo -e "3. ${GREEN}退出${NC}"
-        read -rp "请选择 (1-3)： " choice
+        echo -e "1. ${GREEN}Docker version (recommended, x64 only)${NC}"
+        echo -e "2. ${GREEN}Linux version (supports x64 and arm64)${NC}"
+        echo -e "3. ${GREEN}Exit${NC}"
+        read -rp "Please choose (1-3): " choice
 
         case "$choice" in
         1)
             if [ "$ARCH" != "x64" ]; then
-                print_msg "${RED}" "Docker版本目前仅支持x64架构。"
+                print_msg "${RED}" "Docker version currently supports x64 architecture only."
             else
                 docker_submenu
             fi
@@ -668,11 +668,11 @@ main_menu() {
             linux_menu
             ;;
         3)
-            print_msg "${GREEN}" "退出。"
+            print_msg "${GREEN}" "Exiting."
             exit 0
             ;;
         *)
-            print_msg "${RED}" "无效选项，请输入1到3之间的数字。"
+            print_msg "${RED}" "Invalid option, please enter a number between 1 and 3."
             ;;
         esac
     done
@@ -682,34 +682,34 @@ docker_submenu() {
     while true; do
         echo
         check_docker_status
-        echo -e "${BLUE}Docker 菜单:${NC}"
-        echo -e "1. ${GREEN}安装 Docker${NC}"
-        echo -e "2. ${GREEN}安装或更新并启动容器${NC}"
-        echo -e "3. ${GREEN}启动但不更新容器${NC}"
-        echo -e "4. ${GREEN}停止容器${NC}"
-        echo -e "5. ${GREEN}返回主菜单${NC}"
-        read -rp "请选择 (1-5)： " option
+        echo -e "${BLUE}Docker Menu:${NC}"
+        echo -e "1. ${GREEN}Install Docker${NC}"
+        echo -e "2. ${GREEN}Install or update and start container${NC}"
+        echo -e "3. ${GREEN}Start container without updating${NC}"
+        echo -e "4. ${GREEN}Stop container${NC}"
+        echo -e "5. ${GREEN}Return to main menu${NC}"
+        read -rp "Please choose (1-5): " option
 
         case "$option" in
         1)
             if [ "$docker_installed" = false ]; then
                 install_docker
             else
-                print_msg "${YELLOW}" "Docker 已安装。"
+                print_msg "${YELLOW}" "Docker is already installed."
             fi
             ;;
         2)
             if [ "$docker_installed" = true ]; then
                 run_docker_container
             else
-                print_msg "${RED}" "Docker 未安装，请先安装 Docker。"
+                print_msg "${RED}" "Docker is not installed, please install Docker first."
             fi
             ;;
         3)
             if [ "$docker_installed" = true ]; then
                 start_docker_container
             else
-                print_msg "${RED}" "Docker 未安装，请先安装 Docker。"
+                print_msg "${RED}" "Docker is not installed, please install Docker first."
             fi
             ;;
         4)
@@ -717,17 +717,17 @@ docker_submenu() {
                 if [ "$(docker ps -q -f name=${CONTAINER_NAME})" ]; then
                     stop_docker_container
                 else
-                    print_msg "${YELLOW}" "容器 $CONTAINER_NAME 未在运行。"
+                    print_msg "${YELLOW}" "Container $CONTAINER_NAME is not running."
                 fi
             else
-                print_msg "${RED}" "Docker 未安装，请先安装 Docker。"
+                print_msg "${RED}" "Docker is not installed, please install Docker first."
             fi
             ;;
         5)
             break
             ;;
         *)
-            print_msg "${RED}" "无效选项，请输入1到5之间的数字。"
+            print_msg "${RED}" "Invalid option, please enter a number between 1 and 5."
             ;;
         esac
     done
@@ -738,15 +738,15 @@ linux_menu() {
         echo
         list_installed_versions
         list_running_versions
-        echo -e "${BLUE}Linux版本菜单:${NC}"
-        echo -e "1. ${GREEN}安装最新版本${NC}"
-        echo -e "2. ${GREEN}安装指定版本${NC}"
-        echo -e "3. ${GREEN}删除指定版本${NC}"
-        echo -e "4. ${GREEN}启动指定版本${NC}"
-        echo -e "5. ${GREEN}停止指定版本${NC}"
-        echo -e "6. ${GREEN}更新已安装的版本${NC}"
-        echo -e "7. ${GREEN}返回主菜单${NC}"
-        read -rp "请选择 (1-7)： " option
+        echo -e "${BLUE}Linux Version Menu:${NC}"
+        echo -e "1. ${GREEN}Install latest version${NC}"
+        echo -e "2. ${GREEN}Install specified version${NC}"
+        echo -e "3. ${GREEN}Delete specified version${NC}"
+        echo -e "4. ${GREEN}Start specified version${NC}"
+        echo -e "5. ${GREEN}Stop specified version${NC}"
+        echo -e "6. ${GREEN}Update installed version${NC}"
+        echo -e "7. ${GREEN}Return to main menu${NC}"
+        read -rp "Please choose (1-7): " option
 
         case "$option" in
         1)
@@ -754,36 +754,36 @@ linux_menu() {
             install_version "$LATEST_VERSION"
             ;;
         2)
-            read -rp "请输入要安装的版本（例如：v2.3.7）： " version
+            read -rp "Please enter the version to install (e.g., v2.3.7): " version
             install_version "$version"
             ;;
         3)
             delete_version
             ;;
         4)
-            read -rp "请输入要启动的版本号： " version
+            read -rp "Please enter the version to start: " version
             start_version "$version"
             ;;
         5)
-            read -rp "请输入要停止的版本号： " version
+            read -rp "Please enter the version to stop: " version
             stop_version "$version"
             ;;
         6)
-            read -rp "请输入要更新的版本号： " version
+            read -rp "Please enter the version to update: " version
             update_version "$version"
             ;;
         7)
             break
             ;;
         *)
-            print_msg "${RED}" "无效选项，请输入1到7之间的数字。"
+            print_msg "${RED}" "Invalid option, please enter a number between 1 and 7."
             ;;
         esac
     done
 }
 
 # ================================
-# 脚本初始化
+# Script initialization
 # ================================
 
 main() {

@@ -32,7 +32,7 @@ using System.Text.RegularExpressions;
 namespace Midjourney.Infrastructure.Models
 {
     /// <summary>
-    /// Discord账号类。
+    /// Discord account class.
     /// </summary>
     [BsonCollection("account")]
     [MongoDB.Bson.Serialization.Attributes.BsonIgnoreExtraElements]
@@ -44,198 +44,198 @@ namespace Midjourney.Infrastructure.Models
         }
 
         /// <summary>
-        /// 频道ID  = ID
+        /// Channel ID = ID.
         /// </summary>
         [Display(Name = "频道ID")]
         public string ChannelId { get; set; }
 
         /// <summary>
-        /// 服务器ID
+        /// Server ID.
         /// </summary>
         [Display(Name = "服务器ID")]
         public string GuildId { get; set; }
 
         /// <summary>
-        /// Mj 私信频道ID, 用来接收 seed 值
+        /// Mj private channel ID (to receive seed values).
         /// </summary>
         [Display(Name = "私信频道ID")]
         public string PrivateChannelId { get; set; }
 
         /// <summary>
-        /// Niji 私信频道ID, 用来接收 seed 值
+        /// Niji private channel ID (to receive seed values).
         /// </summary>
         public string NijiBotChannelId { get; set; }
 
         /// <summary>
-        /// 用户Token。
+        /// User token.
         /// </summary>
         [Display(Name = "用户Token")]
         public string UserToken { get; set; }
 
         /// <summary>
-        /// 机器人 Token
+        /// Bot token.
         /// </summary>
         [Display(Name = "机器人Token")]
         public string BotToken { get; set; }
 
         /// <summary>
-        /// 用户UserAgent。
+        /// User agent.
         /// </summary>
         [Display(Name = "用户UserAgent")]
         public string UserAgent { get; set; } = Constants.DEFAULT_DISCORD_USER_AGENT;
 
         /// <summary>
-        /// 是否可用。
+        /// Whether enabled.
         /// </summary>
         public bool? Enable { get; set; }
 
         /// <summary>
-        /// 开启 Midjourney 绘图
+        /// Enable Midjourney drawing.
         /// </summary>
         public bool? EnableMj { get; set; }
 
         /// <summary>
-        /// 开启 Niji 绘图
+        /// Enable Niji drawing.
         /// </summary>
         public bool? EnableNiji { get; set; }
 
         /// <summary>
-        /// 启用快速模式用完自动切换到慢速模式
+        /// Enable fast mode to relax mode.
         /// </summary>
         public bool? EnableFastToRelax { get; set; }
 
         /// <summary>
-        /// 启用时，当有快速时长时，自动切换到快速模式
+        /// Enable relax mode to fast mode.
         /// </summary>
         public bool? EnableRelaxToFast { get; set; }
 
         /// <summary>
-        /// 表示快速模式是否已经用完了
+        /// Indicates whether fast mode is exhausted.
         /// </summary>
         public bool FastExhausted { get; set; }
 
         /// <summary>
-        /// 是否锁定（暂时锁定，可能触发了人机验证）
+        /// Whether locked (temporarily locked, possibly triggered human verification).
         /// </summary>
         public bool Lock { get; set; }
 
         /// <summary>
-        /// 禁用原因
+        /// Disabled reason.
         /// </summary>
         public string DisabledReason { get; set; }
 
         /// <summary>
-        /// 当前频道的永久邀请链接
+        /// Permanent invitation link for the current channel.
         /// </summary>
         public string PermanentInvitationLink { get; set; }
 
         /// <summary>
-        /// 真人验证 hash url 创建时间
+        /// Human verification hash URL creation time.
         /// </summary>
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime? CfHashCreated { get; set; }
 
         /// <summary>
-        /// 真人验证 hash Url
+        /// Human verification hash URL.
         /// </summary>
         public string CfHashUrl { get; set; }
 
         /// <summary>
-        /// 真人验证 Url
+        /// Human verification URL.
         /// </summary>
         public string CfUrl { get; set; }
 
         /// <summary>
-        /// 是否赞助者
+        /// Whether sponsor.
         /// </summary>
         public bool IsSponsor { get; set; }
 
         /// <summary>
-        /// 赞助者用户 ID
+        /// Sponsor user ID.
         /// </summary>
         public string SponsorUserId { get; set; }
 
         /// <summary>
-        /// 并发数。
+        /// Concurrency count.
         /// </summary>
         [Display(Name = "并发数")]
         public int CoreSize { get; set; } = 3;
 
         /// <summary>
-        /// 任务执行前间隔时间（秒，默认：1.2s）。
+        /// Task execution interval time (seconds, default: 1.2s).
         /// </summary>
         public decimal Interval { get; set; } = 1.2m;
 
         /// <summary>
-        /// 任务执行后最小间隔时间（秒，默认：1.2s）
+        /// Minimum interval time after task execution (seconds, default: 1.2s).
         /// </summary>
         public decimal AfterIntervalMin { get; set; } = 1.2m;
 
         /// <summary>
-        /// 任务执行后最大间隔时间（秒，默认：1.2s）
+        /// Maximum interval time after task execution (seconds, default: 1.2s).
         /// </summary>
         public decimal AfterIntervalMax { get; set; } = 1.2m;
 
         /// <summary>
-        /// 等待队列长度。
+        /// Queue size.
         /// </summary>
         [Display(Name = "等待队列长度")]
         public int QueueSize { get; set; } = 10;
 
         /// <summary>
-        /// 等待最大队列长度
+        /// Maximum queue size.
         /// </summary>
         [Display(Name = "等待最大队列长度")]
         public int MaxQueueSize { get; set; } = 100;
 
         /// <summary>
-        /// 任务超时时间（分钟）。
+        /// Timeout in minutes.
         /// </summary>
         [Display(Name = "任务超时时间（分钟）")]
         public int TimeoutMinutes { get; set; } = 5;
 
         /// <summary>
-        /// 备注
+        /// Note.
         /// </summary>
         public string Remark { get; set; }
 
         /// <summary>
-        /// 赞助商（富文本）
+        /// Sponsor (rich text).
         /// </summary>
         public string Sponsor { get; set; }
 
         /// <summary>
-        /// 添加时间
+        /// Creation date.
         /// </summary>
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime DateCreated { get; set; } = DateTime.Now;
 
         /// <summary>
-        /// mj info 更新时间
+        /// Mj info update time.
         /// </summary>
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime? InfoUpdated { get; set; }
 
         /// <summary>
-        /// 权重
+        /// Weight.
         /// </summary>
         public int Weight { get; set; }
 
         /// <summary>
-        /// 工作时间（非工作时间段，不接收任何任务）
+        /// Work time (no tasks accepted outside these hours).
         /// </summary>
         public string WorkTime { get; set; }
 
         /// <summary>
-        /// 摸鱼时间段（只接收变化任务，不接收新的任务）
+        /// Fishing time (accepts only ongoing tasks, no new ones).
         /// </summary>
         public string FishingTime { get; set; }
 
         /// <summary>
-        /// 表示是否接收新的任务
-        /// 1、处于工作时间段内
-        /// 2、处于非摸鱼时间段内
-        /// 3、没有超出最大任务限制
+        /// Indicates whether to accept new tasks.
+        /// 1. Within work hours.
+        /// 2. Not within fishing hours.
+        /// 3. Does not exceed the maximum task limit.
         /// </summary>
         [LiteDB.BsonIgnore]
         [MongoDB.Bson.Serialization.Attributes.BsonIgnore]
@@ -243,7 +243,7 @@ namespace Midjourney.Infrastructure.Models
         {
             get
             {
-                // 如果工作时间段和摸鱼时间段都为空
+                // If both work time and fishing time are empty
                 if (string.IsNullOrWhiteSpace(WorkTime) && string.IsNullOrWhiteSpace(FishingTime))
                 {
                     if (DayDrawLimit <= -1 || DayDrawCount < DayDrawLimit)
@@ -252,7 +252,7 @@ namespace Midjourney.Infrastructure.Models
                     }
                 }
 
-                // 如果工作时间段内，且不是摸鱼时间段
+                // If within work hours and not within fishing hours
                 if (DateTime.Now.IsInWorkTime(WorkTime) && !DateTime.Now.IsInFishTime(FishingTime))
                 {
                     if (DayDrawLimit <= -1 || DayDrawCount < DayDrawLimit)
@@ -261,127 +261,127 @@ namespace Midjourney.Infrastructure.Models
                     }
                 }
 
-                // 表示不接收新的任务
+                // Indicates not accepting new tasks
                 return false;
             }
         }
 
         /// <summary>
-        /// 排序
+        /// Sort.
         /// </summary>
         public int Sort { get; set; }
 
         /// <summary>
-        /// Remix 自动提交
+        /// Remix auto-submit.
         /// </summary>
         public bool RemixAutoSubmit { get; set; }
 
         /// <summary>
-        /// 指定生成速度模式 --fast, --relax, or --turbo parameter at the end.
+        /// Specify generation speed mode --fast, --relax, or --turbo parameter at the end.
         /// </summary>
         [Display(Name = "生成速度模式 fast | relax | turbo")]
         public GenerationSpeedMode? Mode { get; set; }
 
         /// <summary>
-        /// 允许速度模式（如果出现不允许的速度模式，将会自动清除关键词）
+        /// Allowed speed modes (if an unsupported speed mode appears, the keyword will be automatically cleared).
         /// </summary>
         public List<GenerationSpeedMode> AllowModes { get; set; } = new List<GenerationSpeedMode>();
 
         /// <summary>
-        /// 自动设置慢速
-        /// 启用后，当快速用完时，如果允许生成速度模式是 FAST 或 TURBO，则自动清空原有模式，并设置为 RELAX 模式。
+        /// Auto set to relax mode
+        /// When enabled, if fast mode is exhausted and the allowed generation speed mode is FAST or TURBO, the original mode will be automatically cleared and set to RELAX mode.
         /// </summary>
         public bool? EnableAutoSetRelax { get; set; }
 
         /// <summary>
-        /// MJ 组件列表。
+        /// MJ component list.
         /// </summary>
         public List<Component> Components { get; set; } = new List<Component>();
 
         /// <summary>
-        /// MJ 设置消息 ID
+        /// MJ settings message ID.
         /// </summary>
         public string SettingsMessageId { get; set; }
 
         /// <summary>
-        /// NIJI 组件列表。
+        /// NIJI component list.
         /// </summary>
         public List<Component> NijiComponents { get; set; } = new List<Component>();
 
         /// <summary>
-        /// NIJI 设置消息 ID
+        /// NIJI settings message ID.
         /// </summary>
         public string NijiSettingsMessageId { get; set; }
 
         /// <summary>
-        /// 开启 Blend 功能
+        /// Enable Blend feature.
         /// </summary>
         public bool IsBlend { get; set; } = true;
 
         /// <summary>
-        /// 开启 Describe 功能
+        /// Enable Describe feature.
         /// </summary>
         public bool IsDescribe { get; set; } = true;
 
         /// <summary>
-        /// 开启 Shoren 功能
+        /// Enable Shorten feature.
         /// </summary>
         public bool IsShorten { get; set; } = true;
 
         /// <summary>
-        /// 日绘图最大次数限制，默认 -1 不限制
+        /// Daily drawing limit, default -1 for no limit.
         /// </summary>
         public int DayDrawLimit { get; set; } = -1;
 
         /// <summary>
-        /// 当日已绘图次数（每 5 分钟自动刷新）
+        /// Daily drawing count (refreshes every 5 minutes).
         /// </summary>
         public int DayDrawCount { get; set; } = 0;
 
         /// <summary>
-        /// 开启垂直领域
+        /// Whether to enable vertical domain.
         /// </summary>
         public bool IsVerticalDomain { get; set; }
 
         /// <summary>
-        /// 垂直领域 IDS
+        /// Vertical domain IDs.
         /// </summary>
         public List<string> VerticalDomainIds { get; set; } = new List<string>();
 
         /// <summary>
-        /// 子频道列表
+        /// Sub-channel list.
         /// </summary>
         public List<string> SubChannels { get; set; } = new List<string>();
 
         /// <summary>
-        /// 子频道 ids 通过 SubChannels 计算得出
-        /// key: 频道 id, value: 服务器 id
+        /// Sub-channel IDs calculated from SubChannels.
+        /// key: channel ID, value: server ID
         /// </summary>
         public Dictionary<string, string> SubChannelValues { get; set; } = new Dictionary<string, string>();
 
         /// <summary>
-        /// 执行中的任务数
+        /// Number of running tasks.
         /// </summary>
         [LiteDB.BsonIgnore]
         [MongoDB.Bson.Serialization.Attributes.BsonIgnore]
         public int RunningCount { get; set; }
 
         /// <summary>
-        /// 队列中的任务数
+        /// Number of tasks in queue.
         /// </summary>
         [LiteDB.BsonIgnore]
         [MongoDB.Bson.Serialization.Attributes.BsonIgnore]
         public int QueueCount { get; set; }
 
         /// <summary>
-        /// wss 是否运行中
+        /// Whether WSS is running.
         /// </summary>
         [LiteDB.BsonIgnore]
         [MongoDB.Bson.Serialization.Attributes.BsonIgnore]
         public bool Running { get; set; }
 
         /// <summary>
-        /// Mj 按钮
+        /// Mj buttons.
         /// </summary>
         [LiteDB.BsonIgnore]
         [MongoDB.Bson.Serialization.Attributes.BsonIgnore]
@@ -399,14 +399,14 @@ namespace Midjourney.Infrastructure.Models
             }).Where(c => c != null && !string.IsNullOrWhiteSpace(c.CustomId)).ToList();
 
         /// <summary>
-        /// MJ 是否开启 remix mode
+        /// Whether Mj remix mode is enabled.
         /// </summary>
         [LiteDB.BsonIgnore]
         [MongoDB.Bson.Serialization.Attributes.BsonIgnore]
         public bool MjRemixOn => Buttons.Any(x => x.Label == "Remix mode" && x.Style == 3);
 
         /// <summary>
-        /// MJ 是否开启 fast mode
+        /// Whether Mj fast mode is enabled.
         /// </summary>
         [LiteDB.BsonIgnore]
         [MongoDB.Bson.Serialization.Attributes.BsonIgnore]
@@ -414,7 +414,7 @@ namespace Midjourney.Infrastructure.Models
             Buttons.Any(x => (x.Label == "Fast mode" || x.Label == "Turbo mode") && x.Style == 3);
 
         /// <summary>
-        /// Niji 按钮
+        /// Niji buttons.
         /// </summary>
         [LiteDB.BsonIgnore]
         [MongoDB.Bson.Serialization.Attributes.BsonIgnore]
@@ -432,20 +432,20 @@ namespace Midjourney.Infrastructure.Models
             }).Where(c => c != null && !string.IsNullOrWhiteSpace(c.CustomId)).ToList();
 
         /// <summary>
-        /// Niji 是否开启 remix mode
+        /// Whether Niji remix mode is enabled.
         /// </summary>
         [LiteDB.BsonIgnore]
         [MongoDB.Bson.Serialization.Attributes.BsonIgnore]
         public bool NijiRemixOn => NijiButtons.Any(x => x.Label == "Remix mode" && x.Style == 3);
 
         /// <summary>
-        /// Niji 是否开启 fast mode
+        /// Whether Niji fast mode is enabled.
         /// </summary>
         public bool NijiFastModeOn =>
             NijiButtons.Any(x => (x.Label == "Fast mode" || x.Label == "Turbo mode") && x.Style == 3);
 
         /// <summary>
-        /// Mj 下拉框
+        /// Mj dropdown.
         /// </summary>
         [LiteDB.BsonIgnore]
         [MongoDB.Bson.Serialization.Attributes.BsonIgnore]
@@ -462,7 +462,7 @@ namespace Midjourney.Infrastructure.Models
             }).Where(c => c != null && !string.IsNullOrWhiteSpace(c.CustomId)).ToList();
 
         /// <summary>
-        /// 默认下拉框值
+        /// Default dropdown value.
         /// </summary>
         [LiteDB.BsonIgnore]
         [MongoDB.Bson.Serialization.Attributes.BsonIgnore]
@@ -471,7 +471,7 @@ namespace Midjourney.Infrastructure.Models
             .Where(c => c.Default == true).FirstOrDefault()?.Value;
 
         /// <summary>
-        /// 显示信息。
+        /// Display information.
         /// </summary>
         [LiteDB.BsonIgnore]
         [MongoDB.Bson.Serialization.Attributes.BsonIgnore]
@@ -484,7 +484,7 @@ namespace Midjourney.Infrastructure.Models
                 // Standard (Active monthly, renews next on <t:1722649226>)"
                 var plan = Properties.ContainsKey("Subscription") ? Properties["Subscription"].ToString() : "";
 
-                // 正则表达式来捕获 subscribePlan, billedWay 和 timestamp
+                // Regular expression to capture subscribePlan, billedWay, and timestamp
                 var pattern = @"([A-Za-z\s]+) \(([A-Za-z\s]+), renews next on <t:(\d+)\>\)";
                 var match = Regex.Match(plan, pattern);
                 if (match.Success)
@@ -506,41 +506,41 @@ namespace Midjourney.Infrastructure.Models
         }
 
         /// <summary>
-        /// 快速时间剩余
+        /// Fast time remaining.
         /// </summary>
         public object FastTimeRemaining => Properties.ContainsKey("Fast Time Remaining") ? Properties["Fast Time Remaining"] : "";
 
         /// <summary>
-        /// 慢速用量
+        /// Relaxed usage.
         /// </summary>
         public object RelaxedUsage => Properties.ContainsKey("Relaxed Usage") ? Properties["Relaxed Usage"] : "";
 
         /// <summary>
-        /// 加速用量
+        /// Turbo usage.
         /// </summary>
         public object TurboUsage => Properties.ContainsKey("Turbo Usage") ? Properties["Turbo Usage"] : "";
 
         /// <summary>
-        /// 快速用量
+        /// Fast usage.
         /// </summary>
         public object FastUsage => Properties.ContainsKey("Fast Usage") ? Properties["Fast Usage"] : "";
 
         /// <summary>
-        /// 总用量
+        /// Lifetime usage.
         /// </summary>
         public object LifetimeUsage => Properties.ContainsKey("Lifetime Usage") ? Properties["Lifetime Usage"] : "";
 
         /// <summary>
-        /// 获取显示名称。
+        /// Get display name.
         /// </summary>
-        /// <returns>频道ID。</returns>
+        /// <returns>Channel ID.</returns>
         public string GetDisplay()
         {
             return ChannelId;
         }
 
         /// <summary>
-        /// 创建 Discord 账号。
+        /// Create Discord account.
         /// </summary>
         /// <param name="configAccount"></param>
         /// <returns></returns>
@@ -599,16 +599,16 @@ namespace Midjourney.Infrastructure.Models
         }
 
         /// <summary>
-        /// 初始化子频道
+        /// Initialize sub-channels.
         /// </summary>
         public void InitSubChannels()
         {
-            // 启动前校验
+            // Pre-start validation
             if (SubChannels.Count > 0)
             {
                 // https://discord.com/channels/1256526716130693201/1256526716130693204
                 // https://discord.com/channels/{guid}/{id}
-                // {guid} {id} 都是纯数字
+                // {guid} and {id} are both pure numbers
 
                 var dic = new Dictionary<string, string>();
                 foreach (var item in SubChannels)
@@ -618,7 +618,7 @@ namespace Midjourney.Infrastructure.Models
                         continue;
                     }
 
-                    // {id} 作为 key, {guid} 作为 value
+                    // {id} as key, {guid} as value
                     var fir = item.Split(',').Where(c => c.Contains("https://discord.com/channels")).FirstOrDefault();
                     if (fir == null)
                     {
@@ -647,7 +647,7 @@ namespace Midjourney.Infrastructure.Models
         }
 
         /// <summary>
-        /// 赞助账号校验
+        /// Sponsor account validation.
         /// </summary>
         public void SponsorValidate()
         {

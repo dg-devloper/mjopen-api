@@ -34,7 +34,7 @@ using TaskStatus = Midjourney.Infrastructure.TaskStatus;
 namespace Midjourney.API.Controllers
 {
     /// <summary>
-    /// 换脸控制器
+    /// Face Swap Controller
     /// </summary>
     [ApiController]
     [Route("mj/insight-face")]
@@ -63,14 +63,14 @@ namespace Midjourney.API.Controllers
 
             var user = _workContext.GetUser();
 
-            // 如果非演示模式、未开启访客，如果没有登录，直接返回 403 错误
+            // If not in demo mode and guest access is not enabled, return 403 error if not logged in
             if (GlobalConfiguration.IsDemoMode != true && GlobalConfiguration.Setting.EnableGuest != true)
             {
                 if (user == null)
                 {
-                    // 如果是普通用户, 并且不是匿名控制器，则返回 403
+                    // If a regular user and not an anonymous controller, return 403
                     httpContextAccessor.HttpContext.Response.StatusCode = (int)HttpStatusCode.Forbidden;
-                    httpContextAccessor.HttpContext.Response.WriteAsync("未登录");
+                    httpContextAccessor.HttpContext.Response.WriteAsync("Not logged in");
                     return;
                 }
             }
@@ -94,7 +94,7 @@ namespace Midjourney.API.Controllers
         }
 
         /// <summary>
-        /// 提交图片换脸任务（支持 base64 或 url）
+        /// Submit face swap task (supports base64 or URL)
         /// </summary>
         /// <param name="dto"></param>
         /// <returns></returns>
@@ -105,27 +105,27 @@ namespace Midjourney.API.Controllers
 
             if (repl?.EnableFaceSwap != true || string.IsNullOrWhiteSpace(repl.Token))
             {
-                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "服务不支持"));
+                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "Service not supported"));
             }
 
             if (string.IsNullOrWhiteSpace(dto.SourceBase64) && string.IsNullOrWhiteSpace(dto.SourceUrl))
             {
-                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "人脸图片不能为空"));
+                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "Source face image cannot be empty"));
             }
 
             if (string.IsNullOrWhiteSpace(dto.TargetBase64) && string.IsNullOrWhiteSpace(dto.TargetUrl))
             {
-                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "目标图片不能为空"));
+                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "Target image cannot be empty"));
             }
 
             if (!string.IsNullOrWhiteSpace(dto.SourceBase64) && dto.SourceBase64 == dto.TargetBase64)
             {
-                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "人脸图片和目标图片不能相同"));
+                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "Source face image and target image cannot be the same"));
             }
 
             if (!string.IsNullOrWhiteSpace(dto.SourceUrl) && dto.SourceUrl == dto.TargetUrl)
             {
-                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "人脸图片和目标图片不能相同"));
+                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "Source face image and target image cannot be the same"));
             }
 
             var task = NewTask(dto);
@@ -140,7 +140,7 @@ namespace Midjourney.API.Controllers
         }
 
         /// <summary>
-        /// 提交视频换脸任务（支持 base64 或 url）
+        /// Submit video face swap task (supports base64 or URL)
         /// </summary>
         /// <param name="dto"></param>
         /// <returns></returns>
@@ -150,24 +150,24 @@ namespace Midjourney.API.Controllers
             var user = _workContext.GetUser();
             if (user == null || !user.IsWhite)
             {
-                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "由于国家法律和安全问题，视频换脸暂不对访客开放，如有需求请联系管理员"));
+                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "Due to national laws and security issues, video face swap is not open to guests. If needed, please contact the administrator"));
             }
 
             var repl = GlobalConfiguration.Setting.Replicate;
 
             if (repl?.EnableFaceSwap != true || string.IsNullOrWhiteSpace(repl.Token))
             {
-                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "服务不支持"));
+                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "Service not supported"));
             }
 
             if (string.IsNullOrWhiteSpace(dto.SourceBase64) && string.IsNullOrWhiteSpace(dto.SourceUrl))
             {
-                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "人脸图片不能为空"));
+                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "Source face image cannot be empty"));
             }
 
             if (dto.TargetFile == null && string.IsNullOrWhiteSpace(dto.TargetUrl))
             {
-                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "目标视频不能为空"));
+                return Ok(SubmitResultVO.Fail(ReturnCode.VALIDATION_ERROR, "Target video cannot be empty"));
             }
 
             var task = NewTask(dto);
@@ -183,7 +183,7 @@ namespace Midjourney.API.Controllers
 
 
         /// <summary>
-        /// 创建新的任务对象
+        /// Create a new task object
         /// </summary>
         /// <param name="baseDTO"></param>
         /// <returns></returns>
@@ -204,8 +204,8 @@ namespace Midjourney.API.Controllers
 
             var now = new DateTimeOffset(DateTime.Now.Date).ToUnixTimeMilliseconds();
 
-            // 计算当前 ip 当日第几次绘图
-            // 如果不是白名单用户，则计算 ip 绘图限制
+            // Calculate the number of drawings for the current IP today
+            // If not a whitelist user, calculate IP drawing limit
             if (user == null || user.IsWhite != true)
             {
                 if (GlobalConfiguration.Setting.GuestDefaultDayLimit > 0)
@@ -213,12 +213,12 @@ namespace Midjourney.API.Controllers
                     var ipTodayDrawCount = (int)DbHelper.Instance.TaskStore.Count(x => x.SubmitTime >= now && x.ClientIp == _ip);
                     if (ipTodayDrawCount > GlobalConfiguration.Setting.GuestDefaultDayLimit)
                     {
-                        throw new LogicException("今日绘图次数已达上限");
+                        throw new LogicException("Today's drawing limit has been reached");
                     }
                 }
             }
 
-            // 计算当前用户当日第几次绘图
+            // Calculate the number of drawings for the current user today
             if (!string.IsNullOrWhiteSpace(user?.Id))
             {
                 if (user.DayDrawLimit > 0)
@@ -226,7 +226,7 @@ namespace Midjourney.API.Controllers
                     var userTodayDrawCount = (int)DbHelper.Instance.TaskStore.Count(x => x.SubmitTime >= now && x.UserId == user.Id);
                     if (userTodayDrawCount > user.DayDrawLimit)
                     {
-                        throw new LogicException("今日绘图次数已达上限");
+                        throw new LogicException("Today's drawing limit has been reached");
                     }
                 }
             }
@@ -244,7 +244,7 @@ namespace Midjourney.API.Controllers
         }
 
         /// <summary>
-        /// 处理 account filter 和 mode
+        /// Process account filter and mode
         /// </summary>
         /// <param name="task"></param>
         /// <param name="accountFilter"></param>

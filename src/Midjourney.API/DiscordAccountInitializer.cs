@@ -40,7 +40,7 @@ using ILogger = Serilog.ILogger;
 namespace Midjourney.API
 {
     /// <summary>
-    /// Discord账号初始化器，用于初始化Discord账号实例。
+    /// Discord account initializer for initializing Discord account instances.
     /// </summary>
     public class DiscordAccountInitializer : IHostedService
     {
@@ -65,7 +65,7 @@ namespace Midjourney.API
             IMemoryCache memoryCache,
             DiscordHelper discordHelper)
         {
-            // 配置全局缓存
+            // Configure global cache
             GlobalConfiguration.MemoryCache = memoryCache;
 
             _discordLoadBalancer = discordLoadBalancer;
@@ -79,12 +79,12 @@ namespace Midjourney.API
         }
 
         /// <summary>
-        /// 启动服务并初始化Discord账号实例。
+        /// Start the service and initialize Discord account instances.
         /// </summary>
-        /// <param name="cancellationToken">取消令牌。</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            // 初始化环境变量
+            // Initialize environment variables
             var proxy = GlobalConfiguration.Setting?.Proxy;
             if (!string.IsNullOrEmpty(proxy.Host))
             {
@@ -94,14 +94,14 @@ namespace Midjourney.API
                 Environment.SetEnvironmentVariable("https_proxyPort", proxy.Port.ToString());
             }
 
-            // 判断是否启用了 mongodb
+            // Check if MongoDB is enabled
             if (GlobalConfiguration.Setting.IsMongo)
             {
-                // 迁移 account user domain banded
+                // Migrate account user domain banded
                 try
                 {
-                    // 如果 liteAccountIds 的数据在 mongoAccountIds 不存在，则迁移到 mongodb
-                    // account 迁移
+                    // If liteAccountIds data does not exist in mongoAccountIds, migrate to MongoDB
+                    // Account migration
                     var liteAccountIds = LiteDBHelper.AccountStore.GetAllIds();
                     var mongoAccountDb = new MongoDBRepository<DiscordAccount>();
                     var mongoAccountIds = mongoAccountDb.GetAllIds();
@@ -119,7 +119,7 @@ namespace Midjourney.API
                         }
                     }
 
-                    // user 迁移
+                    // User migration
                     var liteUserIds = LiteDBHelper.UserStore.GetAllIds();
                     var mongoUserDb = new MongoDBRepository<User>();
                     var mongoUserIds = mongoUserDb.GetAllIds();
@@ -137,7 +137,7 @@ namespace Midjourney.API
                         }
                     }
 
-                    // domain 迁移
+                    // Domain migration
                     var liteDomainIds = LiteDBHelper.DomainStore.GetAllIds();
                     var mongoDomainDb = new MongoDBRepository<DomainTag>();
                     var mongoDomainIds = mongoDomainDb.GetAllIds();
@@ -155,7 +155,7 @@ namespace Midjourney.API
                         }
                     }
 
-                    // banded 迁移
+                    // Banded migration
                     var liteBannedIds = LiteDBHelper.BannedWordStore.GetAllIds();
                     var mongoBannedDb = new MongoDBRepository<BannedWord>();
                     var mongoBannedIds = mongoBannedDb.GetAllIds();
@@ -175,9 +175,9 @@ namespace Midjourney.API
                 }
                 catch (Exception ex)
                 {
-                    _logger.Error(ex, "本地存储迁移到 mongodb 异常，已重置为本地数据库");
+                    _logger.Error(ex, "Local storage migration to MongoDB failed, reset to local database");
 
-                    // 如果出现异常，则重置为本地存储
+                    // If an exception occurs, reset to local storage
                     GlobalConfiguration.Setting.MongoDefaultConnectionString = "";
 
                     LiteDBHelper.SettingStore.Save(GlobalConfiguration.Setting);
@@ -185,8 +185,8 @@ namespace Midjourney.API
             }
 
 
-            // 初始化管理员用户
-            // 判断超管是否存在
+            // Initialize administrator user
+            // Check if super admin exists
             var admin = DbHelper.Instance.UserStore.Get(Constants.ADMIN_USER_ID);
             if (admin == null)
             {
@@ -208,7 +208,7 @@ namespace Midjourney.API
                 DbHelper.Instance.UserStore.Add(admin);
             }
 
-            // 初始化普通用户
+            // Initialize ordinary user
             var user = DbHelper.Instance.UserStore.Get(Constants.DEFAULT_USER_ID);
             var userToken = _configuration["UserToken"];
             if (user == null && !string.IsNullOrWhiteSpace(userToken))
@@ -225,14 +225,14 @@ namespace Midjourney.API
                 DbHelper.Instance.UserStore.Add(user);
             }
 
-            // 初始化领域标签
+            // Initialize domain tags
             var defaultDomain = DbHelper.Instance.DomainStore.Get(Constants.DEFAULT_DOMAIN_ID);
             if (defaultDomain == null)
             {
                 defaultDomain = new DomainTag
                 {
                     Id = Constants.DEFAULT_DOMAIN_ID,
-                    Name = "默认标签",
+                    Name = "Default Tag",
                     Description = "",
                     Sort = 0,
                     Enable = true,
@@ -241,14 +241,14 @@ namespace Midjourney.API
                 DbHelper.Instance.DomainStore.Add(defaultDomain);
             }
 
-            // 完整标签
+            // Default full tag
             var fullDomain = DbHelper.Instance.DomainStore.Get(Constants.DEFAULT_DOMAIN_FULL_ID);
             if (fullDomain == null)
             {
                 fullDomain = new DomainTag
                 {
                     Id = Constants.DEFAULT_DOMAIN_FULL_ID,
-                    Name = "默认完整标签",
+                    Name = "Default Full Tag",
                     Description = "",
                     Sort = 0,
                     Enable = true,
@@ -257,14 +257,14 @@ namespace Midjourney.API
                 DbHelper.Instance.DomainStore.Add(fullDomain);
             }
 
-            // 违规词
+            // Prohibited word
             var bannedWord = DbHelper.Instance.BannedWordStore.Get(Constants.DEFAULT_BANNED_WORD_ID);
             if (bannedWord == null)
             {
                 bannedWord = new BannedWord
                 {
                     Id = Constants.DEFAULT_BANNED_WORD_ID,
-                    Name = "默认违规词",
+                    Name = "Default Prohibited Word",
                     Description = "",
                     Sort = 0,
                     Enable = true,
@@ -277,10 +277,10 @@ namespace Midjourney.API
             {
                 if (GlobalConfiguration.Setting.IsMongo)
                 {
-                    // 索引
+                    // Index
                     MongoIndexInit();
 
-                    // 自动迁移 task 数据
+                    // Auto migrate task data
                     if (GlobalConfiguration.Setting.IsMongoAutoMigrate)
                     {
                         MongoAutoMigrate();
@@ -301,7 +301,7 @@ namespace Midjourney.API
         }
 
         /// <summary>
-        /// 初始化 mongodb 索引和最大数据限制
+        /// Initialize MongoDB indexes and maximum data limits
         /// </summary>
         public void MongoIndexInit()
         {
@@ -314,7 +314,7 @@ namespace Midjourney.API
 
                 LocalLock.TryLock("MongoIndexInit", TimeSpan.FromSeconds(10), () =>
                 {
-                    // 不能固定大小，因为无法修改数据
+                    // Cannot be fixed size because data cannot be modified
                     //var database = MongoHelper.Instance;
                     //var collectionName = "task";
                     //var collectionExists = database.ListCollectionNames().ToList().Contains(collectionName);
@@ -323,7 +323,7 @@ namespace Midjourney.API
                     //    var options = new CreateCollectionOptions
                     //    {
                     //        Capped = true,
-                    //        MaxSize = 1024L * 1024L * 1024L * 1024L,  // 1 TB 的集合大小，实际上不受大小限制
+                    //        MaxSize = 1024L * 1024L * 1024L * 1024L,  // 1 TB collection size, actually unlimited
                     //        MaxDocuments = 1000000
                     //    };
                     //    database.CreateCollection("task", options);
@@ -358,12 +358,12 @@ namespace Midjourney.API
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "初始化 mongodb 索引和最大数据限制异常");
+                _logger.Error(ex, "Initialize MongoDB indexes and maximum data limits exception");
             }
         }
 
         /// <summary>
-        /// 自动迁移 task 数据
+        /// Auto migrate task data
         /// </summary>
         public void MongoAutoMigrate()
         {
@@ -371,7 +371,7 @@ namespace Midjourney.API
             {
                 LocalLock.TryLock("MongoAutoMigrate", TimeSpan.FromSeconds(10), () =>
                 {
-                    // 判断最后一条是否存在
+                    // Check if the last one exists
                     var success = 0;
                     var last = LiteDBHelper.TaskStore.GetCollection().Query().OrderByDescending(c => c.SubmitTime).FirstOrDefault();
                     if (last != null)
@@ -380,14 +380,14 @@ namespace Midjourney.API
                         var lastMongo = coll.Find(c => c.Id == last.Id).FirstOrDefault();
                         if (lastMongo == null)
                         {
-                            // 迁移数据
+                            // Migrate data
                             var taskIds = LiteDBHelper.TaskStore.GetCollection().Query().Select(c => c.Id).ToList();
                             foreach (var tid in taskIds)
                             {
                                 var info = LiteDBHelper.TaskStore.Get(tid);
                                 if (info != null)
                                 {
-                                    // 判断是否存在
+                                    // Check if it exists
                                     var exist = coll.CountDocuments(c => c.Id == info.Id) > 0;
                                     if (!exist)
                                     {
@@ -409,7 +409,7 @@ namespace Midjourney.API
         }
 
         ///// <summary>
-        ///// 自动迁移本地文件到 oss
+        ///// Auto migrate local files to OSS
         ///// </summary>
         //public void AutoMigrationLocalFileToOss()
         //{
@@ -424,8 +424,8 @@ namespace Midjourney.API
         //            var localCdn = dis.CustomCdn;
         //            var aliCdn = oss.CustomCdn;
 
-        //            // 并且开启了本地域名
-        //            // 并且已经开了 mongodb
+        //            // And enable local domain
+        //            // And MongoDB is enabled
         //            var isMongo = GlobalConfiguration.Setting.IsMongo;
         //            if (oss?.Enable == true && oss?.IsAutoMigrationLocalFile == true && !string.IsNullOrWhiteSpace(localCdn) && isMongo)
         //            {
@@ -447,7 +447,7 @@ namespace Midjourney.API
         //                                var model = coll.Find(c => c.ImageUrl.StartsWith(localCdn) && c.ImageUrl.Contains(fileName)).FirstOrDefault();
         //                                if (model != null)
         //                                {
-        //                                    // 创建保存路径
+        //                                    // Create save path
         //                                    var uri = new Uri(model.ImageUrl);
         //                                    var localPath = uri.AbsolutePath.TrimStart('/');
 
@@ -462,7 +462,7 @@ namespace Midjourney.API
 
         //                                    var result = ossService.SaveAsync(stream, localPath, mm);
 
-        //                                    // 替换 url
+        //                                    // Replace url
         //                                    var url = $"{aliCdn?.Trim()?.Trim('/')}/{localPath}{uri?.Query}";
 
         //                                    if (model.Action != TaskAction.SWAP_VIDEO_FACE)
@@ -479,23 +479,23 @@ namespace Midjourney.API
 
         //                                    stream.Close();
 
-        //                                    // 删除
+        //                                    // Delete
         //                                    File.Delete(fileFullPath);
 
         //                                    process++;
-        //                                    Log.Information("文件已自动迁移到阿里云 {@0}, {@1}", process, fileFullPath);
+        //                                    Log.Information("File has been automatically migrated to Aliyun {@0}, {@1}", process, fileFullPath);
         //                                }
         //                            }
         //                            catch (Exception ex)
         //                            {
-        //                                Log.Error(ex, "文件已自动迁移到阿里云异常 {@0}", fileFullPath);
+        //                                Log.Error(ex, "File has been automatically migrated to Aliyun exception {@0}", fileFullPath);
         //                            }
         //                        }
         //                    }
 
-        //                    Log.Information("文件已自动迁移到阿里云完成 {@0}", process);
+        //                    Log.Information("File has been automatically migrated to Aliyun completed {@0}", process);
 
-        //                    // 二次临时修复，如果本地数据库是阿里云，但是 mongodb 不是阿里云，则将本地的 url 赋值到 mongodb
+        //                    // Second temporary fix, if the local database is Aliyun, but MongoDB is not Aliyun, then assign the local url to MongoDB
         //                    //var localDb = DbHelper.TaskStore;
         //                    //var localList = localDb.GetAll();
         //                    //foreach (var localItem in localList)
@@ -523,7 +523,7 @@ namespace Midjourney.API
 
         private async void DoWork(object state)
         {
-            _logger.Information("开始例行检查");
+            _logger.Information("Routine check started");
 
             try
             {
@@ -531,7 +531,7 @@ namespace Midjourney.API
                 {
                     try
                     {
-                        // 本地配置中的默认账号
+                        // Default account in local configuration
                         var configAccounts = _properties.Accounts.ToList();
                         if (!string.IsNullOrEmpty(_properties.Discord?.ChannelId)
                         && !_properties.Discord.ChannelId.Contains("*"))
@@ -541,30 +541,30 @@ namespace Midjourney.API
 
                         await Initialize(configAccounts.ToArray());
 
-                        // 检查并删除旧的文档
+                        // Check and delete old documents
                         CheckAndDeleteOldDocuments();
                     }
                     catch (Exception ex)
                     {
-                        _logger.Error(ex, "执行例行检查时发生异常");
+                        _logger.Error(ex, "Exception occurred during routine check");
                     }
 
-                    _logger.Information("例行检查完成");
+                    _logger.Information("Routine check completed");
                 });
 
                 if (!isLock)
                 {
-                    _logger.Information("例行检查中，请稍后重试...");
+                    _logger.Information("Routine check in progress, please try again later...");
                 }
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "例行检查执行异常");
+                _logger.Error(ex, "Routine check execution exception");
             }
         }
 
         /// <summary>
-        /// 检查并删除旧文档
+        /// Check and delete old documents
         /// </summary>
         public static void CheckAndDeleteOldDocuments()
         {
@@ -575,7 +575,7 @@ namespace Midjourney.API
 
             var maxCount = GlobalConfiguration.Setting.MaxCount;
 
-            // 如果超过 x 条，删除最早插入的数据
+            // If it exceeds x items, delete the earliest inserted data
             if (GlobalConfiguration.Setting.IsMongo)
             {
                 var coll = MongoHelper.GetCollection<TaskInfo>();
@@ -610,7 +610,7 @@ namespace Midjourney.API
         }
 
         /// <summary>
-        /// 初始化所有账号
+        /// Initialize all accounts.
         /// </summary>
         /// <returns></returns>
         public async Task Initialize(params DiscordAccountConfig[] appends)
@@ -620,7 +620,7 @@ namespace Midjourney.API
                 var db = DbHelper.Instance.AccountStore;
                 var accounts = db.GetAll().OrderBy(c => c.Sort).ToList();
 
-                // 将启动配置中的 account 添加到数据库
+                // Add account from startup configuration to database
                 var configAccounts = new List<DiscordAccountConfig>();
                 if (appends?.Length > 0)
                 {
@@ -650,7 +650,7 @@ namespace Midjourney.API
                         _logger.Error(ex, "Account({@0}) init fail, disabled: {@1}", account.GetDisplay(), ex.Message);
 
                         account.Enable = false;
-                        account.DisabledReason = "初始化失败";
+                        account.DisabledReason = "Initialization failed";
 
                         db.Update(account);
                     }
@@ -661,18 +661,18 @@ namespace Midjourney.API
                 .Select(instance => instance.ChannelId)
                 .ToHashSet();
 
-                _logger.Information("当前可用账号数 [{@0}] - {@1}", enableInstanceIds.Count, string.Join(", ", enableInstanceIds));
+                _logger.Information("Current available accounts [{@0}] - {@1}", enableInstanceIds.Count, string.Join(", ", enableInstanceIds));
             });
             if (!isLock)
             {
-                _logger.Warning("初始化所有账号中，请稍后重试...");
+                _logger.Warning("Initializing all accounts, please try again later...");
             }
 
             await Task.CompletedTask;
         }
 
         /// <summary>
-        /// 检查并启动连接
+        /// Check and start connection
         /// </summary>
         public async Task StartCheckAccount(DiscordAccount account, bool isValidateLock = true)
         {
@@ -692,14 +692,14 @@ namespace Midjourney.API
                 sw.Start();
 
                 var info = new StringBuilder();
-                info.AppendLine($"{account.Id}初始化中...");
+                info.AppendLine($"{account.Id} initializing...");
 
                 var db = DbHelper.Instance.AccountStore;
                 DiscordInstance disInstance = null;
 
                 try
                 {
-                    // 获取获取值
+                    // Get value
                     account = db.Get(account.Id)!;
                     if (account.Enable != true)
                     {
@@ -708,33 +708,33 @@ namespace Midjourney.API
 
                     disInstance = _discordLoadBalancer.GetDiscordInstance(account.ChannelId);
 
-                    // 判断是否在工作时间内
+                    // Check if it is within working hours
                     var now = new DateTimeOffset(DateTime.Now.Date).ToUnixTimeMilliseconds();
                     var dayCount = (int)DbHelper.Instance.TaskStore.Count(c => c.InstanceId == account.ChannelId && c.SubmitTime >= now);
 
                     sw.Stop();
-                    info.AppendLine($"{account.Id}初始化中... 获取任务数耗时: {sw.ElapsedMilliseconds}ms");
+                    info.AppendLine($"{account.Id} initializing... Get task count time: {sw.ElapsedMilliseconds}ms");
                     sw.Restart();
 
-                    // 随机延期token
+                    // Randomly delay token
                     if (setting.EnableAutoExtendToken)
                     {
                         await RandomSyncToken(account);
                         sw.Stop();
-                        info.AppendLine($"{account.Id}初始化中... 随机延期token耗时: {sw.ElapsedMilliseconds}ms");
+                        info.AppendLine($"{account.Id} initializing... Randomly delay token time: {sw.ElapsedMilliseconds}ms");
                         sw.Restart();
                     }
 
-                    // 只要在工作时间内，就创建实例
+                    // As long as it is within working hours, create an instance
                     if (DateTime.Now.IsInWorkTime(account.WorkTime))
                     {
                         if (disInstance == null)
                         {
-                            // 初始化子频道
+                            // Initialize sub-channels
                             account.InitSubChannels();
 
-                            // 快速时长校验
-                            // 如果 fastTime <= 0.1，则标记为快速用完
+                            // Fast duration validation
+                            // If fastTime <= 0.1, mark as fast exhausted
                             var fastTime = account.FastTimeRemaining?.ToString()?.Split('/')?.FirstOrDefault()?.Trim();
                             if (!string.IsNullOrWhiteSpace(fastTime) && double.TryParse(fastTime, out var ftime) && ftime <= 0.1)
                             {
@@ -745,7 +745,7 @@ namespace Midjourney.API
                                 account.FastExhausted = false;
                             }
 
-                            // 自动设置慢速，如果快速用完
+                            // Automatically set to slow mode if fast exhausted
                             if (account.FastExhausted == true && account.EnableAutoSetRelax == true)
                             {
                                 account.AllowModes = new List<GenerationSpeedMode>() { GenerationSpeedMode.RELAX };
@@ -756,7 +756,7 @@ namespace Midjourney.API
                                 }
                             }
 
-                            // 启用自动获取私信 ID
+                            // Enable automatic retrieval of private message ID
                             if (setting.EnableAutoGetPrivateId)
                             {
                                 try
@@ -770,13 +770,13 @@ namespace Midjourney.API
                                 }
                                 catch (Exception ex)
                                 {
-                                    _logger.Error(ex, "获取 MJ 私聊频道 ID 异常 {@0}", account.ChannelId);
+                                    _logger.Error(ex, "Get MJ private chat channel ID exception {@0}", account.ChannelId);
 
-                                    info.AppendLine($"{account.Id}初始化中... 获取 MJ 私聊频道 ID 异常");
+                                    info.AppendLine($"{account.Id} initializing... Get MJ private chat channel ID exception");
                                 }
 
                                 sw.Stop();
-                                info.AppendLine($"{account.Id}初始化中... 获取 MJ 私聊频道 ID 耗时: {sw.ElapsedMilliseconds}ms");
+                                info.AppendLine($"{account.Id} initializing... Get MJ private chat channel ID time: {sw.ElapsedMilliseconds}ms");
                                 sw.Restart();
 
                                 try
@@ -790,34 +790,34 @@ namespace Midjourney.API
                                 }
                                 catch (Exception ex)
                                 {
-                                    _logger.Error(ex, "获取 NIJI 私聊频道 ID 异常 {@0}", account.ChannelId);
+                                    _logger.Error(ex, "Get NIJI private chat channel ID exception {@0}", account.ChannelId);
 
-                                    info.AppendLine($"{account.Id}初始化中... 获取 NIJI 私聊频道 ID 异常");
+                                    info.AppendLine($"{account.Id} initializing... Get NIJI private chat channel ID exception");
                                 }
 
                                 sw.Stop();
-                                info.AppendLine($"{account.Id}初始化中... 获取 NIJI 私聊频道 ID 耗时: {sw.ElapsedMilliseconds}ms");
+                                info.AppendLine($"{account.Id} initializing... Get NIJI private chat channel ID time: {sw.ElapsedMilliseconds}ms");
                                 sw.Restart();
                             }
 
                             account.DayDrawCount = dayCount;
                             db.Update("NijiBotChannelId,PrivateChannelId,AllowModes,SubChannels,SubChannelValues,FastExhausted,DayDrawCount", account);
 
-                            // 清除缓存
+                            // Clear cache
                             ClearAccountCache(account.Id);
 
-                            // 启用自动验证账号功能
-                            // 连接前先判断账号是否正常
+                            // Enable automatic account verification
+                            // Validate account before connecting
                             if (setting.EnableAutoVerifyAccount)
                             {
                                 var success = await _discordAccountHelper.ValidateAccount(account);
                                 if (!success)
                                 {
-                                    throw new Exception("账号不可用");
+                                    throw new Exception("Account unavailable");
                                 }
 
                                 sw.Stop();
-                                info.AppendLine($"{account.Id}初始化中... 验证账号耗时: {sw.ElapsedMilliseconds}ms");
+                                info.AppendLine($"{account.Id} initializing... Validate account time: {sw.ElapsedMilliseconds}ms");
                                 sw.Restart();
                             }
 
@@ -826,58 +826,58 @@ namespace Midjourney.API
                             _discordLoadBalancer.AddInstance(disInstance);
 
                             sw.Stop();
-                            info.AppendLine($"{account.Id}初始化中... 创建实例耗时: {sw.ElapsedMilliseconds}ms");
+                            info.AppendLine($"{account.Id} initializing... Create instance time: {sw.ElapsedMilliseconds}ms");
                             sw.Restart();
 
-                            // 这里应该等待初始化完成，并获取用户信息验证，获取用户成功后设置为可用状态
-                            // 多账号启动时，等待一段时间再启动下一个账号
+                            // Here should wait for initialization to complete, and get user information verification, set to available status after getting user successfully
+                            // When starting multiple accounts, wait for a while before starting the next account
                             await Task.Delay(1000 * 5);
 
 
                             try
                             {
-                                // 启动后执行 info setting 操作
+                                // Execute info setting operation after startup
                                 await _taskService.InfoSetting(account.Id);
                             }
                             catch (Exception ex)
                             {
-                                _logger.Error(ex, "同步 info 异常 {@0}", account.ChannelId);
+                                _logger.Error(ex, "Sync info exception {@0}", account.ChannelId);
 
-                                info.AppendLine($"{account.Id}初始化中... 同步 info 异常");
+                                info.AppendLine($"{account.Id} initializing... Sync info exception");
                             }
 
                             sw.Stop();
-                            info.AppendLine($"{account.Id}初始化中... 同步 info 耗时: {sw.ElapsedMilliseconds}ms");
+                            info.AppendLine($"{account.Id} initializing... Sync info time: {sw.ElapsedMilliseconds}ms");
                             sw.Restart();
 
                         }
 
-                        // 慢速切换快速模式检查
+                        // Slow mode switch to fast mode check
                         if (account.EnableRelaxToFast == true)
                         {
                             await disInstance?.RelaxToFastValidate();
                             sw.Stop();
-                            info.AppendLine($"{account.Id}初始化中... 慢速切换快速模式检查耗时: {sw.ElapsedMilliseconds}ms");
+                            info.AppendLine($"{account.Id} initializing... Slow mode switch to fast mode check time: {sw.ElapsedMilliseconds}ms");
                             sw.Restart();
                         }
 
-                        // 启用自动同步信息和设置
+                        // Enable automatic synchronization of information and settings
                         if (setting.EnableAutoSyncInfoSetting)
                         {
-                            // 每 6~12 小时，同步账号信息
+                            // Sync account information every 6~12 hours
                             await disInstance?.RandomSyncInfo();
                             sw.Stop();
-                            info.AppendLine($"{account.Id}初始化中... 随机同步信息耗时: {sw.ElapsedMilliseconds}ms");
+                            info.AppendLine($"{account.Id} initializing... Random sync info time: {sw.ElapsedMilliseconds}ms");
                             sw.Restart();
                         }
                     }
                     else
                     {
                         sw.Stop();
-                        info.AppendLine($"{account.Id}初始化中... 非工作时间，不创建实例耗时: {sw.ElapsedMilliseconds}ms");
+                        info.AppendLine($"{account.Id} initializing... Not working hours, do not create instance time: {sw.ElapsedMilliseconds}ms");
                         sw.Restart();
 
-                        // 非工作时间内，如果存在实例则释放
+                        // If it is not within working hours, release the instance if it exists
                         if (disInstance != null)
                         {
                             _discordLoadBalancer.RemoveInstance(disInstance);
@@ -885,54 +885,54 @@ namespace Midjourney.API
                         }
 
                         sw.Stop();
-                        info.AppendLine($"{account.Id}初始化中... 非工作时间，释放实例耗时: {sw.ElapsedMilliseconds}ms");
+                        info.AppendLine($"{account.Id} initializing... Not working hours, release instance time: {sw.ElapsedMilliseconds}ms");
                         sw.Restart();
                     }
                 }
                 catch (Exception ex)
                 {
                     sw.Stop();
-                    info.AppendLine($"{account.Id}初始化中... 异常: {ex.Message} 耗时: {sw.ElapsedMilliseconds}ms");
+                    info.AppendLine($"{account.Id} initializing... Exception: {ex.Message} time: {sw.ElapsedMilliseconds}ms");
                     sw.Restart();
 
                     _logger.Error(ex, "Account({@0}) init fail, disabled: {@1}", account.ChannelId, ex.Message);
 
                     account.Enable = false;
-                    account.DisabledReason = ex.Message ?? "初始化失败";
+                    account.DisabledReason = ex.Message ?? "Initialization failed";
 
                     db.Update(account);
 
                     disInstance?.ClearAccountCache(account.Id);
                     disInstance = null;
 
-                    // 清除缓存
+                    // Clear cache
                     ClearAccountCache(account.Id);
 
                     sw.Stop();
-                    info.AppendLine($"{account.Id}初始化中... 异常，禁用账号耗时: {sw.ElapsedMilliseconds}ms");
+                    info.AppendLine($"{account.Id} initializing... Exception, disable account time: {sw.ElapsedMilliseconds}ms");
                     sw.Restart();
                 }
                 finally
                 {
                     swAll.Stop();
-                    info.AppendLine($"{account.Id}初始化完成, 总耗时: {swAll.ElapsedMilliseconds}ms");
+                    info.AppendLine($"{account.Id} initialization completed, total time: {swAll.ElapsedMilliseconds}ms");
 
                     _logger.Information(info.ToString());
                 }
             });
 
-            // 未获取到锁时，是否抛出异常
-            // 如果验证锁，但未获取锁时，抛出异常
+            // If the lock is not obtained, whether to throw an exception
+            // If the lock is validated, but the lock is not obtained, throw an exception
             if (isValidateLock && !isLock)
             {
-                throw new LogicException("初始化中，请稍后重试");
+                throw new LogicException("Initializing, please try again later");
             }
 
             await Task.CompletedTask;
         }
 
         /// <summary>
-        /// 随机 60~600s 延期 token
+        /// Randomly delay token for 60~600s
         /// </summary>
         /// <returns></returns>
         public async Task RandomSyncToken(DiscordAccount account)
@@ -942,9 +942,9 @@ namespace Midjourney.API
             {
                 try
                 {
-                    _logger.Information("随机对 token 进行延期 {@0}", account.ChannelId);
+                    _logger.Information("Randomly delay token {@0}", account.ChannelId);
 
-                    // 随机 60~600s
+                    // Randomly 60~600s
                     var random = new Random();
                     var sec = random.Next(60, 600);
                     c.SetAbsoluteExpiration(TimeSpan.FromSeconds(sec));
@@ -958,13 +958,14 @@ namespace Midjourney.API
                     var request = new RestRequest("/api/v9/content-inventory/users/@me", Method.Get);
                     request.AddHeader("authorization", account.UserToken);
 
-                    // base64 编码
+                    // base64 encoding
                     // "eyJvcyI6IldpbmRvd3MiLCJicm93c2VyIjoiQ2hyb21lIiwiZGV2aWNlIjoiIiwic3lzdGVtX2xvY2FsZSI6InpoLUNOIiwiYnJvd3Nlcl91c2VyX2FnZW50IjoiTW96aWxsYS81LjAgKFdpbmRvd3MgTlQgMTAuMDsgV2luNjQ7IHg2NCkgQXBwbGVXZWJLaXQvNTM3LjM2IChLSFRNTCwgbGlrZSBHZWNrbykgQ2hyb21lLzEyOS4wLjAuMCBTYWZhcmkvNTM3LjM2IiwiYnJvd3Nlcl92ZXJzaW9uIjoiMTI5LjAuMC4wIiwib3NfdmVyc2lvbiI6IjEwIiwicmVmZXJyZXIiOiJodHRwczovL2Rpc2NvcmQuY29tLz9kaXNjb3JkdG9rZW49TVRJM056TXhOVEEyT1RFMU1UQXlNekUzTlEuR1k2U2RpLm9zdl81cVpOcl9xeVdxVDBtTW0tYkJ4RVRXQzgwQzVPbzU4WlJvIiwicmVmZXJyaW5nX2RvbWFpbiI6ImRpc2NvcmQuY29tIiwicmVmZXJyZXJfY3VycmVudCI6IiIsInJlZmVycmluZ19kb21haW5fY3VycmVudCI6IiIsInJlbGVhc2VfY2hhbm5lbCI6InN0YWJsZSIsImNsaWVudF9idWlsZF9udW1iZXIiOjM0Mjk2OCwiY2xpZW50X2V2ZW50X3NvdXJjZSI6bnVsbH0="
 
                     var str = "{\"os\":\"Windows\",\"browser\":\"Chrome\",\"device\":\"\",\"system_locale\":\"zh-CN\",\"browser_user_agent\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36\",\"browser_version\":\"129.0.0.0\",\"os_version\":\"10\",\"referrer\":\"https://discord.com/?discordtoken={@token}\",\"referring_domain\":\"discord.com\",\"referrer_current\":\"\",\"referring_domain_current\":\"\",\"release_channel\":\"stable\",\"client_build_number\":342968,\"client_event_source\":null}";
+
                     str = str.Replace("{@token}", account.UserToken);
 
-                    // str 转 base64
+                    // str to base64
                     var bs64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(str));
 
                     request.AddHeader("x-super-properties", bs64);
@@ -986,18 +987,18 @@ namespace Midjourney.API
                         var refreshToken = obj["refresh_token"].ToString();
                         if (!string.IsNullOrWhiteSpace(refreshToken))
                         {
-                            _logger.Information("随机对 token 进行延期成功 {@0}", account.ChannelId);
+                            _logger.Information("Randomly delay token success {@0}", account.ChannelId);
                             return true;
                         }
                     }
 
-                    _logger.Information("随机对 token 进行延期失败 {@0}, {@1}", account.ChannelId, response.Content);
+                    _logger.Information("Randomly delay token failed {@0}, {@1}", account.ChannelId, response.Content);
 
                     return false;
                 }
                 catch (Exception ex)
                 {
-                    _logger.Error(ex, "随机对 token 进行延期异常 {@0}", account.ChannelId);
+                    _logger.Error(ex, "Randomly delay token exception {@0}", account.ChannelId);
                 }
 
                 return false;
@@ -1005,7 +1006,7 @@ namespace Midjourney.API
         }
 
         /// <summary>
-        /// 更新账号信息
+        /// Update account information
         /// </summary>
         /// <param name="param"></param>
         public async Task UpdateAccount(DiscordAccount param)
@@ -1013,31 +1014,31 @@ namespace Midjourney.API
             var model = DbHelper.Instance.AccountStore.Get(param.Id);
             if (model == null)
             {
-                throw new LogicException("账号不存在");
+                throw new LogicException("Account does not exist");
             }
 
-            // 更新一定要加锁，因为其他进程会修改 account 值，导致值覆盖
+            // Update must be locked because other processes will modify the account value, causing the value to be overwritten
             var isLock = await AsyncLocalLock.TryLockAsync($"initialize:{model.Id}", TimeSpan.FromSeconds(5), async () =>
             {
                 model = DbHelper.Instance.AccountStore.Get(model.Id)!;
 
-                // 渠道 ID 和 服务器 ID 禁止修改
+                // Channel ID and server ID are prohibited from modification
                 //model.ChannelId = account.ChannelId;
                 //model.GuildId = account.GuildId;
 
-                // 更新账号重连时，自动解锁
+                // Automatically unlock when updating account reconnection
                 model.Lock = false;
                 model.CfHashCreated = null;
                 model.CfHashUrl = null;
                 model.CfUrl = null;
 
-                // 验证 Interval
+                // Validate Interval
                 if (param.Interval < 1.2m)
                 {
                     param.Interval = 1.2m;
                 }
 
-                // 验证 WorkTime
+                // Validate WorkTime
                 if (!string.IsNullOrEmpty(param.WorkTime))
                 {
                     var ts = param.WorkTime.ToTimeSlots();
@@ -1047,7 +1048,7 @@ namespace Midjourney.API
                     }
                 }
 
-                // 验证 FishingTime
+                // Validate FishingTime
                 if (!string.IsNullOrEmpty(param.FishingTime))
                 {
                     var ts = param.FishingTime.ToTimeSlots();
@@ -1099,19 +1100,19 @@ namespace Midjourney.API
                 var disInstance = _discordLoadBalancer.GetDiscordInstance(model.ChannelId);
                 disInstance?.ClearAccountCache(model.Id);
 
-                // 清除缓存
+                // Clear cache
                 ClearAccountCache(model.Id);
 
                 await Task.CompletedTask;
             });
             if (!isLock)
             {
-                throw new LogicException("作业执行中，请稍后重试");
+                throw new LogicException("Job in progress, please try again later");
             }
         }
 
         /// <summary>
-        /// 清理账号缓存
+        /// Clear account cache
         /// </summary>
         /// <param name="id"></param>
         public void ClearAccountCache(string id)
@@ -1121,14 +1122,14 @@ namespace Midjourney.API
 
 
         /// <summary>
-        /// 更新并重新连接账号
+        /// Update and reconnect the account.
         /// </summary>
         /// <param name="account"></param>
         public async Task ReconnectAccount(DiscordAccount account)
         {
             try
             {
-                // 如果正在执行则释放
+                // If it's running, then release.
                 var disInstance = _discordLoadBalancer.GetDiscordInstance(account.ChannelId);
                 if (disInstance != null)
                 {
@@ -1142,12 +1143,12 @@ namespace Midjourney.API
 
             await UpdateAccount(account);
 
-            // 异步执行
+            // Execute asynchronously
             _ = StartCheckAccount(account);
         }
 
         /// <summary>
-        /// 停止连接并删除账号
+        /// Stop the connection and delete the account.
         /// </summary>
         /// <param name="id"></param>
         public void DeleteAccount(string id)
@@ -1174,13 +1175,13 @@ namespace Midjourney.API
         }
 
         /// <summary>
-        /// 停止服务
+        /// Stop service.
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         public async Task StopAsync(CancellationToken cancellationToken)
         {
-            _logger.Information("例行检查服务已停止");
+            _logger.Information("Routine check service stopped");
 
             _timer?.Change(Timeout.Infinite, 0);
 

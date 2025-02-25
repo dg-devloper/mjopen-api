@@ -24,7 +24,7 @@
 namespace Midjourney.Infrastructure.Models
 {
     /// <summary>
-    /// 结果
+    /// Result
     /// </summary>
     public class Result
     {

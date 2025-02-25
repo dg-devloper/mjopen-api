@@ -24,17 +24,17 @@
 namespace Midjourney.Infrastructure.Models
 {
     /// <summary>
-    /// 通用消息类，用于封装返回结果。
+    /// General message class for encapsulating return results.
     /// </summary>
     public class Message
     {
         /// <summary>
-        /// 状态码。
+        /// Status code.
         /// </summary>
         public int Code { get; }
 
         /// <summary>
-        /// 描述信息。
+        /// Description.
         /// </summary>
         public string Description { get; }
 
@@ -45,50 +45,49 @@ namespace Midjourney.Infrastructure.Models
         }
 
         /// <summary>
-        /// 返回成功的消息。
+        /// Returns a success message.
         /// </summary>
-        public static Message Success() => new Message(ReturnCode.SUCCESS, "成功");
-
+        public static Message Success() => new Message(ReturnCode.SUCCESS, "Success");
 
         /// <summary>
-        /// 返回成功的消息。
+        /// Returns a success message.
         /// </summary>
         public static Message Success(string message) => new Message(ReturnCode.SUCCESS, message);
 
         /// <summary>
-        /// 返回未找到的消息。
+        /// Returns a not found message.
         /// </summary>
-        public static Message NotFound() => new Message(ReturnCode.NOT_FOUND, "数据未找到");
+        public static Message NotFound() => new Message(ReturnCode.NOT_FOUND, "Data not found");
 
         /// <summary>
-        /// 返回校验错误的消息。
+        /// Returns a validation error message.
         /// </summary>
-        public static Message ValidationError() => new Message(ReturnCode.VALIDATION_ERROR, "校验错误");
+        public static Message ValidationError() => new Message(ReturnCode.VALIDATION_ERROR, "Validation error");
 
         /// <summary>
-        /// 返回系统异常的消息。
+        /// Returns a system error message.
         /// </summary>
-        public static Message Failure() => new Message(ReturnCode.FAILURE, "系统异常");
+        public static Message Failure() => new Message(ReturnCode.FAILURE, "System error");
 
         /// <summary>
-        /// 返回带自定义描述的系统异常消息。
+        /// Returns a system error message with a custom description.
         /// </summary>
         public static Message Failure(string description) => new Message(ReturnCode.FAILURE, description);
 
         /// <summary>
-        /// 返回自定义状态码和描述的消息。
+        /// Returns a message with a custom status code and description.
         /// </summary>
         public static Message Of(int code, string description) => new Message(code, description);
     }
 
     /// <summary>
-    /// 通用消息类，用于封装返回结果。
+    /// General message class for encapsulating return results.
     /// </summary>
-    /// <typeparam name="T">消息类型。</typeparam>
+    /// <typeparam name="T">Message type.</typeparam>
     public class Message<T> : Message
     {
         /// <summary>
-        /// 返回结果。
+        /// Return result.
         /// </summary>
         public T Result { get; }
 
@@ -99,18 +98,18 @@ namespace Midjourney.Infrastructure.Models
         }
 
         /// <summary>
-        /// 返回成功的消息。
+        /// Returns a success message.
         /// </summary>
-        /// <param name="result">结果。</param>
-        public static Message<T> Success(T result) => new Message<T>(ReturnCode.SUCCESS, "成功", result);
+        /// <param name="result">Result.</param>
+        public static Message<T> Success(T result) => new Message<T>(ReturnCode.SUCCESS, "Success", result);
 
         /// <summary>
-        /// 返回带自定义状态码和描述的成功消息。
+        /// Returns a success message with a custom status code and description.
         /// </summary>
         public static Message<T> Success(int code, string description, T result) => new Message<T>(code, description, result);
 
         /// <summary>
-        /// 返回自定义状态码、描述和结果的消息。
+        /// Returns a message with a custom status code, description, and result.
         /// </summary>
         public static Message<T> Of(int code, string description, T result) => new Message<T>(code, description, result);
     }
