@@ -3,8 +3,6 @@
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 USER app
 WORKDIR /app
-RUN sudo apt-get install -y apt-transport-https
-RUN sudo apt-get update && apt-get install -y curl jq 
 EXPOSE 8080
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
